@@ -10,6 +10,7 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/cleitinhodev/chromaqui/releases/latest"><b>Baixar</b></a> ·
   <a href="https://github.com/cleitinhodev/">Repositório</a> ·
   <a href="https://www.bugzinho.com/">Site</a> ·
   <a href="https://www.bugzinho.com/donate">Doar 💚</a> ·
@@ -23,7 +24,7 @@
 
 ## Download
 
-Baixe o `.zip` mais recente em **Releases**:
+Baixe o `.zip` mais recente em **[Releases](https://github.com/cleitinhodev/chromaqui/releases/latest)**:
 
 - **Chromaqui-Windows.zip** — pasta com `Chromaqui.exe` (abre mais rápido; recomendado).
 - **Chromaqui-Windows-onefile.zip** — um único `Chromaqui.exe` (mais prático, demora alguns segundos para abrir).
@@ -145,7 +146,7 @@ animated WebP, APNG, WebM VP9 with alpha and MOV ProRes 4444 with alpha** (bundl
 - **GPU rendering** via OpenCV OpenCL (Auto/CPU/GPU) with a verification test and safe CPU fallback.
 
 **Download:** grab `Chromaqui-Windows.zip` (folder build, faster start) or
-`Chromaqui-Windows-onefile.zip` (single exe) from **Releases**, unzip and run.
+`Chromaqui-Windows-onefile.zip` (single exe) from **[Releases](https://github.com/cleitinhodev/chromaqui/releases/latest)**, unzip and run.
 
 **From source:** `pip install -r requirements.txt && python run_chromaqui.py`.
 **Build:** `pip install -r requirements-build.txt && python tools/build_exe.py --both --zip`.
