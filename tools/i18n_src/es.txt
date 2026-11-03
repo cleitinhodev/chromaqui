@@ -1,0 +1,261 @@
+1|(doble clic: valor predeterminado)
+2|Ningún vídeo cargado
+3|Qué mostrar en la vista previa (no cambia la exportación).
+4|Fondo de la vista previa. 'Imagen o vídeo…' permite probar el recorte sobre un escenario; solo se exporta si marcas 'Incluir fondo en la exportación'.
+5|Cómo encajar la imagen/vídeo de fondo: rellenar (recorta), ajustar (bordes) o estirar.
+6|Reproducir
+7|Reproducir / pausar con el recorte aplicado (barra espaciadora)
+8|Velocidad de reproducción (predeterminado = FPS del vídeo)
+9|Repetir
+10|Vuelve al inicio al llegar al final del vídeo.
+11|Resolución de la vista previa durante la reproducción: 'Rápida' es fluida; 'Completa' muestra más detalle (puede descartar fotogramas). No afecta a la exportación.
+12|Línea de tiempo (haz clic en un fotograma para verlo):
+13|Exportar…
+14|Exporta en el formato elegido en 'Opciones de exportación'.
+15|Cancelar
+16|%v / %m fotogramas
+17|Listo
+18|Importar vídeo…
+19|Abrir un vídeo (MP4, MOV, AVI, MKV, WebM…)
+20|Alternar entre tema claro y oscuro
+21|Idioma de la interfaz (cambia al instante)
+22|Configuración
+23|Tema, idioma, animaciones, neón y renderizado (CPU/GPU)
+24|Acerca de
+25|Color clave
+26|Aplicar eliminación de fondo
+27|Desactívalo para comparar con el vídeo original.
+28|Otro…
+29|Elegir cualquier color como color clave
+30|Elegir color haciendo clic en el vídeo
+31|Después haz clic en el fondo del vídeo, en la vista previa, para tomar el color exacto.
+32|Color actual
+33|Ajustes preestablecidos
+34|Guarda todos los ajustes en un archivo .json
+35|Carga ajustes guardados de un archivo .json
+36|Restablece todos los parámetros a los valores predeterminados
+37|Opciones de exportación
+38|Secuencias de imágenes (una por fotograma) o un único archivo animado/vídeo, todos con transparencia.
+39|Formato
+40|1 de cada N fotogramas
+41|1 = todos; 2 = uno sí, uno no; etc.
+42|Escala
+43|Ampliar recalcula los bordes en la resolución final (Lanczos).
+44|Automático
+45|FPS de la animación
+46|Automático = FPS del vídeo ÷ paso (mantiene la velocidad original).
+47|Infinito
+48|Repeticiones
+49|Cuántas veces se repite la animación (Infinito = siempre).
+50|Prefijo del nombre
+51|Ej.: frame_ → frame_00001.png
+52|Profundidad
+53|16 bits: bordes/alfa más precisos, archivos más grandes.
+54|Compresión PNG
+55|0 = más rápido/más grande, 9 = más pequeño/más lento (sin pérdida).
+56|Compresión LZW (sin pérdida)
+57|Archivos TIFF más pequeños, sin perder calidad.
+58|Calidad
+59|Más alto = mejor imagen y archivo más grande.
+60|Sin pérdida (lossless)
+61|Calidad máxima; archivos mucho más grandes.
+62|Umbral de transparencia
+63|En GIF el píxel solo puede ser 100% transparente u opaco: el alfa por debajo de este valor se vuelve transparente.
+64|Colores de la paleta
+65|Máximo 256 (uno se reserva para la transparencia).
+66|Alta (corte medio)
+67|Rápida (octree)
+68|Calidad de la paleta
+69|Método de reducción de colores.
+70|Tramado (dither)
+71|Suaviza degradados con tramado (archivo un poco más grande).
+72|Mezclar bordes con el color
+73|Borde (matte)
+74|Los bordes semitransparentes se mezclan con este color (usa el color del fondo donde se mostrará el GIF) para que no queden dentados/oscuros.
+75|Incluir fondo en la exportación
+76|Compone la imagen/vídeo de fondo elegido en la vista previa en el archivo exportado (resultado opaco).
+77|Color de borde (matte) del GIF
+78|Importar vídeo
+79|Pausar
+80|Parámetros restablecidos a los valores predeterminados.
+81|Guardar ajuste preestablecido
+82|Cargar ajuste preestablecido
+83|Elige el color del fondo
+84|Exportando…
+85|eliminador de fondo de vídeo
+86|Ver:
+87|Fondo:
+88|FPS:
+89|Calidad de reproducción:
+90|Tema claro
+91|Tema oscuro
+92|Guardar preset…
+93|Cargar preset…
+94|Restablecer valores
+95|Fotograma inicial
+96|Primer fotograma a exportar.
+97|Fotograma final
+98|Último fotograma a exportar (incluido).
+99|Usar actual
+100|Usar el fotograma mostrado en la vista previa
+101|Personalizado
+102|8 bits por canal
+103|16 bits por canal
+104|con fondo (opaco)
+105|ffmpeg no encontrado
+106|Color de fondo de la vista previa
+107|Haz clic en el fondo del vídeo para elegir el color.
+108|Error en la exportación
+109|El idioma se aplicará cuando termine la exportación o al volver a abrir el programa.
+110|Fotograma {i} / {n}
+111|Acerca de {app}
+112|Renderizado: {b}
+113|Vídeos
+114|Todos
+115|Error
+116|{name} — {w}×{h}, {n} fotogramas, {fps} fps, {dur} s
+117|real: {fps} fps · {n} descartados
+118|1 archivo, {n} fotogramas, {size}, {fps} fps
+119|{n} archivos, {size}
+120|Imagen o vídeo de fondo
+121|Fondo: {name}
+122|vista previa: {ms} ms
+123|Color elegido: {c}
+124|Guardar como
+125|Elige la carpeta de destino
+126|Usar el color clave predeterminado: {c}
+127|No se pudo abrir el vídeo:
+128|Vídeo largo: la línea de tiempo muestra {n} muestras; usa el control deslizante para ver cualquier fotograma.
+129|Preset guardado: {p}
+130|No se pudo abrir el fondo:
+131|Carpeta no vacía
+132|Completado
+133|Preset cargado: {p}
+134|Preset no válido:
+135|Imágenes y vídeos
+136|Exportación cancelada ({n} fotogramas guardados).
+137|{n} fotogramas exportados a:
+138|Esta carpeta ya tiene archivos {p}*{ext} que pueden sobrescribirse. ¿Continuar?
+139|CPU elegida
+140|OpenCL no disponible
+141|ningún dispositivo OpenCL utilizable
+142|la prueba de verificación falló
+143|sin tarjeta gráfica OpenCL
+144|CPU
+145|Elimina el fondo verde o azul (chroma key) de vídeos y exporta fotogramas y animaciones con transparencia: PNG, GIF, WebP, APNG, WebM y ProRes.
+146|Software libre bajo la licencia MIT.
+147|Cerrar
+148|Apariencia
+149|Oscuro
+150|Claro
+151|Tema
+152|El idioma cambia al instante; el vídeo y los ajustes se mantienen.
+153|Idioma
+154|Animaciones (abrir/cerrar secciones, transiciones, fundidos)
+155|Brillo neón en los elementos destacados
+156|Rendimiento
+157|Automático: usa la tarjeta gráfica (OpenCL) si existe y pasa la prueba; si no, la CPU. El resultado es el mismo; solo cambia la velocidad.
+158|Renderizado
+159|En uso
+160|GPU (OpenCL): {dev}
+161|Versión {v}
+162|Repositorio
+163|Sitio web
+164|Donar
+165|Importa un vídeo para empezar
+166|Generación de la máscara
+167|Tolerancia
+168|Cuántos colores parecidos al color clave se eliminarán.
+169|Rango de transición
+170|Ancho de la transición entre opaco y transparente. Valores altos = bordes más suaves y naturales (cabello, desenfoque).
+171|Transparencia
+172|Hace más transparentes las zonas semitransparentes.
+173|Realce (luces)
+174|Aumenta la opacidad de las zonas claras del sujeto.
+175|Sombra
+176|Aumenta la opacidad de las zonas oscuras del sujeto.
+177|Pedestal
+178|Elimina ruido: los valores bajos de alfa se vuelven transparentes.
+179|Calidad de los bordes
+180|Refinar bordes
+181|Refina la máscara guiada por la imagen (guided filter): bordes lisos, sin dientes de sierra, conservando los mechones de cabello.
+182|Descontaminar bordes
+183|Elimina el color del fondo mezclado en los píxeles del borde (sin halo verde/azul).
+184|Suavizar croma
+185|Reduce los 'escalones' causados por la compresión del vídeo (H.264 4:2:0) antes del recorte.
+186|Colorización de bordes
+187|Activar
+188|Recolorea solo los bordes con el color más cercano del sujeto que no sea el color clave (el cabello rubio toma el rubio, la piel toma el tono de piel…).
+189|Intensidad
+190|Cuánto se acerca el color de los bordes al color del sujeto vecino.
+191|Ancho del borde (px)
+192|Cuántos píxeles dentro de la parte opaca también se recolorean (además de la franja semitransparente).
+193|Alcance del muestreo (px)
+194|Hasta qué distancia del borde se busca el color del sujeto.
+195|Conservar brillo
+196|100 = mantiene el brillo original del borde y cambia solo el color (conserva detalles como mechones de cabello).
+197|Solo afectar residuo del color clave
+198|Activado: solo recolorea píxeles que aún tienen tono del color clave (verde/azul). Desactivado: recolorea todo el borde.
+199|Suavizado del color muestreado
+200|Promedia el color muestreado (menos ruido, transición más uniforme).
+201|Limpieza de la máscara
+202|Encoger / expandir
+203|Positivo encoge el borde del sujeto; negativo lo expande.
+204|Suavizar
+205|Desenfoca la máscara para bordes más suaves.
+206|Contraste de la máscara
+207|Endurece la máscara (menos zonas semitransparentes).
+208|Punto medio
+209|Punto de equilibrio usado por el contraste de la máscara.
+210|Supresión de reflejo (spill)
+211|Cantidad
+212|Cuánto del reflejo del color clave se elimina de los bordes.
+213|Intervalo
+214|Amplía el rango de colores considerados reflejo (más agresivo).
+215|Desaturar
+216|Quita saturación de las zonas con reflejo.
+217|Luma (conservar brillo)
+218|Devuelve el brillo perdido al eliminar el reflejo.
+219|Corrección de color del sujeto
+220|Brillo
+221|Contraste
+222|Saturación
+223|100 = original.
+224|Tono
+225|Gira los colores (grados).
+226|Temperatura
+227|Negativo = más frío (azul); positivo = más cálido.
+228|Recorte (garbage matte)
+229|Recortar arriba %
+230|Vuelve transparente este porcentaje de la parte superior.
+231|Recortar abajo %
+232|Recortar izquierda %
+233|Recortar derecha %
+234|Secuencia PNG
+235|Secuencia TGA
+236|Secuencia TIFF
+237|Secuencia WebP
+238|GIF animado (transparente)
+239|WebP animado (alfa)
+240|APNG animado (alfa)
+241|WebM VP9 (alfa)
+242|MOV ProRes 4444 (alfa)
+243|Resultado
+244|Máscara (alfa)
+245|Máscara de colorización
+246|Original
+247|Lado a lado
+248|Cuadrícula
+249|Negro
+250|Blanco
+251|Color…
+252|Imagen o vídeo…
+253|Rellenar
+254|Ajustar
+255|Estirar
+256|Rápida
+257|Media
+258|Completa
+259|GPU (OpenCL)
+260|Verde
+261|Azul

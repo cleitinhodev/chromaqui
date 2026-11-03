@@ -1,0 +1,261 @@
+1|(double-click: default)
+2|No video loaded
+3|What to show in the preview (does not change the export).
+4|Preview background. 'Image or video…' lets you test the key over a scene; it is only exported if you check 'Include background in export'.
+5|How to fit the background image/video: fill (crops), fit (borders) or stretch.
+6|Play
+7|Play / pause with the key applied (space bar)
+8|Playback speed (default = video FPS)
+9|Loop
+10|Go back to the start when the video ends.
+11|Preview resolution during playback: 'Fast' stays smooth; 'Full' shows more detail (may drop frames). Does not affect the export.
+12|Timeline (click a frame to view it):
+13|Export…
+14|Exports in the format chosen in 'Export options'.
+15|Cancel
+16|%v / %m frames
+17|Ready
+18|Import video…
+19|Open a video (MP4, MOV, AVI, MKV, WebM…)
+20|Switch between light and dark theme
+21|Interface language (changes immediately)
+22|Settings
+23|Theme, language, animations, neon and rendering (CPU/GPU)
+24|About
+25|Key color
+26|Apply background removal
+27|Turn off to compare with the original video.
+28|Other…
+29|Pick any color as the key color
+30|Pick color by clicking the video
+31|Then click the video background in the preview to grab the exact color.
+32|Current color
+33|Presets
+34|Saves all settings to a .json file
+35|Loads saved settings from a .json file
+36|Resets all parameters to default
+37|Export options
+38|Image sequences (one per frame) or a single animated/video file, all with transparency.
+39|Format
+40|1 every N frames
+41|1 = all; 2 = every other frame; etc.
+42|Scale
+43|Upscaling recomputes the edges at the final resolution (Lanczos).
+44|Automatic
+45|Animation FPS
+46|Automatic = video FPS ÷ step (keeps the original speed).
+47|Infinite
+48|Repeats
+49|How many times the animation repeats (Infinite = forever).
+50|File name prefix
+51|E.g.: frame_ → frame_00001.png
+52|Bit depth
+53|16 bits: more precise edges/alpha, bigger files.
+54|PNG compression
+55|0 = fastest/biggest, 9 = smallest/slowest (lossless).
+56|LZW compression (lossless)
+57|Smaller TIFF files without losing quality.
+58|Quality
+59|Higher = better image and bigger file.
+60|Lossless
+61|Maximum quality; much bigger files.
+62|Transparency threshold
+63|GIF pixels are either 100% transparent or opaque: alpha below this value becomes transparent.
+64|Palette colors
+65|Maximum 256 (one is reserved for transparency).
+66|High (median cut)
+67|Fast (octree)
+68|Palette quality
+69|Color reduction method.
+70|Dithering
+71|Smooths gradients with dithering (slightly bigger file).
+72|Blend edges with color
+73|Edge (matte)
+74|Semi-transparent edges are blended with this color (use the background color where the GIF will be shown) so they don't look jagged/dark.
+75|Include background in export
+76|Composites the background image/video chosen in the preview into the exported file (opaque result).
+77|GIF edge (matte) color
+78|Import video
+79|Pause
+80|Parameters reset to default.
+81|Save preset
+82|Load preset
+83|Choose the background color
+84|Exporting…
+85|video background remover
+86|View:
+87|Background:
+88|FPS:
+89|Playback quality:
+90|Light theme
+91|Dark theme
+92|Save preset…
+93|Load preset…
+94|Restore defaults
+95|Start frame
+96|First frame to export.
+97|End frame
+98|Last frame to export (inclusive).
+99|Use current
+100|Use the frame shown in the preview
+101|Custom
+102|8 bits per channel
+103|16 bits per channel
+104|with background (opaque)
+105|ffmpeg not found
+106|Preview background color
+107|Click the video background to pick the color.
+108|Export error
+109|The language will be applied when the export finishes or when the program is reopened.
+110|Frame {i} / {n}
+111|About {app}
+112|Rendering: {b}
+113|Videos
+114|All files
+115|Error
+116|{name} — {w}×{h}, {n} frames, {fps} fps, {dur} s
+117|actual: {fps} fps · {n} dropped
+118|1 file, {n} frames, {size}, {fps} fps
+119|{n} files, {size}
+120|Background image or video
+121|Background: {name}
+122|preview: {ms} ms
+123|Color picked: {c}
+124|Save as
+125|Choose the destination folder
+126|Use the default key color: {c}
+127|Could not open the video:
+128|Long video: the timeline shows {n} samples; use the slider to view any frame.
+129|Preset saved: {p}
+130|Could not open the background:
+131|Folder not empty
+132|Done
+133|Preset loaded: {p}
+134|Invalid preset:
+135|Images and videos
+136|Export cancelled ({n} frames saved).
+137|{n} frames exported to:
+138|This folder already has {p}*{ext} files that may be overwritten. Continue?
+139|CPU selected
+140|OpenCL unavailable
+141|no usable OpenCL device
+142|verification test failed
+143|no OpenCL graphics card
+144|CPU
+145|Remove green or blue backgrounds (chroma key) from videos and export frames and animations with transparency: PNG, GIF, WebP, APNG, WebM and ProRes.
+146|Free software under the MIT license.
+147|Close
+148|Appearance
+149|Dark
+150|Light
+151|Theme
+152|The language changes immediately; the video and settings are kept.
+153|Language
+154|Animations (expand/collapse sections, transitions, fades)
+155|Neon glow on highlights
+156|Performance
+157|Automatic: uses the graphics card (OpenCL) if present and it passes the test; otherwise the CPU. The result is the same; only the speed changes.
+158|Rendering
+159|In use
+160|GPU (OpenCL): {dev}
+161|Version {v}
+162|Repository
+163|Website
+164|Donate
+165|Import a video to get started
+166|Matte generation
+167|Tolerance
+168|How many colors similar to the key color will be removed.
+169|Transition range
+170|Width of the transition between opaque and transparent. High values = softer, more natural edges (hair, blur).
+171|Transparency
+172|Makes semi-transparent areas more transparent.
+173|Highlights
+174|Increases the opacity of bright areas of the subject.
+175|Shadows
+176|Increases the opacity of dark areas of the subject.
+177|Pedestal
+178|Removes noise: low alpha values become transparent.
+179|Edge quality
+180|Refine edges
+181|Refines the matte guided by the image (guided filter): smooth, non-jagged edges that keep hair strands.
+182|Decontaminate edges
+183|Removes the background color mixed into edge pixels (no green/blue halo).
+184|Smooth chroma
+185|Reduces the 'steps' caused by video compression (H.264 4:2:0) before keying.
+186|Edge colorization
+187|Enable
+188|Recolors only the edges with the nearest subject color that is not the key color (blonde hair takes the blonde, skin takes the skin tone…).
+189|Strength
+190|How much the edge color is pulled toward the neighboring subject color.
+191|Edge width (px)
+192|How many pixels inside the opaque part are also recolored (beyond the semi-transparent band).
+193|Sampling reach (px)
+194|How far from the edge the subject color is searched.
+195|Preserve brightness
+196|100 = keeps the original edge brightness and changes only the color (keeps details like hair strands).
+197|Only affect key color residue
+198|On: only recolors pixels that still have a key color tint (green/blue). Off: recolors the whole edge.
+199|Sampled color smoothing
+200|Averages the sampled color (less noise, more uniform transition).
+201|Matte cleanup
+202|Shrink / grow
+203|Positive shrinks the subject edge; negative grows it.
+204|Soften
+205|Blurs the matte for softer edges.
+206|Matte contrast
+207|Makes the matte harder (fewer semi-transparent areas).
+208|Midpoint
+209|Balance point used by the matte contrast.
+210|Spill suppression
+211|Amount
+212|How much of the key color spill is removed from the edges.
+213|Range
+214|Widens the range of colors considered spill (more aggressive).
+215|Desaturate
+216|Removes saturation from spill areas.
+217|Luma (preserve brightness)
+218|Restores the brightness lost when removing spill.
+219|Subject color correction
+220|Brightness
+221|Contrast
+222|Saturation
+223|100 = original.
+224|Hue
+225|Rotates the colors (degrees).
+226|Temperature
+227|Negative = cooler (blue); positive = warmer.
+228|Crop (garbage matte)
+229|Crop top %
+230|Makes this percentage of the top transparent.
+231|Crop bottom %
+232|Crop left %
+233|Crop right %
+234|PNG sequence
+235|TGA sequence
+236|TIFF sequence
+237|WebP sequence
+238|Animated GIF (transparent)
+239|Animated WebP (alpha)
+240|Animated APNG (alpha)
+241|WebM VP9 (alpha)
+242|MOV ProRes 4444 (alpha)
+243|Result
+244|Matte (alpha)
+245|Colorization mask
+246|Original
+247|Side by side
+248|Checkerboard
+249|Black
+250|White
+251|Color…
+252|Image or video…
+253|Fill
+254|Fit
+255|Stretch
+256|Fast
+257|Medium
+258|Full
+259|GPU (OpenCL)
+260|Green
+261|Blue

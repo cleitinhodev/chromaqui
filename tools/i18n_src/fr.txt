@@ -1,0 +1,261 @@
+1|(double-clic : valeur par défaut)
+2|Aucune vidéo chargée
+3|Ce qu'il faut afficher dans l'aperçu (ne modifie pas l'export).
+4|Fond de l'aperçu. « Image ou vidéo… » permet de tester le détourage sur un décor ; il n'est exporté que si vous cochez « Inclure le fond dans l'export ».
+5|Comment ajuster l'image/vidéo de fond : remplir (rogne), ajuster (bandes) ou étirer.
+6|Lecture
+7|Lecture / pause avec le détourage appliqué (barre d'espace)
+8|Vitesse de lecture (par défaut = FPS de la vidéo)
+9|Boucle
+10|Revient au début à la fin de la vidéo.
+11|Résolution de l'aperçu pendant la lecture : « Rapide » reste fluide ; « Complète » montre plus de détails (peut sauter des images). N'affecte pas l'export.
+12|Chronologie (cliquez sur une image pour l'afficher) :
+13|Exporter…
+14|Exporte dans le format choisi dans « Options d'export ».
+15|Annuler
+16|%v / %m images
+17|Prêt
+18|Importer une vidéo…
+19|Ouvrir une vidéo (MP4, MOV, AVI, MKV, WebM…)
+20|Basculer entre thème clair et sombre
+21|Langue de l'interface (change immédiatement)
+22|Paramètres
+23|Thème, langue, animations, néon et rendu (CPU/GPU)
+24|À propos
+25|Couleur de clé
+26|Appliquer la suppression du fond
+27|Désactivez pour comparer avec la vidéo originale.
+28|Autre…
+29|Choisir n'importe quelle couleur comme couleur de clé
+30|Choisir la couleur en cliquant sur la vidéo
+31|Cliquez ensuite sur le fond de la vidéo, dans l'aperçu, pour prélever la couleur exacte.
+32|Couleur actuelle
+33|Préréglages
+34|Enregistre tous les réglages dans un fichier .json
+35|Charge des réglages enregistrés depuis un fichier .json
+36|Rétablit tous les paramètres par défaut
+37|Options d'export
+38|Séquences d'images (une par image) ou un seul fichier animé/vidéo, tous avec transparence.
+39|Format
+40|1 image sur N
+41|1 = toutes ; 2 = une sur deux ; etc.
+42|Échelle
+43|L'agrandissement recalcule les bords à la résolution finale (Lanczos).
+44|Automatique
+45|FPS de l'animation
+46|Automatique = FPS de la vidéo ÷ pas (garde la vitesse d'origine).
+47|Infini
+48|Répétitions
+49|Nombre de répétitions de l'animation (Infini = toujours).
+50|Préfixe du nom
+51|Ex. : frame_ → frame_00001.png
+52|Profondeur
+53|16 bits : bords/alpha plus précis, fichiers plus gros.
+54|Compression PNG
+55|0 = plus rapide/plus gros, 9 = plus petit/plus lent (sans perte).
+56|Compression LZW (sans perte)
+57|Fichiers TIFF plus petits, sans perte de qualité.
+58|Qualité
+59|Plus élevé = meilleure image et fichier plus gros.
+60|Sans perte (lossless)
+61|Qualité maximale ; fichiers beaucoup plus gros.
+62|Seuil de transparence
+63|En GIF, un pixel est soit 100 % transparent soit opaque : l'alpha sous cette valeur devient transparent.
+64|Couleurs de la palette
+65|256 maximum (une est réservée à la transparence).
+66|Haute (median cut)
+67|Rapide (octree)
+68|Qualité de la palette
+69|Méthode de réduction des couleurs.
+70|Tramage (dither)
+71|Adoucit les dégradés par tramage (fichier un peu plus gros).
+72|Mélanger les bords avec la couleur
+73|Bord (matte)
+74|Les bords semi-transparents sont mélangés avec cette couleur (utilisez la couleur du fond où le GIF sera affiché) pour éviter qu'ils soient crénelés/sombres.
+75|Inclure le fond dans l'export
+76|Incruste l'image/vidéo de fond choisie dans l'aperçu dans le fichier exporté (résultat opaque).
+77|Couleur de bord (matte) du GIF
+78|Importer une vidéo
+79|Pause
+80|Paramètres rétablis par défaut.
+81|Enregistrer le préréglage
+82|Charger un préréglage
+83|Choisissez la couleur du fond
+84|Export en cours…
+85|suppression de fond vidéo
+86|Afficher :
+87|Fond :
+88|FPS :
+89|Qualité de lecture :
+90|Thème clair
+91|Thème sombre
+92|Enregistrer le préréglage…
+93|Charger un préréglage…
+94|Rétablir les valeurs par défaut
+95|Image de début
+96|Première image à exporter.
+97|Image de fin
+98|Dernière image à exporter (incluse).
+99|Utiliser l'actuelle
+100|Utiliser l'image affichée dans l'aperçu
+101|Personnalisé
+102|8 bits par canal
+103|16 bits par canal
+104|avec fond (opaque)
+105|ffmpeg introuvable
+106|Couleur de fond de l'aperçu
+107|Cliquez sur le fond de la vidéo pour choisir la couleur.
+108|Erreur d'export
+109|La langue sera appliquée à la fin de l'export ou à la réouverture du programme.
+110|Image {i} / {n}
+111|À propos de {app}
+112|Rendu : {b}
+113|Vidéos
+114|Tous les fichiers
+115|Erreur
+116|{name} — {w}×{h}, {n} images, {fps} fps, {dur} s
+117|réel : {fps} fps · {n} sautées
+118|1 fichier, {n} images, {size}, {fps} fps
+119|{n} fichiers, {size}
+120|Image ou vidéo de fond
+121|Fond : {name}
+122|aperçu : {ms} ms
+123|Couleur choisie : {c}
+124|Enregistrer sous
+125|Choisissez le dossier de destination
+126|Utiliser la couleur de clé par défaut : {c}
+127|Impossible d'ouvrir la vidéo :
+128|Vidéo longue : la chronologie affiche {n} échantillons ; utilisez le curseur pour voir n'importe quelle image.
+129|Préréglage enregistré : {p}
+130|Impossible d'ouvrir le fond :
+131|Dossier non vide
+132|Terminé
+133|Préréglage chargé : {p}
+134|Préréglage invalide :
+135|Images et vidéos
+136|Export annulé ({n} images enregistrées).
+137|{n} images exportées vers :
+138|Ce dossier contient déjà des fichiers {p}*{ext} qui peuvent être remplacés. Continuer ?
+139|CPU choisi
+140|OpenCL indisponible
+141|aucun périphérique OpenCL utilisable
+142|le test de vérification a échoué
+143|pas de carte graphique OpenCL
+144|CPU
+145|Supprimez le fond vert ou bleu (chroma key) des vidéos et exportez des images et des animations avec transparence : PNG, GIF, WebP, APNG, WebM et ProRes.
+146|Logiciel libre sous licence MIT.
+147|Fermer
+148|Apparence
+149|Sombre
+150|Clair
+151|Thème
+152|La langue change immédiatement ; la vidéo et les réglages sont conservés.
+153|Langue
+154|Animations (ouvrir/fermer les sections, transitions, fondus)
+155|Lueur néon sur les éléments clés
+156|Performances
+157|Automatique : utilise la carte graphique (OpenCL) si elle existe et passe le test ; sinon le CPU. Le résultat est identique ; seule la vitesse change.
+158|Rendu
+159|Utilisé
+160|GPU (OpenCL) : {dev}
+161|Version {v}
+162|Dépôt
+163|Site web
+164|Faire un don
+165|Importez une vidéo pour commencer
+166|Génération du masque
+167|Tolérance
+168|Quantité de couleurs proches de la couleur de clé à supprimer.
+169|Plage de transition
+170|Largeur du passage entre opaque et transparent. Valeurs élevées = bords plus doux et naturels (cheveux, flou).
+171|Transparence
+172|Rend les zones semi-transparentes plus transparentes.
+173|Hautes lumières
+174|Augmente l'opacité des zones claires du sujet.
+175|Ombres
+176|Augmente l'opacité des zones sombres du sujet.
+177|Piédestal
+178|Supprime le bruit : les faibles valeurs d'alpha deviennent transparentes.
+179|Qualité des bords
+180|Affiner les bords
+181|Affine le masque guidé par l'image (guided filter) : bords lisses, sans crénelage, en préservant les mèches de cheveux.
+182|Décontaminer les bords
+183|Supprime la couleur du fond mélangée aux pixels de bord (sans halo vert/bleu).
+184|Lisser la chrominance
+185|Réduit les « marches » dues à la compression vidéo (H.264 4:2:0) avant le détourage.
+186|Colorisation des bords
+187|Activer
+188|Recolore seulement les bords avec la couleur du sujet la plus proche qui n'est pas la couleur de clé (les cheveux blonds prennent le blond, la peau prend sa teinte…).
+189|Intensité
+190|Dans quelle mesure la couleur des bords tend vers la couleur du sujet voisin.
+191|Largeur du bord (px)
+192|Nombre de pixels à l'intérieur de la partie opaque également recolorés (en plus de la bande semi-transparente).
+193|Portée de l'échantillonnage (px)
+194|Distance du bord jusqu'à laquelle la couleur du sujet est recherchée.
+195|Préserver la luminosité
+196|100 = garde la luminosité d'origine du bord et ne change que la couleur (préserve les détails comme les mèches).
+197|N'affecter que le résidu de couleur de clé
+198|Activé : ne recolore que les pixels qui ont encore une teinte de la couleur de clé (vert/bleu). Désactivé : recolore tout le bord.
+199|Lissage de la couleur échantillonnée
+200|Moyenne la couleur échantillonnée (moins de bruit, transition plus uniforme).
+201|Nettoyage du masque
+202|Réduire / étendre
+203|Positif réduit le bord du sujet ; négatif l'étend.
+204|Adoucir
+205|Floute le masque pour des bords plus doux.
+206|Contraste du masque
+207|Durcit le masque (moins de zones semi-transparentes).
+208|Point médian
+209|Point d'équilibre utilisé par le contraste du masque.
+210|Suppression du débordement (spill)
+211|Quantité
+212|Quantité de débordement de la couleur de clé supprimée des bords.
+213|Plage
+214|Élargit la plage de couleurs considérées comme débordement (plus agressif).
+215|Désaturer
+216|Retire la saturation des zones avec débordement.
+217|Luma (préserver la luminosité)
+218|Rend la luminosité perdue en supprimant le débordement.
+219|Correction colorimétrique du sujet
+220|Luminosité
+221|Contraste
+222|Saturation
+223|100 = original.
+224|Teinte
+225|Fait tourner les couleurs (degrés).
+226|Température
+227|Négatif = plus froid (bleu) ; positif = plus chaud.
+228|Rognage (garbage matte)
+229|Rogner le haut %
+230|Rend transparent ce pourcentage du haut.
+231|Rogner le bas %
+232|Rogner la gauche %
+233|Rogner la droite %
+234|Séquence PNG
+235|Séquence TGA
+236|Séquence TIFF
+237|Séquence WebP
+238|GIF animé (transparent)
+239|WebP animé (alpha)
+240|APNG animé (alpha)
+241|WebM VP9 (alpha)
+242|MOV ProRes 4444 (alpha)
+243|Résultat
+244|Masque (alpha)
+245|Masque de colorisation
+246|Original
+247|Côte à côte
+248|Damier
+249|Noir
+250|Blanc
+251|Couleur…
+252|Image ou vidéo…
+253|Remplir
+254|Ajuster
+255|Étirer
+256|Rapide
+257|Moyenne
+258|Complète
+259|GPU (OpenCL)
+260|Vert
+261|Bleu

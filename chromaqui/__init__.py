@@ -1,0 +1,8 @@
+"""Chromaqui! — remove o fundo (chroma key) de vídeos e exporta quadros/animações com transparência."""
+APP_NAME = "Chromaqui!"
+APP_SLUG = "chromaqui"
+__version__ = "3.0.0"
+ORG_NAME = "bugzinho"
+URL_REPO = "https://github.com/cleitinhodev/"
+URL_SITE = "https://www.bugzinho.com/"
+URL_DONATE = "https://www.bugzinho.com/donate"

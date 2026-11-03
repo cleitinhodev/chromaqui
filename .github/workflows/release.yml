@@ -1,0 +1,60 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Instalar dependências
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-build.txt
+
+      - name: Testes (núcleo e exportadores)
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          python tests/make_soft_video.py
+          python tests/test_core.py
+          python tests/test_exporters.py
+
+      - name: Gerar executáveis (pasta + arquivo único) e zips
+        run: python tools/build_exe.py --both --zip
+
+      - name: Auto-teste do .exe
+        shell: pwsh
+        run: |
+          $p = Start-Process -FilePath dist/Chromaqui/Chromaqui.exe -ArgumentList "--self-test","tests/_out/teste_verde.mp4","selftest_out" -Wait -PassThru
+          Get-Content selftest_out/selftest.log
+          if ($p.ExitCode -ne 0) { exit 1 }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Chromaqui-Windows
+          path: |
+            Chromaqui-Windows.zip
+            Chromaqui-Windows-onefile.zip
+
+      - name: Publicar Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Chromaqui! ${{ github.ref_name }}
+          body_path: CHANGELOG.md
+          files: |
+            Chromaqui-Windows.zip
+            Chromaqui-Windows-onefile.zip

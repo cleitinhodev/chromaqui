@@ -1,0 +1,261 @@
+1|(Doppelklick: Standard)
+2|Kein Video geladen
+3|Was in der Vorschau angezeigt wird (ändert den Export nicht).
+4|Vorschauhintergrund. „Bild oder Video…“ lässt dich das Freistellen vor einer Szene testen; er wird nur exportiert, wenn du „Hintergrund in den Export aufnehmen“ aktivierst.
+5|Wie das Hintergrundbild/-video eingepasst wird: füllen (beschneidet), einpassen (Ränder) oder strecken.
+6|Abspielen
+7|Abspielen / Pause mit angewendetem Key (Leertaste)
+8|Wiedergabegeschwindigkeit (Standard = Video-FPS)
+9|Wiederholen
+10|Springt am Ende des Videos zurück zum Anfang.
+11|Vorschauauflösung bei der Wiedergabe: „Schnell“ bleibt flüssig; „Voll“ zeigt mehr Details (kann Bilder auslassen). Beeinflusst den Export nicht.
+12|Zeitleiste (Bild anklicken, um es anzuzeigen):
+13|Exportieren…
+14|Exportiert im unter „Exportoptionen“ gewählten Format.
+15|Abbrechen
+16|%v / %m Bilder
+17|Bereit
+18|Video importieren…
+19|Ein Video öffnen (MP4, MOV, AVI, MKV, WebM…)
+20|Zwischen hellem und dunklem Design wechseln
+21|Sprache der Oberfläche (wechselt sofort)
+22|Einstellungen
+23|Design, Sprache, Animationen, Neon und Rendering (CPU/GPU)
+24|Über
+25|Key-Farbe
+26|Hintergrundentfernung anwenden
+27|Ausschalten, um mit dem Originalvideo zu vergleichen.
+28|Andere…
+29|Beliebige Farbe als Key-Farbe wählen
+30|Farbe durch Klick ins Video wählen
+31|Klicke danach in der Vorschau auf den Videohintergrund, um die genaue Farbe aufzunehmen.
+32|Aktuelle Farbe
+33|Voreinstellungen
+34|Speichert alle Einstellungen in einer .json-Datei
+35|Lädt gespeicherte Einstellungen aus einer .json-Datei
+36|Setzt alle Parameter auf Standard zurück
+37|Exportoptionen
+38|Bildsequenzen (eins pro Frame) oder eine einzelne Animations-/Videodatei, alle mit Transparenz.
+39|Format
+40|1 von N Bildern
+41|1 = alle; 2 = jedes zweite; usw.
+42|Skalierung
+43|Vergrößern berechnet die Kanten in der Endauflösung neu (Lanczos).
+44|Automatisch
+45|Animations-FPS
+46|Automatisch = Video-FPS ÷ Schritt (behält die Originalgeschwindigkeit).
+47|Endlos
+48|Wiederholungen
+49|Wie oft die Animation wiederholt wird (Endlos = immer).
+50|Namenspräfix
+51|Z. B.: frame_ → frame_00001.png
+52|Farbtiefe
+53|16 Bit: genauere Kanten/Alpha, größere Dateien.
+54|PNG-Kompression
+55|0 = am schnellsten/größten, 9 = am kleinsten/langsamsten (verlustfrei).
+56|LZW-Kompression (verlustfrei)
+57|Kleinere TIFF-Dateien ohne Qualitätsverlust.
+58|Qualität
+59|Höher = besseres Bild und größere Datei.
+60|Verlustfrei (lossless)
+61|Maximale Qualität; deutlich größere Dateien.
+62|Transparenzschwelle
+63|GIF kennt nur 100 % transparente oder deckende Pixel: Alpha unter diesem Wert wird transparent.
+64|Palettenfarben
+65|Maximal 256 (eine ist für Transparenz reserviert).
+66|Hoch (Median-Cut)
+67|Schnell (Octree)
+68|Palettenqualität
+69|Verfahren zur Farbreduktion.
+70|Dithering
+71|Glättet Verläufe durch Dithering (etwas größere Datei).
+72|Kanten mit Farbe mischen
+73|Kante (Matte)
+74|Halbtransparente Kanten werden mit dieser Farbe gemischt (nimm die Hintergrundfarbe, auf der das GIF erscheint), damit sie nicht gezackt/dunkel wirken.
+75|Hintergrund in den Export aufnehmen
+76|Fügt das in der Vorschau gewählte Hintergrundbild/-video in die exportierte Datei ein (deckendes Ergebnis).
+77|Kantenfarbe (Matte) des GIF
+78|Video importieren
+79|Pause
+80|Parameter auf Standard zurückgesetzt.
+81|Voreinstellung speichern
+82|Voreinstellung laden
+83|Hintergrundfarbe wählen
+84|Exportiere…
+85|Video-Hintergrundentferner
+86|Ansicht:
+87|Hintergrund:
+88|FPS:
+89|Wiedergabequalität:
+90|Helles Design
+91|Dunkles Design
+92|Voreinstellung speichern…
+93|Voreinstellung laden…
+94|Standard wiederherstellen
+95|Startbild
+96|Erstes zu exportierendes Bild.
+97|Endbild
+98|Letztes zu exportierendes Bild (einschließlich).
+99|Aktuelles verwenden
+100|Das in der Vorschau angezeigte Bild verwenden
+101|Benutzerdefiniert
+102|8 Bit pro Kanal
+103|16 Bit pro Kanal
+104|mit Hintergrund (deckend)
+105|ffmpeg nicht gefunden
+106|Hintergrundfarbe der Vorschau
+107|Klicke auf den Videohintergrund, um die Farbe zu wählen.
+108|Exportfehler
+109|Die Sprache wird nach Ende des Exports oder beim nächsten Programmstart übernommen.
+110|Bild {i} / {n}
+111|Über {app}
+112|Rendering: {b}
+113|Videos
+114|Alle Dateien
+115|Fehler
+116|{name} — {w}×{h}, {n} Bilder, {fps} fps, {dur} s
+117|tatsächlich: {fps} fps · {n} ausgelassen
+118|1 Datei, {n} Bilder, {size}, {fps} fps
+119|{n} Dateien, {size}
+120|Hintergrundbild oder -video
+121|Hintergrund: {name}
+122|Vorschau: {ms} ms
+123|Gewählte Farbe: {c}
+124|Speichern unter
+125|Zielordner wählen
+126|Standard-Key-Farbe verwenden: {c}
+127|Video konnte nicht geöffnet werden:
+128|Langes Video: Die Zeitleiste zeigt {n} Proben; nutze den Schieberegler, um jedes Bild zu sehen.
+129|Voreinstellung gespeichert: {p}
+130|Hintergrund konnte nicht geöffnet werden:
+131|Ordner nicht leer
+132|Fertig
+133|Voreinstellung geladen: {p}
+134|Ungültige Voreinstellung:
+135|Bilder und Videos
+136|Export abgebrochen ({n} Bilder gespeichert).
+137|{n} Bilder exportiert nach:
+138|Dieser Ordner enthält bereits {p}*{ext}-Dateien, die überschrieben werden können. Fortfahren?
+139|CPU gewählt
+140|OpenCL nicht verfügbar
+141|kein nutzbares OpenCL-Gerät
+142|Prüftest fehlgeschlagen
+143|keine OpenCL-Grafikkarte
+144|CPU
+145|Entferne grüne oder blaue Hintergründe (Chroma Key) aus Videos und exportiere Bilder und Animationen mit Transparenz: PNG, GIF, WebP, APNG, WebM und ProRes.
+146|Freie Software unter der MIT-Lizenz.
+147|Schließen
+148|Darstellung
+149|Dunkel
+150|Hell
+151|Design
+152|Die Sprache wechselt sofort; Video und Einstellungen bleiben erhalten.
+153|Sprache
+154|Animationen (Abschnitte auf-/zuklappen, Übergänge, Einblenden)
+155|Neon-Leuchten bei Hervorhebungen
+156|Leistung
+157|Automatisch: nutzt die Grafikkarte (OpenCL), falls vorhanden und der Test bestanden wird; sonst die CPU. Das Ergebnis ist gleich; nur die Geschwindigkeit ändert sich.
+158|Rendering
+159|In Verwendung
+160|GPU (OpenCL): {dev}
+161|Version {v}
+162|Repository
+163|Website
+164|Spenden
+165|Importiere ein Video, um zu beginnen
+166|Maskenerzeugung
+167|Toleranz
+168|Wie viele der Key-Farbe ähnliche Farben entfernt werden.
+169|Übergangsbereich
+170|Breite des Übergangs zwischen deckend und transparent. Hohe Werte = weichere, natürlichere Kanten (Haare, Unschärfe).
+171|Transparenz
+172|Macht halbtransparente Bereiche transparenter.
+173|Lichter
+174|Erhöht die Deckkraft heller Bereiche des Motivs.
+175|Schatten
+176|Erhöht die Deckkraft dunkler Bereiche des Motivs.
+177|Sockel
+178|Entfernt Rauschen: niedrige Alphawerte werden transparent.
+179|Kantenqualität
+180|Kanten verfeinern
+181|Verfeinert die Maske anhand des Bildes (Guided Filter): glatte Kanten ohne Treppeneffekt, Haarsträhnen bleiben erhalten.
+182|Kanten entfärben
+183|Entfernt die in Kantenpixel gemischte Hintergrundfarbe (kein grüner/blauer Saum).
+184|Chroma glätten
+185|Reduziert die durch Videokompression (H.264 4:2:0) verursachten „Treppen“ vor dem Freistellen.
+186|Kantenfärbung
+187|Aktivieren
+188|Färbt nur die Kanten mit der nächstgelegenen Motivfarbe um, die nicht die Key-Farbe ist (blondes Haar bekommt Blond, Haut den Hautton…).
+189|Stärke
+190|Wie stark die Kantenfarbe zur benachbarten Motivfarbe gezogen wird.
+191|Kantenbreite (px)
+192|Wie viele Pixel innerhalb des deckenden Teils ebenfalls umgefärbt werden (zusätzlich zum halbtransparenten Band).
+193|Abtastreichweite (px)
+194|Wie weit vom Rand entfernt nach der Motivfarbe gesucht wird.
+195|Helligkeit erhalten
+196|100 = behält die ursprüngliche Kantenhelligkeit und ändert nur die Farbe (erhält Details wie Haarsträhnen).
+197|Nur Rest der Key-Farbe betreffen
+198|An: färbt nur Pixel um, die noch einen Stich der Key-Farbe (grün/blau) haben. Aus: färbt die ganze Kante um.
+199|Glättung der abgetasteten Farbe
+200|Mittelt die abgetastete Farbe (weniger Rauschen, gleichmäßigerer Übergang).
+201|Maskenbereinigung
+202|Verkleinern / erweitern
+203|Positiv verkleinert die Motivkante; negativ erweitert sie.
+204|Weichzeichnen
+205|Zeichnet die Maske weich für sanftere Kanten.
+206|Maskenkontrast
+207|Macht die Maske härter (weniger halbtransparente Bereiche).
+208|Mittelpunkt
+209|Gleichgewichtspunkt für den Maskenkontrast.
+210|Spill-Unterdrückung
+211|Menge
+212|Wie viel Spill der Key-Farbe von den Kanten entfernt wird.
+213|Bereich
+214|Erweitert den Farbbereich, der als Spill gilt (aggressiver).
+215|Entsättigen
+216|Entfernt die Sättigung in Bereichen mit Spill.
+217|Luma (Helligkeit erhalten)
+218|Gibt die beim Entfernen des Spills verlorene Helligkeit zurück.
+219|Farbkorrektur des Motivs
+220|Helligkeit
+221|Kontrast
+222|Sättigung
+223|100 = Original.
+224|Farbton
+225|Dreht die Farben (Grad).
+226|Farbtemperatur
+227|Negativ = kühler (blau); positiv = wärmer.
+228|Beschnitt (Garbage Matte)
+229|Oben beschneiden %
+230|Macht diesen Prozentsatz oben transparent.
+231|Unten beschneiden %
+232|Links beschneiden %
+233|Rechts beschneiden %
+234|PNG-Sequenz
+235|TGA-Sequenz
+236|TIFF-Sequenz
+237|WebP-Sequenz
+238|Animiertes GIF (transparent)
+239|Animiertes WebP (Alpha)
+240|Animiertes APNG (Alpha)
+241|WebM VP9 (Alpha)
+242|MOV ProRes 4444 (Alpha)
+243|Ergebnis
+244|Maske (Alpha)
+245|Färbungsmaske
+246|Original
+247|Nebeneinander
+248|Schachbrett
+249|Schwarz
+250|Weiß
+251|Farbe…
+252|Bild oder Video…
+253|Füllen
+254|Einpassen
+255|Strecken
+256|Schnell
+257|Mittel
+258|Voll
+259|GPU (OpenCL)
+260|Grün
+261|Blau
