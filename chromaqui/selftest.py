@@ -106,9 +106,22 @@ def self_test(argv):
     except OSError:
         pass
     lines, code = [], 0
+    log_path = os.path.join(log_dir, "selftest.log")
+    live = open(log_path, "w", encoding="utf-8")  # gravado a cada linha (diagnóstico se travar)
+    try:
+        import faulthandler
+        crash = open(os.path.join(log_dir, "selftest_crash.log"), "w", encoding="utf-8")
+        faulthandler.enable(crash, all_threads=True)
+    except Exception:  # noqa: BLE001
+        pass
 
     def log(s):
         lines.append(s)
+        try:
+            live.write(s + "\n")
+            live.flush()
+        except Exception:  # noqa: BLE001
+            pass
         try:
             print(s, flush=True)
         except Exception:  # console sem UTF-8 (cp1252) ou sem stdout (--windowed)
@@ -316,6 +329,7 @@ def self_test(argv):
         code = 1
     if code == 0:
         log("SELF-TEST OK")
-    with open(os.path.join(log_dir, "selftest.log"), "w", encoding="utf-8") as fh:
+    live.close()
+    with open(log_path, "w", encoding="utf-8") as fh:
         fh.write("\n".join(lines) + "\n")
     return code

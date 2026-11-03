@@ -38,9 +38,24 @@ jobs:
       - name: Auto-teste do .exe
         shell: pwsh
         run: |
-          $p = Start-Process -FilePath dist/Chromaqui/Chromaqui.exe -ArgumentList "--self-test","tests/_out/teste_verde.mp4","selftest_out" -Wait -PassThru
-          Get-Content selftest_out/selftest.log
+          $out = Join-Path $PWD "selftest_out"
+          $vid = Join-Path $PWD "tests/_out/teste_verde.mp4"
+          New-Item -ItemType Directory -Force $out | Out-Null
+          $p = Start-Process -FilePath (Resolve-Path dist/Chromaqui/Chromaqui.exe) -ArgumentList "--self-test","`"$vid`"","`"$out`"" -Wait -PassThru
+          "exit code: $($p.ExitCode)"
+          Get-ChildItem $out | Format-Table Name, Length
+          foreach ($f in "selftest.log", "selftest_crash.log") {
+            $fp = Join-Path $out $f
+            if (Test-Path $fp) { "== $f =="; Get-Content $fp }
+          }
           if ($p.ExitCode -ne 0) { exit 1 }
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: selftest
+          path: selftest_out
+          if-no-files-found: ignore
 
       - uses: actions/upload-artifact@v4
         with:
