@@ -143,7 +143,11 @@ def self_test(argv):
         def _qt_msg(mode, ctx, msg):          # silencia avisos inofensivos da plataforma "offscreen"
             if "propagateSizeHints" in msg:
                 return
-            sys.stderr.write(msg + "\n")
+            if sys.stderr is not None:          # .exe --windowed não tem stderr
+                try:
+                    sys.stderr.write(msg + "\n")
+                except Exception:  # noqa: BLE001
+                    pass
         _prev["h"] = qInstallMessageHandler(_qt_msg)
         app = QApplication.instance() or QApplication(sys.argv[:1])
         ctrl = Controller(app)
