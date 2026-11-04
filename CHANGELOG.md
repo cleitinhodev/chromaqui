@@ -1,5 +1,48 @@
 # Changelog
 
+## 3.2.0-beta.1 — 2026-11-04 (pré-release, versão de testes)
+
+> Versão **de testes**: publicada como *pre-release*. A **3.1.0 continua sendo a versão estável**
+> ("Latest" nas Releases). Os recursos marcados *(beta)* podem mudar até a 3.2.0.
+
+### Já existia (sem mudanças)
+- **Exportar só um trecho**: os campos *De / Até / 1 a cada N* em "Opções de exportação" já exportam
+  um intervalo do vídeo (`ExportOptions.start/end/step`).
+
+### Novidades (beta)
+- **Recorte que acompanha o objeto** — em "Recorte da área exportada", *Movimento*:
+  - **Seguir o objeto**: a área (tamanho fixo = o maior necessário + margem) acompanha o objeto,
+    com **suavização** ajustável; **Analisar movimento** mostra o caminho na prévia.
+  - **Quadros-chave**: posicione a área em alguns quadros (mover/redimensionar marca o quadro) e ela é
+    interpolada entre eles; marcar/remover/limpar quadros-chave.
+- **Retoque com pincel**: pinte na prévia o que deve ficar (**Manter**), sumir (**Remover**) ou voltar ao
+  automático (**Borracha**); tamanho e dureza, máscara fixa (todos os quadros) ou só no quadro atual.
+  Atalhos `B`, `[` e `]`.
+- **Sprite sheet (PNG + JSON)**: novo formato com colunas automáticas ou fixas, espaçamento, tamanho
+  máximo (divide em várias folhas), *trim* de transparência e JSON do **TexturePacker** (hash ou array;
+  Phaser, Pixi, Godot, Unity).
+- **Exportação em lote**: fila de vídeos (arrastar e soltar), ajustes atuais ou um preset `.json`,
+  recorte salvo por tamanho de vídeo, progresso por vídeo e total, cancelar.
+- **Remoção por IA (sem tela verde)**: *Origem do recorte* = IA, com **onnxruntime** (CPU). Modelos
+  *Pessoas — MODNet* e *Objetos — U²-Net pequeno*, baixados **uma vez, no primeiro uso**, para
+  `%APPDATA%\Chromaqui\models` (com verificação SHA-256 e cancelamento); depois funciona offline.
+  Refinamento de borda, limpeza, retoque e o resto continuam valendo.
+- **Sombra projetada / brilho neon** atrás do objeto (cor, desfoque, deslocamento, opacidade, expansão),
+  na prévia e, se marcado, na exportação.
+- **Desfazer/Refazer** (`Ctrl+Z`, `Ctrl+Y`/`Ctrl+Shift+Z`) para ajustes, recorte, quadros-chave e pincel;
+  **Comparar** (prévia dividida, divisória arrastável) e botão **Antes** (segure para ver o original).
+- **Verificação de atualizações**: consulta as Releases do GitHub em segundo plano (desligável em
+  ⚙ Configurações → Atualizações, com opção de incluir betas e "Verificar agora"); sem internet, nada acontece.
+- "beta" aparece no título da janela e no **Sobre**.
+
+### Interno
+- Todas as frases novas nos 8 idiomas; novos testes (`tests/test_features.py`, fluxo de interface
+  `test_ui_flows.py beta`, auto-teste do `.exe` cobrindo sprite sheet, pincel, brilho, seguir objeto,
+  desfazer, lote e IA).
+- CI: tags `-alpha`/`-beta`/`-rc` são publicadas como **pre-release** sem virar a "Latest".
+- As threads novas (análise de movimento, download do modelo, lote, atualizações) seguem o mesmo
+  padrão seguro da 3.0.2.
+
 ## 3.1.0 — 2026-11-03
 
 ### Novidade: recorte da área exportada

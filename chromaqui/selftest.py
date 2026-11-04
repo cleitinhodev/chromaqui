@@ -65,6 +65,13 @@ def verify_output(key, out, expected):
         assert a.min() == 0 and a.max() == a.dtype.type(np.iinfo(a.dtype).max), key
         return f"{len(files)} arquivos {arr.dtype}"
     assert os.path.getsize(out) > 0, key
+    if key == "sheet":
+        import json
+        js = json.load(open(os.path.splitext(out)[0] + ".json", encoding="utf-8"))
+        im = Image.open(out)
+        assert im.mode == "RGBA" and len(js["frames"]) == expected, (im.mode, len(js["frames"]))
+        assert js["meta"]["size"] == {"w": im.width, "h": im.height}, js["meta"]["size"]
+        return f"{len(js['frames'])} quadros numa folha {im.width}×{im.height} + JSON"
     if key == "gif":
         g = Image.open(out)
         tr = g.info.get("transparency")
@@ -96,11 +103,136 @@ def verify_output(key, out, expected):
     return "ok"
 
 
+def _beta_checks(app, w, log, log_dir, video):
+    """Recursos da 3.2 (beta) dentro do programa empacotado."""
+    import json
+    from PIL import Image
+    from . import ai, core
+    from .exporters import FORMATS
+    fmt_idx = {f.key: i for i, f in enumerate(FORMATS)}
+    w.sp_in.setValue(1)
+    w.sp_out.setValue(6)
+    w.sp_step.setValue(1)
+    w.cmb_scale.setCurrentIndex(0)
+
+    def export(key, name):
+        w.cmb_fmt.setCurrentIndex(fmt_idx[key])
+        out = os.path.join(log_dir, name)
+        w.start_export(out)
+        assert _wait(app, lambda: not w.is_exporting(), 300), f"{name}: exportação travou"
+        n, _c, err, outp = w.last_export
+        assert not err and n == 6, (name, w.last_export)
+        return outp
+
+    # sprite sheet com opções
+    w.sp_sheet_cols.setValue(3)
+    w.cmb_sheet_json.setCurrentIndex(1)
+    outp = export("sheet", "beta_sheet.png")
+    js = json.load(open(os.path.splitext(outp)[0] + ".json", encoding="utf-8"))
+    assert isinstance(js["frames"], list) and js["meta"]["grid"]["columns"] == 3, js["meta"]
+    log(f"SPRITE SHEET OK ({len(js['frames'])} quadros, 3 colunas, JSON array, {Image.open(outp).size})")
+    # retoque com pincel (remover um trecho em todos os quadros)
+    rt = w.retouch
+    W = w.video.width
+    f0 = w.video.read(0)
+    p0 = w.params()
+    p0.frame_idx = 0
+    a0 = core.compute_alpha(f0, p0)
+    ys, xs = np.nonzero(a0 > 0.9)
+    assert len(xs), "sem objeto no vídeo de teste"
+    cx, cy = int(np.median(xs)), int(np.median(ys))
+    rt.begin_stroke(None)
+    rt.dab(cx, cy, max(6, W // 30), 1.0, "remove", None)
+    p1 = w.params()
+    p1.frame_idx = 0
+    a1 = core.compute_alpha(f0, p1)
+    assert a1[cy, cx] < 0.05 and a0[cy, cx] > 0.9, (a0[cy, cx], a1[cy, cx])
+    rt.clear()
+    log(f"RETOQUE OK (pincel remover em ({cx}, {cy}))")
+    # sombra/brilho na exportação
+    outp = export("png", "beta_sem_brilho")
+    a_off = cv2.imdecode(np.fromfile(os.path.join(outp, "frame_00001.png"), np.uint8), cv2.IMREAD_UNCHANGED)[..., 3]
+    w.chk_glow.setChecked(True)
+    w.cmb_glow_mode.setCurrentIndex(1)
+    w._on_glow_mode()
+    outp = export("png", "beta_brilho")
+    a_on = cv2.imdecode(np.fromfile(os.path.join(outp, "frame_00001.png"), np.uint8), cv2.IMREAD_UNCHANGED)[..., 3]
+    assert (a_on > 0).sum() > (a_off > 0).sum(), ((a_on > 0).sum(), (a_off > 0).sum())
+    w.chk_glow.setChecked(False)
+    log(f"SOMBRA/BRILHO OK (pixels visíveis {(a_off > 0).sum()} → {(a_on > 0).sum()})")
+    # recorte que segue o objeto
+    w.cmb_motion.setCurrentIndex(w.cmb_motion.findData("follow"))
+    w._on_motion()
+    outp = export("webm", "beta_seguir.webm")
+    info = _ffmpeg_info(outp)
+    m = re.search(r"(\d{2,5})x(\d{2,5})", info.split("Video:")[-1])
+    assert m and int(m.group(1)) % 2 == 0 and int(m.group(2)) % 2 == 0 and int(m.group(1)) <= W, info[-300:]
+    w.cmb_motion.setCurrentIndex(0)
+    w._on_motion()
+    log(f"RECORTE QUE SEGUE OK (webm {m.group(1)}×{m.group(2)})")
+    # desfazer/refazer
+    s = w.sliders["choke"]
+    v0 = s.value()
+    w.flush_undo()
+    s.setValue(v0 + 7)
+    w.flush_undo()
+    w.undo()
+    assert s.value() == v0, (s.value(), v0)
+    w.redo()
+    assert s.value() == v0 + 7
+    w.undo()
+    log("DESFAZER/REFAZER OK")
+    # exportação em lote
+    w.cmb_fmt.setCurrentIndex(fmt_idx["gif"])
+    d = w.open_batch()
+    d.add_videos([video])
+    d.ed_out.setText(os.path.join(log_dir, "beta_lote"))
+    assert d.start()
+    assert _wait(app, lambda: not d.running(), 300), "lote travou"
+    _pump(app, 0.1)
+    canc, res = d.last_result
+    assert not canc and res[0] and not res[0][1] and os.path.exists(res[0][2]), d.last_result
+    d.close()
+    log(f"LOTE OK ({os.path.basename(res[0][2])})")
+    # verificação de atualização: desligada no auto-teste
+    assert not w.schedule_update_check()
+    # IA: onnxruntime empacotado; o modelo é baixado se houver internet
+    assert ai.runtime_available(), "onnxruntime não está no pacote"
+    import onnxruntime as ort
+    name = "u2netp"
+    try:
+        if not ai.is_ready(name):
+            ai.download(name, timeout=30)
+        net = True
+    except Exception as e:  # noqa: BLE001
+        net = False
+        log(f"IA: download indisponível ({e}); só o onnxruntime foi verificado")
+    if net:
+        alpha = ai.predict(f0, name)
+        assert alpha.shape == f0.shape[:2] and 0 <= alpha.min() and alpha.max() <= 1, alpha.shape
+        w.cmb_ai_model.setCurrentIndex(w.cmb_ai_model.findData(name))
+        w.cmb_source.setCurrentIndex(1)
+        w._on_source()
+        assert _wait(app, lambda: not w.is_downloading(), 60)
+        _pump(app, 0.1)
+        assert w.params().source == "ai", w.matte_source
+        outp = export("png", "beta_ia")
+        a_ai = cv2.imdecode(np.fromfile(os.path.join(outp, "frame_00001.png"), np.uint8), cv2.IMREAD_UNCHANGED)[..., 3]
+        assert a_ai.max() == 255 and a_ai.min() == 0, (a_ai.min(), a_ai.max())
+        w.cmb_source.setCurrentIndex(0)
+        w._on_source()
+        log(f"IA OK (onnxruntime {ort.__version__}, modelo {name} em {ai.models_dir()}, exportação)")
+    else:
+        log(f"IA OK parcial (onnxruntime {ort.__version__} carregado)")
+
+
 def self_test(argv):
     args = [a for a in argv[1:] if a != "--self-test"]
     log_dir = args[1] if len(args) > 1 else os.getcwd()
     os.makedirs(log_dir, exist_ok=True)
     os.environ["CHROMAQUI_SETTINGS"] = os.path.join(log_dir, "selftest_settings.ini")
+    os.environ["CHROMAQUI_NO_UPDATE_CHECK"] = "1"          # o auto-teste nunca consulta o GitHub sozinho
+    os.environ.setdefault("CHROMAQUI_MODELS_DIR", os.path.join(log_dir, "models"))
     try:
         os.remove(os.environ["CHROMAQUI_SETTINGS"])
     except OSError:
@@ -399,6 +531,7 @@ def self_test(argv):
             assert _wait(app, lambda: not w.is_exporting(), 120)
             assert w.last_export[1] and not os.path.exists(out), w.last_export
             log("CANCELAR OK")
+            _beta_checks(app, w, log, log_dir, video)
             w.cmb_scale.setCurrentIndex(0)
             w.render_preview()
             _pump(app, 0.8)

@@ -284,3 +284,158 @@
 284|Exported area: {w}×{h} px at position {x}, {y} ({pct}% of the frame).
 285|Automatic crop: frame {i} of {n}…
 286|Automatic crop: {w}×{h} px.
+287|Batch export…
+288|Exports several videos at once with the current settings or with a preset.
+289|The preset uses AI removal: download the model in the 'AI removal' section.
+290|Analyzing the subject's motion…
+291|keyframes
+292|size set by the motion analysis
+293|Sprite sheet: {n} frames of {size} + JSON ({kind})
+294|following the subject
+295|Undo
+296|Undoes the last change to settings, crop or brush (Ctrl+Z)
+297|Redo
+298|Redoes the undone change (Ctrl+Y)
+299|Compare
+300|Splits the preview: original on the left, result on the right. Drag the divider.
+301|Before
+302|Hold to see the original video; release to go back to the result.
+303|AI removal (beta)
+304|Chroma key (green/blue screen)
+305|AI — no green screen
+306|Matte source
+307|AI: separates the person/object from the background without a green screen. Edge refinement, cleanup, retouch and the other settings still apply.
+308|Model
+309|People: portraits and full body (best for videos of people). Objects: any prominent object.
+310|Download model
+311|Downloading the AI model…
+312|AI model ready.
+313|Brush retouch (beta)
+314|Brush
+315|Paint on the preview the areas that should stay (Keep) or disappear (Remove). Shortcuts: B toggles, [ and ] change the size.
+316|Mode
+317|Keep: forces opaque. Remove: forces transparent. Eraser: undoes the painted retouch.
+318|Size
+319|Brush radius in pixels of the original video.
+320|Hardness
+321|100 = hard edge; 0 = very soft edge.
+322|This frame only
+323|Unchecked: the retouch applies to all frames (fixed mask). Checked: only to the frame shown.
+324|Clear frame
+325|Clear all
+326|Shadow and glow (beta)
+327|Enable shadow/glow behind the subject
+328|Shows in the preview (over the test background) and, if checked below, in the exported file.
+329|Drop shadow
+330|Neon glow
+331|Type
+332|Choosing the type applies suggested values (you can adjust them afterwards).
+333|Color
+334|Include in export
+335|Unchecked: the effect shows only in the preview.
+336|Shadow/glow color
+337|Motion
+338|Fixed: the same area in every frame. Follow the subject: the area tracks the subject (fixed size = the largest needed). Keyframes: you position the area in a few frames and it is interpolated between them.
+339|Motion smoothing: higher values make the camera steadier.
+340|Analyze motion
+341|Computes the crop path to view in the preview (the export computes it on its own).
+342|Set keyframe
+343|Stores the current area at this frame. Moving/resizing the area on a frame also sets a keyframe.
+344|Remove
+345|Removes the keyframe at the current frame.
+346|Clear
+347|Analyzing…
+348|Motion analyzed.
+349|Columns
+350|Automatic = grid as square as possible.
+351|Spacing
+352|Empty space between frames on the sheet.
+353|Maximum size
+354|If the sheet exceeds this, several sheets are generated (name_0.png, name_1.png…).
+355|Trim transparency
+356|Removes the transparent borders of each frame; the JSON stores the offset (spriteSourceSize).
+357|Hash (Phaser, Pixi, Godot)
+358|Array (Phaser, Unity)
+359|JSON
+360|TexturePacker JSON format.
+361|Undone.
+362|Redone.
+363|beta (testing)
+364|stable
+365|Update available
+366|Open download page
+367|Skip this version
+368|Not now
+369|onnxruntime is not available in this installation.
+370|AI removal
+371|Brush: paint on the preview. Green = keep, red = remove.
+372|No retouch painted.
+373|fixed mask (all frames)
+374|frames
+375|Smoothing
+376|Nothing to undo.
+377|Nothing to redo.
+378|beta
+379|Downloading the AI model: {a} of {b} MB
+380|Download canceled.
+381|Check your connection and try again. Meanwhile, chroma key keeps working.
+382|Retouch: {what}.
+383|In pixels of the original video.
+384|The area follows the subject. Click 'Analyze motion' to see it in the preview; the export computes the path automatically.
+385|Analyzing motion: frame {i} of {n}…
+386|Could not download the AI model:
+387|{n} frame(s) with their own retouch
+388|Could not check right now.
+389|New version available: {v}
+390|A new version of {app} is available: <b>{v}</b> ({kind}).<br>You are using {cur}.
+391|Path analyzed: {w}×{h} px area following the subject.
+392|{n} keyframe(s): {list}
+393|Model ready (works offline). Folder: {p}
+394|You already have the latest version ({v}).
+395|The model ({mb} MB) is downloaded once, on first use, to {p}.
+396|Batch export (beta)
+397|Add videos to the queue. All are exported in the format and with the options chosen in 'Export options' (whole video). Brush retouch and keyframes are not applied in batch.
+398|Add videos…
+399|Clear queue
+400|Current settings
+401|Choose preset (.json)…
+402|Choose…
+403|Use the saved crop for each video size
+404|If you already cropped a video of the same size, the same area is used; otherwise, the full frame.
+405|Video %v of %m
+406|Start
+407|Add videos
+408|Video
+409|Status
+410|Settings
+411|Output folder
+412|Queued
+413|Batch finished: {ok} of {n} videos exported.
+414|Format: {fmt}
+415|Batch canceled: {ok} of {n} videos exported.
+416|{n} frames
+417|Canceled
+418|Batch export
+419|Cancel the batch export?
+420|Updates
+421|Check for updates at startup
+422|Queries GitHub Releases in the background; without internet, nothing happens.
+423|Include beta (testing) versions
+424|Check now
+425|This is a testing version: the new features may change. The stable version remains available on the Releases page.
+426|Checking…
+427|BETA (testing version)
+428|Later
+429|Sprite sheet (PNG + JSON)
+430|People — MODNet (26 MB)
+431|Objects — U²-Net small (4.6 MB)
+432|Keep
+433|Eraser
+434|Fixed
+435|Follow the subject
+436|Keyframes
+437|Blur
+438|Offset X
+439|Offset Y
+440|Opacity
+441|Spread

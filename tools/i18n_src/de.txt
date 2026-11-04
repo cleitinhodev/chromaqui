@@ -284,3 +284,158 @@
 284|Exportbereich: {w}×{h} px an Position {x}, {y} ({pct}% des Frames).
 285|Automatischer Zuschnitt: Frame {i} von {n}…
 286|Automatischer Zuschnitt: {w}×{h} px.
+287|Stapelexport…
+288|Exportiert mehrere Videos auf einmal mit den aktuellen Einstellungen oder mit einem Preset.
+289|Das Preset nutzt KI-Freistellung: Laden Sie das Modell im Bereich „KI-Freistellung“ herunter.
+290|Bewegung des Objekts wird analysiert…
+291|Keyframes
+292|Größe durch die Bewegungsanalyse festgelegt
+293|Sprite Sheet: {n} Bilder à {size} + JSON ({kind})
+294|folgt dem Objekt
+295|Rückgängig
+296|Macht die letzte Änderung an Einstellungen, Zuschnitt oder Pinsel rückgängig (Strg+Z)
+297|Wiederholen
+298|Stellt die rückgängig gemachte Änderung wieder her (Strg+Y)
+299|Vergleichen
+300|Teilt die Vorschau: Original links, Ergebnis rechts. Ziehen Sie die Trennlinie.
+301|Vorher
+302|Gedrückt halten, um das Originalvideo zu sehen; loslassen, um zum Ergebnis zurückzukehren.
+303|KI-Freistellung (Beta)
+304|Farbschlüssel (Green-/Bluescreen)
+305|KI — ohne Greenscreen
+306|Quelle der Maske
+307|KI: trennt Person/Objekt ohne Greenscreen vom Hintergrund. Kantenverfeinerung, Bereinigung, Retusche und die übrigen Einstellungen gelten weiterhin.
+308|Modell
+309|Personen: Porträts und Ganzkörper (am besten für Videos mit Menschen). Objekte: jedes hervorgehobene Objekt.
+310|Modell herunterladen
+311|KI-Modell wird heruntergeladen…
+312|KI-Modell bereit.
+313|Pinselretusche (Beta)
+314|Pinsel
+315|Malen Sie in der Vorschau die Bereiche, die bleiben (Behalten) oder verschwinden (Entfernen) sollen. Tastenkürzel: B schaltet um, [ und ] ändern die Größe.
+316|Modus
+317|Behalten: erzwingt deckend. Entfernen: erzwingt transparent. Radierer: hebt die gemalte Retusche auf.
+318|Größe
+319|Pinselradius in Pixeln des Originalvideos.
+320|Härte
+321|100 = harte Kante; 0 = sehr weiche Kante.
+322|Nur dieses Bild
+323|Nicht markiert: Die Retusche gilt für alle Bilder (feste Maske). Markiert: nur für das angezeigte Bild.
+324|Bild leeren
+325|Alles leeren
+326|Schatten und Leuchten (Beta)
+327|Schatten/Leuchten hinter dem Objekt aktivieren
+328|Erscheint in der Vorschau (über dem Testhintergrund) und, falls unten markiert, in der exportierten Datei.
+329|Schlagschatten
+330|Neon-Leuchten
+331|Art
+332|Die Wahl der Art setzt vorgeschlagene Werte (später anpassbar).
+333|Farbe
+334|In den Export aufnehmen
+335|Nicht markiert: Der Effekt erscheint nur in der Vorschau.
+336|Farbe von Schatten/Leuchten
+337|Bewegung
+338|Fest: derselbe Bereich in allen Bildern. Objekt folgen: Der Bereich folgt dem Objekt (feste Größe = die größte benötigte). Keyframes: Sie platzieren den Bereich in einigen Bildern, dazwischen wird interpoliert.
+339|Bewegungsglättung: Höhere Werte machen die Kamera ruhiger.
+340|Bewegung analysieren
+341|Berechnet den Zuschnittpfad für die Vorschau (der Export berechnet ihn selbst).
+342|Keyframe setzen
+343|Speichert den aktuellen Bereich in diesem Bild. Das Verschieben/Ändern des Bereichs in einem Bild setzt ebenfalls einen Keyframe.
+344|Entfernen
+345|Entfernt den Keyframe des aktuellen Bildes.
+346|Leeren
+347|Analysiere…
+348|Bewegung analysiert.
+349|Spalten
+350|Automatisch = möglichst quadratisches Raster.
+351|Abstand
+352|Leerraum zwischen den Bildern im Sheet.
+353|Maximale Größe
+354|Überschreitet das Sheet diesen Wert, werden mehrere Sheets erzeugt (name_0.png, name_1.png…).
+355|Transparenz beschneiden (Trim)
+356|Entfernt die transparenten Ränder jedes Bildes; das JSON speichert den Versatz (spriteSourceSize).
+357|Hash (Phaser, Pixi, Godot)
+358|Array (Phaser, Unity)
+359|JSON
+360|JSON-Format von TexturePacker.
+361|Rückgängig gemacht.
+362|Wiederhergestellt.
+363|Beta (Testversion)
+364|stabil
+365|Update verfügbar
+366|Downloadseite öffnen
+367|Diese Version überspringen
+368|Nicht jetzt
+369|onnxruntime ist in dieser Installation nicht verfügbar.
+370|KI-Freistellung
+371|Pinsel: in der Vorschau malen. Grün = behalten, Rot = entfernen.
+372|Keine Retusche gemalt.
+373|feste Maske (alle Bilder)
+374|Bilder
+375|Glättung
+376|Nichts rückgängig zu machen.
+377|Nichts zu wiederholen.
+378|Beta
+379|KI-Modell wird heruntergeladen: {a} von {b} MB
+380|Download abgebrochen.
+381|Prüfen Sie die Verbindung und versuchen Sie es erneut. Der Farbschlüssel funktioniert weiterhin.
+382|Retusche: {what}.
+383|In Pixeln des Originalvideos.
+384|Der Bereich folgt dem Objekt. Klicken Sie auf „Bewegung analysieren“, um ihn in der Vorschau zu sehen; der Export berechnet den Pfad automatisch.
+385|Bewegung wird analysiert: Bild {i} von {n}…
+386|Das KI-Modell konnte nicht heruntergeladen werden:
+387|{n} Bild(er) mit eigener Retusche
+388|Prüfung momentan nicht möglich.
+389|Neue Version verfügbar: {v}
+390|Eine neue Version von {app} ist verfügbar: <b>{v}</b> ({kind}).<br>Sie verwenden {cur}.
+391|Pfad analysiert: Bereich von {w}×{h} px folgt dem Objekt.
+392|{n} Keyframe(s): {list}
+393|Modell bereit (funktioniert offline). Ordner: {p}
+394|Sie haben bereits die neueste Version ({v}).
+395|Das Modell ({mb} MB) wird einmalig beim ersten Gebrauch nach {p} heruntergeladen.
+396|Stapelexport (Beta)
+397|Fügen Sie Videos zur Warteschlange hinzu. Alle werden im Format und mit den Optionen aus „Exportoptionen“ exportiert (ganzes Video). Pinselretusche und Keyframes werden im Stapel nicht angewendet.
+398|Videos hinzufügen…
+399|Warteschlange leeren
+400|Aktuelle Einstellungen
+401|Preset wählen (.json)…
+402|Wählen…
+403|Gespeicherten Zuschnitt je Videogröße verwenden
+404|Wenn Sie bereits ein Video gleicher Größe zugeschnitten haben, wird derselbe Bereich verwendet; sonst das ganze Bild.
+405|Video %v von %m
+406|Starten
+407|Videos hinzufügen
+408|Video
+409|Status
+410|Einstellungen
+411|Zielordner
+412|In Warteschlange
+413|Stapel fertig: {ok} von {n} Videos exportiert.
+414|Format: {fmt}
+415|Stapel abgebrochen: {ok} von {n} Videos exportiert.
+416|{n} Bilder
+417|Abgebrochen
+418|Stapelexport
+419|Stapelexport abbrechen?
+420|Updates
+421|Beim Start nach Updates suchen
+422|Fragt GitHub-Releases im Hintergrund ab; ohne Internet passiert nichts.
+423|Beta-Versionen (Testversionen) einbeziehen
+424|Jetzt prüfen
+425|Dies ist eine Testversion: Neue Funktionen können sich ändern. Die stabile Version bleibt auf der Releases-Seite verfügbar.
+426|Prüfe…
+427|BETA (Testversion)
+428|Später
+429|Sprite Sheet (PNG + JSON)
+430|Personen — MODNet (26 MB)
+431|Objekte — U²-Net klein (4,6 MB)
+432|Behalten
+433|Radierer
+434|Fest
+435|Objekt folgen
+436|Keyframes
+437|Unschärfe
+438|Versatz X
+439|Versatz Y
+440|Deckkraft
+441|Ausdehnung

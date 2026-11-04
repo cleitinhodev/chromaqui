@@ -284,3 +284,158 @@
 284|Area esportata: {w}×{h} px nella posizione {x}, {y} ({pct}% del fotogramma).
 285|Ritaglio automatico: fotogramma {i} di {n}…
 286|Ritaglio automatico: {w}×{h} px.
+287|Esportazione in blocco…
+288|Esporta più video insieme con le impostazioni attuali o con un preset.
+289|Il preset usa la rimozione con IA: scarica il modello nella sezione 'Rimozione con IA'.
+290|Analisi del movimento del soggetto…
+291|fotogrammi chiave
+292|dimensione definita dall'analisi del movimento
+293|Sprite sheet: {n} fotogrammi da {size} + JSON ({kind})
+294|segue il soggetto
+295|Annulla
+296|Annulla l'ultima modifica a impostazioni, ritaglio o pennello (Ctrl+Z)
+297|Ripeti
+298|Ripete la modifica annullata (Ctrl+Y)
+299|Confronta
+300|Divide l'anteprima: originale a sinistra, risultato a destra. Trascina il divisore.
+301|Prima
+302|Tieni premuto per vedere il video originale; rilascia per tornare al risultato.
+303|Rimozione con IA (beta)
+304|Chroma key (green/blue screen)
+305|IA — senza green screen
+306|Origine del ritaglio
+307|IA: separa la persona/l'oggetto dallo sfondo senza green screen. Rifinitura dei bordi, pulizia, ritocco e le altre impostazioni restano valide.
+308|Modello
+309|Persone: ritratti e figura intera (ideale per video di persone). Oggetti: qualsiasi oggetto in evidenza.
+310|Scarica modello
+311|Download del modello IA…
+312|Modello IA pronto.
+313|Ritocco a pennello (beta)
+314|Pennello
+315|Dipingi nell'anteprima le aree da tenere (Mantieni) o da far sparire (Rimuovi). Scorciatoie: B attiva/disattiva, [ e ] cambiano la dimensione.
+316|Modalità
+317|Mantieni: forza opaco. Rimuovi: forza trasparente. Gomma: annulla il ritocco dipinto.
+318|Dimensione
+319|Raggio del pennello in pixel del video originale.
+320|Durezza
+321|100 = bordo netto; 0 = bordo molto morbido.
+322|Solo in questo fotogramma
+323|Non selezionato: il ritocco vale per tutti i fotogrammi (maschera fissa). Selezionato: solo per il fotogramma mostrato.
+324|Pulisci fotogramma
+325|Pulisci tutto
+326|Ombra e bagliore (beta)
+327|Attiva ombra/bagliore dietro il soggetto
+328|Appare nell'anteprima (sullo sfondo di prova) e, se selezionato sotto, nel file esportato.
+329|Ombra proiettata
+330|Bagliore neon
+331|Tipo
+332|Scegliere il tipo applica valori suggeriti (modificabili dopo).
+333|Colore
+334|Includi nell'esportazione
+335|Non selezionato: l'effetto appare solo nell'anteprima.
+336|Colore di ombra/bagliore
+337|Movimento
+338|Fisso: la stessa area in tutti i fotogrammi. Segui il soggetto: l'area segue il soggetto (dimensione fissa = la massima necessaria). Fotogrammi chiave: posizioni l'area in alcuni fotogrammi e viene interpolata tra di essi.
+339|Smussatura del movimento: valori più alti rendono la camera più stabile.
+340|Analizza movimento
+341|Calcola il percorso del ritaglio per vederlo nell'anteprima (l'esportazione lo calcola da sola).
+342|Imposta fotogramma chiave
+343|Salva l'area attuale in questo fotogramma. Spostare/ridimensionare l'area in un fotogramma imposta anche un fotogramma chiave.
+344|Rimuovi
+345|Rimuove il fotogramma chiave del fotogramma attuale.
+346|Pulisci
+347|Analisi…
+348|Movimento analizzato.
+349|Colonne
+350|Automatico = griglia il più quadrata possibile.
+351|Spaziatura
+352|Spazio vuoto tra i fotogrammi nel foglio.
+353|Dimensione massima
+354|Se il foglio supera questo valore, vengono generati più fogli (nome_0.png, nome_1.png…).
+355|Rifila trasparenza (trim)
+356|Rimuove i bordi trasparenti di ogni fotogramma; il JSON conserva lo spostamento (spriteSourceSize).
+357|Hash (Phaser, Pixi, Godot)
+358|Array (Phaser, Unity)
+359|JSON
+360|Formato JSON di TexturePacker.
+361|Annullato.
+362|Ripetuto.
+363|beta (di prova)
+364|stabile
+365|Aggiornamento disponibile
+366|Apri la pagina di download
+367|Ignora questa versione
+368|Non ora
+369|onnxruntime non è disponibile in questa installazione.
+370|Rimozione con IA
+371|Pennello: dipingi nell'anteprima. Verde = mantieni, rosso = rimuovi.
+372|Nessun ritocco dipinto.
+373|maschera fissa (tutti i fotogrammi)
+374|fotogrammi
+375|Smussatura
+376|Niente da annullare.
+377|Niente da ripetere.
+378|beta
+379|Download del modello IA: {a} di {b} MB
+380|Download annullato.
+381|Controlla la connessione e riprova. Nel frattempo il chroma key continua a funzionare.
+382|Ritocco: {what}.
+383|In pixel del video originale.
+384|L'area segue il soggetto. Fai clic su 'Analizza movimento' per vederla nell'anteprima; l'esportazione calcola il percorso automaticamente.
+385|Analisi del movimento: fotogramma {i} di {n}…
+386|Impossibile scaricare il modello IA:
+387|{n} fotogramma/i con ritocco proprio
+388|Impossibile verificare adesso.
+389|Nuova versione disponibile: {v}
+390|È disponibile una nuova versione di {app}: <b>{v}</b> ({kind}).<br>Stai usando la {cur}.
+391|Percorso analizzato: area di {w}×{h} px che segue il soggetto.
+392|{n} fotogramma/i chiave: {list}
+393|Modello pronto (funziona offline). Cartella: {p}
+394|Hai già la versione più recente ({v}).
+395|Il modello ({mb} MB) viene scaricato una sola volta, al primo uso, in {p}.
+396|Esportazione in blocco (beta)
+397|Aggiungi video alla coda. Tutti vengono esportati nel formato e con le opzioni scelti in 'Opzioni di esportazione' (video intero). Ritocco a pennello e fotogrammi chiave non vengono applicati nel blocco.
+398|Aggiungi video…
+399|Svuota coda
+400|Impostazioni attuali
+401|Scegli preset (.json)…
+402|Scegli…
+403|Usa il ritaglio salvato per ogni dimensione di video
+404|Se hai già ritagliato un video della stessa dimensione, viene usata la stessa area; altrimenti, il fotogramma intero.
+405|Video %v di %m
+406|Avvia
+407|Aggiungi video
+408|Video
+409|Stato
+410|Impostazioni
+411|Cartella di destinazione
+412|In coda
+413|Blocco completato: {ok} di {n} video esportati.
+414|Formato: {fmt}
+415|Blocco annullato: {ok} di {n} video esportati.
+416|{n} fotogrammi
+417|Annullato
+418|Esportazione in blocco
+419|Annullare l'esportazione in blocco?
+420|Aggiornamenti
+421|Controlla aggiornamenti all'avvio
+422|Consulta le Releases di GitHub in background; senza internet non succede nulla.
+423|Includi versioni beta (di prova)
+424|Controlla ora
+425|Questa è una versione di prova: le nuove funzioni possono cambiare. La versione stabile resta disponibile nella pagina Releases.
+426|Verifica…
+427|BETA (versione di prova)
+428|Più tardi
+429|Sprite sheet (PNG + JSON)
+430|Persone — MODNet (26 MB)
+431|Oggetti — U²-Net piccolo (4,6 MB)
+432|Mantieni
+433|Gomma
+434|Fisso
+435|Segui il soggetto
+436|Fotogrammi chiave
+437|Sfocatura
+438|Spostamento X
+439|Spostamento Y
+440|Opacità
+441|Espansione

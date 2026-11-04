@@ -284,3 +284,158 @@
 284|Zone exportée : {w}×{h} px à la position {x}, {y} ({pct}% de l'image).
 285|Recadrage automatique : image {i} sur {n}…
 286|Recadrage automatique : {w}×{h} px.
+287|Export par lot…
+288|Exporte plusieurs vidéos d'un coup avec les réglages actuels ou avec un preset.
+289|Le preset utilise la suppression par IA : téléchargez le modèle dans la section « Suppression par IA ».
+290|Analyse du mouvement du sujet…
+291|images clés
+292|taille définie par l'analyse du mouvement
+293|Sprite sheet : {n} images de {size} + JSON ({kind})
+294|suit le sujet
+295|Annuler
+296|Annule la dernière modification de réglage, de recadrage ou de pinceau (Ctrl+Z)
+297|Rétablir
+298|Rétablit la modification annulée (Ctrl+Y)
+299|Comparer
+300|Divise l'aperçu : original à gauche, résultat à droite. Faites glisser le séparateur.
+301|Avant
+302|Maintenez pour voir la vidéo originale ; relâchez pour revenir au résultat.
+303|Suppression par IA (bêta)
+304|Incrustation (fond vert/bleu)
+305|IA — sans fond vert
+306|Source du détourage
+307|IA : sépare la personne/l'objet du fond sans fond vert. L'affinage des bords, le nettoyage, la retouche et les autres réglages restent actifs.
+308|Modèle
+309|Personnes : portraits et corps entier (idéal pour les vidéos de personnes). Objets : tout objet mis en avant.
+310|Télécharger le modèle
+311|Téléchargement du modèle d'IA…
+312|Modèle d'IA prêt.
+313|Retouche au pinceau (bêta)
+314|Pinceau
+315|Peignez sur l'aperçu les zones à garder (Garder) ou à faire disparaître (Supprimer). Raccourcis : B active/désactive, [ et ] changent la taille.
+316|Mode
+317|Garder : force l'opacité. Supprimer : force la transparence. Gomme : annule la retouche peinte.
+318|Taille
+319|Rayon du pinceau en pixels de la vidéo originale.
+320|Dureté
+321|100 = bord dur ; 0 = bord très doux.
+322|Cette image uniquement
+323|Décoché : la retouche s'applique à toutes les images (masque fixe). Coché : uniquement à l'image affichée.
+324|Effacer l'image
+325|Tout effacer
+326|Ombre et lueur (bêta)
+327|Activer l'ombre/la lueur derrière le sujet
+328|Apparaît dans l'aperçu (sur le fond de test) et, si coché ci-dessous, dans le fichier exporté.
+329|Ombre portée
+330|Lueur néon
+331|Type
+332|Choisir le type applique des valeurs suggérées (modifiables ensuite).
+333|Couleur
+334|Inclure dans l'export
+335|Décoché : l'effet n'apparaît que dans l'aperçu.
+336|Couleur de l'ombre/la lueur
+337|Mouvement
+338|Fixe : la même zone sur toutes les images. Suivre le sujet : la zone suit le sujet (taille fixe = la plus grande nécessaire). Images clés : vous placez la zone sur quelques images et elle est interpolée entre elles.
+339|Lissage du mouvement : des valeurs plus élevées rendent la caméra plus stable.
+340|Analyser le mouvement
+341|Calcule le trajet du recadrage pour l'aperçu (l'export le calcule tout seul).
+342|Définir une image clé
+343|Enregistre la zone actuelle sur cette image. Déplacer/redimensionner la zone sur une image crée aussi une image clé.
+344|Supprimer
+345|Supprime l'image clé de l'image actuelle.
+346|Effacer
+347|Analyse…
+348|Mouvement analysé.
+349|Colonnes
+350|Automatique = grille la plus carrée possible.
+351|Espacement
+352|Espace vide entre les images sur la feuille.
+353|Taille maximale
+354|Si la feuille dépasse cette taille, plusieurs feuilles sont générées (nom_0.png, nom_1.png…).
+355|Rogner la transparence (trim)
+356|Retire les bords transparents de chaque image ; le JSON garde le décalage (spriteSourceSize).
+357|Hash (Phaser, Pixi, Godot)
+358|Array (Phaser, Unity)
+359|JSON
+360|Format JSON de TexturePacker.
+361|Annulé.
+362|Rétabli.
+363|bêta (de test)
+364|stable
+365|Mise à jour disponible
+366|Ouvrir la page de téléchargement
+367|Ignorer cette version
+368|Pas maintenant
+369|onnxruntime n'est pas disponible dans cette installation.
+370|Suppression par IA
+371|Pinceau : peignez sur l'aperçu. Vert = garder, rouge = supprimer.
+372|Aucune retouche peinte.
+373|masque fixe (toutes les images)
+374|images
+375|Lissage
+376|Rien à annuler.
+377|Rien à rétablir.
+378|bêta
+379|Téléchargement du modèle d'IA : {a} sur {b} Mo
+380|Téléchargement annulé.
+381|Vérifiez la connexion et réessayez. En attendant, l'incrustation continue de fonctionner.
+382|Retouche : {what}.
+383|En pixels de la vidéo originale.
+384|La zone suit le sujet. Cliquez sur « Analyser le mouvement » pour la voir dans l'aperçu ; l'export calcule le trajet automatiquement.
+385|Analyse du mouvement : image {i} sur {n}…
+386|Impossible de télécharger le modèle d'IA :
+387|{n} image(s) avec leur propre retouche
+388|Vérification impossible pour le moment.
+389|Nouvelle version disponible : {v}
+390|Une nouvelle version de {app} est disponible : <b>{v}</b> ({kind}).<br>Vous utilisez la {cur}.
+391|Trajet analysé : zone de {w}×{h} px qui suit le sujet.
+392|{n} image(s) clé(s) : {list}
+393|Modèle prêt (fonctionne hors ligne). Dossier : {p}
+394|Vous avez déjà la version la plus récente ({v}).
+395|Le modèle ({mb} Mo) est téléchargé une seule fois, à la première utilisation, dans {p}.
+396|Export par lot (bêta)
+397|Ajoutez des vidéos à la file. Toutes sont exportées dans le format et avec les options choisis dans « Options d'export » (vidéo entière). La retouche au pinceau et les images clés ne sont pas appliquées au lot.
+398|Ajouter des vidéos…
+399|Vider la file
+400|Réglages actuels
+401|Choisir un preset (.json)…
+402|Choisir…
+403|Utiliser le recadrage enregistré pour chaque taille de vidéo
+404|Si vous avez déjà recadré une vidéo de la même taille, la même zone est utilisée ; sinon, l'image entière.
+405|Vidéo %v sur %m
+406|Démarrer
+407|Ajouter des vidéos
+408|Vidéo
+409|État
+410|Réglages
+411|Dossier de destination
+412|En attente
+413|Lot terminé : {ok} sur {n} vidéos exportées.
+414|Format : {fmt}
+415|Lot annulé : {ok} sur {n} vidéos exportées.
+416|{n} images
+417|Annulé
+418|Export par lot
+419|Annuler l'export par lot ?
+420|Mises à jour
+421|Rechercher les mises à jour au démarrage
+422|Consulte les Releases GitHub en arrière-plan ; sans internet, rien ne se passe.
+423|Inclure les versions bêta (de test)
+424|Vérifier maintenant
+425|Ceci est une version de test : les nouvelles fonctions peuvent changer. La version stable reste disponible sur la page Releases.
+426|Vérification…
+427|BÊTA (version de test)
+428|Plus tard
+429|Sprite sheet (PNG + JSON)
+430|Personnes — MODNet (26 Mo)
+431|Objets — U²-Net petit (4,6 Mo)
+432|Garder
+433|Gomme
+434|Fixe
+435|Suivre le sujet
+436|Images clés
+437|Flou
+438|Décalage X
+439|Décalage Y
+440|Opacité
+441|Expansion

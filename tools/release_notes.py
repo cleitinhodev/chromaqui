@@ -9,6 +9,9 @@ text = open(os.path.join(ROOT, "CHANGELOG.md"), encoding="utf-8").read()
 m = re.search(rf"^## {re.escape(ver)}\b[^\n]*\n(.*?)(?=^## |\Z)", text, re.S | re.M)
 body = m.group(1).strip() if m else "Veja o CHANGELOG.md."
 sys.stdout.reconfigure(encoding="utf-8")
+if any(t in ver for t in ("-alpha", "-beta", "-rc")):
+    print("> 🧪 **Versão de testes (pré-release).** Os recursos novos podem mudar. A versão estável continua\n"
+          "> sendo a marcada como **Latest** na página de Releases.\n")
 print(f"## Chromaqui! {ver}\n\n{body}\n")
 print("""### Download
 - **Chromaqui-Windows.zip** — pasta com `Chromaqui.exe` (abre mais rápido; recomendado).

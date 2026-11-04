@@ -5,11 +5,13 @@ import os
 
 from PySide6.QtCore import QSettings
 
-from . import ORG_NAME
+from . import IS_BETA, ORG_NAME
 
 DEFAULTS = {"theme": "dark", "lang": "pt-BR", "animations": True, "neon": True, "render": "auto",
             "accent": "", "play_quality": 0, "last_dir": "",
-            "crops": "", "crop_margin": 8, "crop_even": False}
+            "crops": "", "crop_margin": 8, "crop_even": False,
+            "update_check": True, "update_betas": IS_BETA, "update_skip": "",
+            "brush_size": 30, "brush_hardness": 50}
 
 
 class Settings:

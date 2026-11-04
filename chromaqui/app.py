@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import copy
+import dataclasses
 import json
 import os
 import sys
@@ -14,12 +15,13 @@ from PySide6.QtWidgets import (
     QSlider, QSpinBox, QStyle, QToolButton, QVBoxLayout, QWidget,
 )
 
-from . import APP_NAME, __version__, core, gpu, i18n, theme
+from . import APP_NAME, __version__, ai, core, gpu, i18n, theme
 from .dialogs import AboutDialog, SettingsDialog, app_icon, backend_text, logo_pixmap
 from .exporters import FORMAT_BY_KEY, FORMATS, default_output_name, ffmpeg_available
 from .fx import FX, fade_in, fade_window, set_neon
 from .i18n import LANGUAGES, T
 from .settings import Settings
+from .app_extras import ExtrasMixin, window_title_suffix
 from .widgets import (AutoCropWorker, GradientTitle, PLAY_QUALITY, THUMB_H, ExportWorker, ParamCheck, ParamSlider, PlaybackWorker,
                       PreviewLabel, RenderWorker, Section, ThumbWorker, preview_frame)
 
@@ -62,18 +64,19 @@ OPT_ROWS = {
     "comp": {"png"},
     "quality": {"webp", "webp_seq", "webm"},
     "lossless": {"webp", "webp_seq"},
-    "fps": {"gif", "webp", "apng", "webm", "prores"},
+    "fps": {"gif", "webp", "apng", "webm", "prores", "sheet"},
     "loop": {"gif", "webp", "apng"},
     "gif": {"gif"},
     "tiffc": {"tiff"},
+    "sheet": {"sheet"},
 }
 
 
-class MainWindow(QMainWindow):
+class MainWindow(ExtrasMixin, QMainWindow):
     def __init__(self, ctrl):
         super().__init__()
         self.ctrl = ctrl
-        self.setWindowTitle(f"{APP_NAME} — " + T("removedor de fundo de vídeo"))
+        self.setWindowTitle(f"{APP_NAME} — " + T("removedor de fundo de vídeo") + window_title_suffix())
         self.setWindowIcon(app_icon())
         self.resize(1400, 900)
         self.video = None
@@ -97,6 +100,7 @@ class MainWindow(QMainWindow):
         self.auto_thread = self.auto_worker = None
         self._crop_save_timer = QTimer(self, singleShot=True, interval=400)
         self._crop_save_timer.timeout.connect(self._save_crop)
+        self._init_extras()
 
         self.render_thread = QThread()
         self.render_worker = RenderWorker()
@@ -138,6 +142,7 @@ class MainWindow(QMainWindow):
         self.cmb_bgmode.currentIndexChanged.connect(self._on_bgmode)
         self.cmb_bgmode.setVisible(False)
         top.addWidget(self.cmb_bgmode)
+        self._build_view_tools(top)
         root.addLayout(top)
 
         mid = QHBoxLayout()
@@ -226,11 +231,15 @@ class MainWindow(QMainWindow):
         self.btn_cancel = QPushButton(T("Cancelar"))
         self.btn_cancel.setEnabled(False)
         self.btn_cancel.clicked.connect(self.cancel_export)
+        self.btn_batch = QPushButton(T("Exportar em lote…"))
+        self.btn_batch.setToolTip(T("Exporta vários vídeos de uma vez com os ajustes atuais ou com um preset."))
+        self.btn_batch.clicked.connect(lambda: self.open_batch())
         self.progress = QProgressBar()
         self.progress.setFormat(T("%v / %m quadros"))
         exp.addWidget(self.btn_export)
         exp.addWidget(self.progress, 1)
         exp.addWidget(self.btn_cancel)
+        exp.addWidget(self.btn_batch)
         root.addLayout(exp)
 
         self.lbl_backend = QLabel()
@@ -244,6 +253,8 @@ class MainWindow(QMainWindow):
         self._neon_widgets = [(self.lbl_title, 18), (self.btn_export, 14), (self.btn_play, 12), (self.btn_open, 12)]
         self.apply_fx()
         self._on_format_changed()
+        self._install_extra_shortcuts()
+        self.reset_undo()
 
     # ---------------------------------------------------------- cabeçalho
     def _build_header(self):
@@ -355,6 +366,7 @@ class MainWindow(QMainWindow):
         swl.addWidget(self.lbl_rgb, 1)
         sec.add_row(T("Cor atual"), sw)
         lay.addWidget(sec)
+        lay.addWidget(self._build_ai_section())
         lay.addWidget(self._build_crop_section())
 
         dc = T("(duplo clique: padrão)")
@@ -366,6 +378,8 @@ class MainWindow(QMainWindow):
                 self.sliders[key] = s
                 sec.add_row(T(label), s, (T(tip) + "  " + dc) if tip else dc)
             lay.addWidget(sec)
+        lay.addWidget(self._build_retouch_section())
+        lay.addWidget(self._build_glow_section())
 
         sec = Section(T("Presets"))
         row = QWidget()
@@ -446,6 +460,7 @@ class MainWindow(QMainWindow):
         self.chk_crop_even.toggled.connect(self._on_crop_even)
         sec.add_row("", self.chk_crop_even, T("Alguns programas e codecs exigem dimensões pares. WebM e ProRes "
                                               "sempre usam dimensões pares."))
+        self._build_motion_rows(sec)
         self.lbl_crop_info = QLabel("")
         self.lbl_crop_info.setObjectName("muted")
         self.lbl_crop_info.setWordWrap(True)
@@ -455,6 +470,8 @@ class MainWindow(QMainWindow):
     def toggle_crop(self, on):
         if on and self.btn_pick.isChecked():
             self.btn_pick.setChecked(False)
+        if on and self.btn_brush.isChecked():
+            self.btn_brush.setChecked(False)
         self.preview.set_crop_mode(on)
         if on:
             self.statusBar().showMessage(T("Recorte: arraste na prévia para desenhar a área; arraste as alças para "
@@ -470,7 +487,10 @@ class MainWindow(QMainWindow):
         self.preview.set_crop(r)
         self._sync_crop_spins()
         self._update_crop_info()
+        if not self._restoring:
+            self._crop_edited(r)
         self._update_export_info()
+        self._note_change()
         if save:
             self._crop_save_timer.start()
 
@@ -566,12 +586,14 @@ class MainWindow(QMainWindow):
                                           self.sp_crop_margin.value())
         self.auto_worker.moveToThread(self.auto_thread)
         self.auto_thread.started.connect(self.auto_worker.run)
-        self.auto_worker.progress.connect(lambda c, t: self.statusBar().showMessage(
-            T("Recorte automático: quadro {i} de {n}…").format(i=c, n=t)))
+        self.auto_worker.progress.connect(self._on_auto_progress)
         self.auto_worker.finished.connect(self._on_auto_crop)
         self.auto_worker.finished.connect(self.auto_thread.quit)
         self._auto_path = self.path
         self.auto_thread.start()
+
+    def _on_auto_progress(self, c, t):
+        self.statusBar().showMessage(T("Recorte automático: quadro {i} de {n}…").format(i=c, n=t))
 
     def is_auto_cropping(self):
         return self.auto_thread is not None and self.auto_thread.isRunning()
@@ -697,6 +719,7 @@ class MainWindow(QMainWindow):
                   T("As bordas semitransparentes são misturadas com esta cor (use a cor do fundo onde o GIF vai "
                     "aparecer) para não ficarem serrilhadas/escuras."))
         self._update_matte()
+        self._build_sheet_rows(sec)
         self.chk_include_bg = QCheckBox(T("Incluir fundo na exportação"))
         self.chk_include_bg.setToolTip(T("Compõe a imagem/vídeo de fundo escolhido na prévia no arquivo exportado "
                                          "(resultado opaco)."))
@@ -776,6 +799,11 @@ class MainWindow(QMainWindow):
             wdg.setEnabled(True)
         self._sync_crop_spins()
         self._update_crop_info()
+        self._reset_retouch_for_video()
+        self.track_path = None
+        self.crop_keys = {}
+        self.cmb_motion.setEnabled(True)
+        self._update_motion_ui()
         self.sp_fps.blockSignals(True)
         self.sp_fps.setValue(min(120.0, max(1.0, v.fps or 24.0)))
         self.sp_fps.blockSignals(False)
@@ -804,6 +832,7 @@ class MainWindow(QMainWindow):
         self.on_frame_changed(frame_idx)
         self._start_thumbs(indices)
         self._update_export_info()
+        self.reset_undo()
         fade_in(self.preview)
         return True
 
@@ -845,6 +874,8 @@ class MainWindow(QMainWindow):
             return
         self.frame, self.px_scale = preview_frame(f)
         self._mark_frame(idx)
+        self._show_motion_crop(idx)
+        self._feed_before()
         self.schedule_render()
 
     def _mark_frame(self, idx):
@@ -919,7 +950,9 @@ class MainWindow(QMainWindow):
             return                            # quadro atrasado de uma reprodução anterior
         wk.ack()                              # libera o próximo quadro (sem fila acumulando)
         self.frame, self.px_scale = frame, sc
+        self._feed_before()
         self.preview.set_image(qimg)
+        self._show_motion_crop(idx)
         self.slider.blockSignals(True)
         self.slider.setValue(idx)
         self.slider.blockSignals(False)
@@ -943,7 +976,8 @@ class MainWindow(QMainWindow):
     # ---------------------------------------------------------- parâmetros
     def params(self) -> core.KeyParams:
         return core.KeyParams(tuple(self.key_rgb), {k: s.value() for k, s in self.sliders.items()},
-                              self.chk_enable.isChecked())
+                              self.chk_enable.isChecked(), self.matte_source, self.ai_model,
+                              copy.deepcopy(self.glow), self.retouch)
 
     def apply_params(self, p: core.KeyParams):
         for s in self.sliders.values():
@@ -954,6 +988,26 @@ class MainWindow(QMainWindow):
             s.blockSignals(False)
         self.chk_enable.setChecked(p.enabled)
         self.set_key(p.key_rgb)
+        # recursos da 3.2: origem do recorte (IA só se o modelo já estiver baixado), sombra/brilho, retoque
+        model = p.ai_model if p.ai_model in ai.MODELS else "modnet"
+        self.ai_model = model
+        self.cmb_ai_model.setCurrentIndex(max(0, self.cmb_ai_model.findData(model)))
+        src = p.source if p.source in core.MATTE_SOURCES else "chroma"
+        if src == "ai" and not ai.is_ready(model):
+            src = "chroma"
+            self.statusBar().showMessage(T("O preset usa remoção por IA: baixe o modelo na seção 'Remoção por IA'."))
+        self.matte_source = src
+        self._set_source_combo(src)
+        self._update_ai_status()
+        g = dict(core.GLOW_DEFAULTS)
+        g.update(p.glow or {})
+        self.glow = g
+        self._sync_glow_widgets()
+        if p.retouch is not None and self.video is not None and \
+                (p.retouch.w, p.retouch.h) == (self.video.width, self.video.height):
+            self.retouch = p.retouch
+            self._update_retouch_info()
+        self.schedule_render()
 
     def reset_defaults(self):
         self.apply_params(core.KeyParams())
@@ -1003,7 +1057,16 @@ class MainWindow(QMainWindow):
             gif_matte=self.chk_gif_matte.isChecked(), gif_matte_rgb=tuple(self.gif_matte_rgb),
             include_bg=self.chk_include_bg.isChecked() and self.background.active,
             tiff_compress=self.chk_tiffc.isChecked(), crop=self.crop_for_export(),
-            even=self.chk_crop_even.isChecked())
+            even=self.chk_crop_even.isChecked(), crop_motion=self._export_motion(),
+            crop_keys={int(k): tuple(v) for k, v in self.crop_keys.items()},
+            track_margin=self.sp_crop_margin.value(), track_smooth=self.sp_track_smooth.value(),
+            **self.sheet_options())
+
+    def _export_motion(self):
+        m = self.crop_motion()
+        if not self.video or (m == "keys" and not self.crop_keys):
+            return "fixed"
+        return m
 
     def _update_export_info(self, *_):
         if not self.video:
@@ -1015,7 +1078,22 @@ class MainWindow(QMainWindow):
         size = f"{ow}×{oh} px"
         if crop is not None:
             size += " (" + T("recortado") + ")"
-        if f.single_file:
+        if o.crop_motion == "keys":
+            mw = max(r[2] for r in o.crop_keys.values())
+            mh = max(r[3] for r in o.crop_keys.values())
+            _c, ow, oh = core.export_geometry(self.video.width, self.video.height,
+                                              dataclasses.replace(o, crop=(0, 0, mw, mh)))
+            size = f"{ow}×{oh} px (" + T("quadros-chave") + ")"
+        elif o.crop_motion == "follow":
+            if self.track_path and self._track_sig == self._track_signature():
+                tw, th = next(iter(self.track_path.values()))[2:]
+                size = f"{max(1, round(tw * o.scale))}×{max(1, round(th * o.scale))} px (" + T("seguindo o objeto") + ")"
+            else:
+                size = T("tamanho definido pela análise do movimento")
+        if o.fmt == "sheet":
+            txt = T("Sprite sheet: {n} quadros de {size} + JSON ({kind})").format(
+                n=n, size=size, kind=o.sheet_json)
+        elif f.single_file:
             fps = o.fps if o.fps > 0 else (self.video.fps or 30) / o.step
             txt = T("1 arquivo, {n} quadros, {size}, {fps} fps").format(n=n, size=size, fps=f"{fps:.2f}")
         else:
@@ -1029,6 +1107,7 @@ class MainWindow(QMainWindow):
     # ---------------------------------------------------------- prévia e fundo
     def schedule_render(self, *_):
         self._render_timer.start()
+        self._note_change()
 
     def _on_bg_activated(self, i):
         key = BACKGROUNDS[i]
@@ -1162,7 +1241,11 @@ class MainWindow(QMainWindow):
         bg = self.background.clone() if opts.include_bg else None
         retire_thread(self.exp_thread, self.exp_worker)
         self.exp_thread = QThread()
-        self.exp_worker = ExportWorker(self.path, out, copy.deepcopy(self.params()), opts, bg)
+        p = copy.deepcopy(self.params())
+        if p.retouch is not None:
+            p.retouch = None if p.retouch.is_empty() else p.retouch.frozen()   # cópia fixa: pintar não afeta
+        self.exp_worker = ExportWorker(self.path, out, p, opts, bg)
+        self.exp_worker.stage.connect(self._on_export_stage)
         self.exp_worker.moveToThread(self.exp_thread)
         self.exp_thread.started.connect(self.exp_worker.run)
         self.exp_worker.progress.connect(self._on_progress)
@@ -1173,6 +1256,10 @@ class MainWindow(QMainWindow):
 
     def is_exporting(self):
         return self.exp_thread is not None and self.exp_thread.isRunning()
+
+    def _on_export_stage(self, stage):
+        self.progress.setValue(0)
+        self.statusBar().showMessage(T("Analisando o movimento do objeto…") if stage == "track" else T("Exportando…"))
 
     def _on_progress(self, c, t):
         if self.progress.maximum() != t:
@@ -1210,14 +1297,37 @@ class MainWindow(QMainWindow):
             "matte": self.gif_matte_rgb, "fps": self.sp_fps.value(), "loop": self.chk_loop.isChecked(),
             "include_bg": self.chk_include_bg.isChecked(), "geometry": self.saveGeometry(),
             "maximized": self.isMaximized(), "crop": self.crop_rect, "crop_mode": self.btn_crop.isChecked(),
+            "motion": self.crop_motion(), "keys": dict(self.crop_keys), "smooth": self.sp_track_smooth.value(),
+            "track": (self.track_path, self._track_sig), "sheet": self.sheet_options(),
+            "compare": self.btn_compare.isChecked(), "brush_frame": self.chk_brush_frame.isChecked(),
+            "brush_mode": self.brush_mode_key(),
         }
 
     def restore(self, st):
         if st.get("path") and os.path.isfile(st["path"]):
             self.load_video(st["path"], st.get("idx", 0))
         self.apply_params(st["params"])
+        self.crop_keys = dict(st.get("keys") or {})
+        self.sp_track_smooth.setValue(st.get("smooth", 9))
+        self._set_motion_combo(st.get("motion", "fixed"))
+        self.track_path, self._track_sig = st.get("track") or (None, None)
+        sh = st.get("sheet") or {}
+        if sh:
+            self.sp_sheet_cols.setValue(sh["sheet_cols"])
+            self.sp_sheet_pad.setValue(sh["sheet_pad"])
+            self.cmb_sheet_max.setCurrentIndex(max(0, self.cmb_sheet_max.findData(sh["sheet_max"])))
+            self.chk_sheet_trim.setChecked(sh["sheet_trim"])
+            self.cmb_sheet_json.setCurrentIndex(max(0, self.cmb_sheet_json.findData(sh["sheet_json"])))
+        self.btn_compare.setChecked(bool(st.get("compare")))
+        self.chk_brush_frame.setChecked(bool(st.get("brush_frame")))
+        self.set_brush_mode_key(st.get("brush_mode", "keep"))
         if self.video and st.get("crop") and core.crop_fits(st["crop"], self.video.width, self.video.height):
-            self.set_crop(st["crop"], save=False)
+            self._restoring = True
+            try:
+                self.set_crop(st["crop"], save=False)
+            finally:
+                self._restoring = False
+        self._update_motion_ui()
         self.btn_crop.setChecked(bool(st.get("crop_mode")) and self.video is not None)
         self.cmb_view.setCurrentIndex(st.get("view", 0))
         self.bg_rgb = st.get("bg_rgb", self.bg_rgb)
@@ -1235,10 +1345,12 @@ class MainWindow(QMainWindow):
         self.chk_include_bg.setChecked(st.get("include_bg", False))
         if st.get("geometry") is not None:
             self.restoreGeometry(st["geometry"])
+        self.reset_undo()
         self.schedule_render()
 
     def shutdown(self):
         self.stop_play()
+        self.shutdown_extras()
         if self._crop_save_timer.isActive():
             self._crop_save_timer.stop()
             self._save_crop()
@@ -1374,6 +1486,7 @@ def main():
     w = ctrl.create_window()
     w.show()
     fade_window(w)
+    w.schedule_update_check()
     if len(sys.argv) > 1 and os.path.isfile(sys.argv[1]):
         w.load_video(sys.argv[1])
     sys.exit(app.exec())

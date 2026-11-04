@@ -28,7 +28,9 @@ def pyinstaller(onefile: bool):
     args = [sys.executable, "-m", "PyInstaller", "--noconfirm", "--clean", "--windowed",
             "--name", NAME, "--icon", os.path.join("assets", "icon.ico"),
             "--add-data", f"assets{sep}assets", "--collect-data", "imageio_ffmpeg",
-            "--hidden-import", "tifffile"]
+            "--hidden-import", "tifffile",
+            # remoção por IA (3.2): o runtime ONNX vai junto; os modelos são baixados no primeiro uso
+            "--hidden-import", "onnxruntime", "--collect-binaries", "onnxruntime"]
     for m in EXCLUDES:
         args += ["--exclude-module", m]
     if onefile:

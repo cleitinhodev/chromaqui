@@ -2,6 +2,9 @@
 transparência (GIF, WebP animado, APNG, WebM VP9 com alfa, MOV ProRes 4444 com alfa)."""
 from __future__ import annotations
 
+import copy
+import json
+import math
 import os
 import shutil
 import subprocess
@@ -12,8 +15,8 @@ import cv2
 import numpy as np
 
 from . import gpu
-from .core import (ExportOptions, KeyParams, Video, crop_box_out, export_geometry, key_for_export, to_bgra,
-                   write_png)
+from .core import (EVEN_FORMATS, ExportOptions, KeyParams, Video, crop_box_out, export_geometry,
+                   key_for_export, motion_path, to_bgra, write_png)
 
 
 @dataclass(frozen=True)
@@ -35,6 +38,7 @@ FORMATS = [
     Format("apng", "APNG animado (alfa)", ".png", True, True),
     Format("webm", "WebM VP9 (alfa)", ".webm", True, True),
     Format("prores", "MOV ProRes 4444 (alfa)", ".mov", True, True),
+    Format("sheet", "Sprite sheet (PNG + JSON)", ".png", True),
 ]
 FORMAT_BY_KEY = {f.key: f for f in FORMATS}
 
@@ -236,6 +240,95 @@ class _FFmpegWriter:
 
 
 # --------------------------------------------------------------------------------------
+class _SheetWriter:
+    """Sprite sheet: grade PNG + JSON no formato do TexturePacker ("hash" ou "array"), lido por
+    Phaser, Godot (importadores TexturePacker), Unity (TexturePacker Importer), PixiJS etc.
+    Células de tamanho uniforme (o maior quadro, já recortado se trim); se a folha passar de
+    `sheet_max`, gera várias (nome_0.png, nome_1.png...)."""
+
+    def __init__(self, path, opts: ExportOptions, fps):
+        self.path, self.opts, self.fps = path, opts, fps
+        self.frames = []     # (bgra uint8 recortado, (ox, oy), (w, h) original)
+        self.files = []
+
+    def write(self, color, alpha):
+        img = to_bgra(color, alpha)
+        H, W = img.shape[:2]
+        ox = oy = 0
+        if self.opts.sheet_trim:
+            nz = cv2.findNonZero((img[..., 3] > 0).astype(np.uint8))
+            if nz is None:
+                img, ox, oy = img[:1, :1].copy(), 0, 0
+                img[:] = 0
+            else:
+                x, y, w, h = cv2.boundingRect(nz)
+                img, ox, oy = np.ascontiguousarray(img[y:y + h, x:x + w]), x, y
+        self.frames.append((img, (ox, oy), (W, H)))
+
+    @staticmethod
+    def layout(n, cw, ch, cols, pad, max_size):
+        """(colunas, linhas por folha, quadros por folha). ValueError se um quadro não couber."""
+        if cw > max_size or ch > max_size:
+            raise ValueError(f"quadro ({cw}×{ch}) maior que o tamanho máximo da folha ({max_size})")
+        fit_c = max(1, (max_size + pad) // (cw + pad))
+        fit_r = max(1, (max_size + pad) // (ch + pad))
+        if cols and cols > 0:
+            c = min(int(cols), fit_c, n)
+        else:
+            c = min(fit_c, max(1, math.ceil(math.sqrt(n * ch / max(1, cw)))), n)
+        r = min(fit_r, math.ceil(n / c))
+        return c, r, c * r
+
+    def close(self, ok):
+        if not ok or not self.frames:
+            return None
+        o = self.opts
+        pad = max(0, int(o.sheet_pad))
+        cw = max(f[0].shape[1] for f in self.frames)
+        ch = max(f[0].shape[0] for f in self.frames)
+        n = len(self.frames)
+        cols, rows, per = self.layout(n, cw, ch, o.sheet_cols, pad, max(16, int(o.sheet_max)))
+        sheets = math.ceil(n / per)
+        base, _ = os.path.splitext(self.path)
+        name = os.path.basename(base)
+        dur = int(round(1000.0 / self.fps)) if self.fps else 100
+        for s in range(sheets):
+            chunk = self.frames[s * per:(s + 1) * per]
+            rr = math.ceil(len(chunk) / cols)
+            cc = min(cols, len(chunk))
+            sw, sh = cc * cw + (cc - 1) * pad, rr * ch + (rr - 1) * pad
+            sheet = np.zeros((sh, sw, 4), np.uint8)
+            stem = base if sheets == 1 else f"{base}_{s}"
+            png = stem + ".png"
+            entries = []
+            for k, (img, (ox, oy), (W, H)) in enumerate(chunk):
+                x, y = (k % cols) * (cw + pad), (k // cols) * (ch + pad)
+                h, w = img.shape[:2]
+                sheet[y:y + h, x:x + w] = img
+                trimmed = (w, h) != (W, H)
+                entries.append((f"{name}_{s * per + k:05d}.png", {
+                    "frame": {"x": x, "y": y, "w": w, "h": h},
+                    "rotated": False, "trimmed": trimmed,
+                    "spriteSourceSize": {"x": ox, "y": oy, "w": w, "h": h},
+                    "sourceSize": {"w": W, "h": H},
+                    "pivot": {"x": 0.5, "y": 0.5},
+                    "duration": dur}))
+            write_png(png, sheet, 6)
+            from . import __version__
+            meta = {"app": "Chromaqui!", "version": __version__, "image": os.path.basename(png),
+                    "format": "RGBA8888", "size": {"w": sw, "h": sh}, "scale": "1",
+                    "frameTags": [], "fps": round(float(self.fps or 0), 3),
+                    "grid": {"columns": cc, "rows": rr, "cellWidth": cw, "cellHeight": ch, "padding": pad}}
+            if o.sheet_json == "array":
+                frames = [{"filename": k, **v} for k, v in entries]
+            else:
+                frames = {k: v for k, v in entries}
+            with open(stem + ".json", "w", encoding="utf-8") as f:
+                json.dump({"frames": frames, "meta": meta}, f, indent=1)
+            self.files += [png, stem + ".json"]
+        return self.files[0]
+
+
 def composite(color, alpha, back_bgr):
     """Compõe o objeto sobre o fundo; resultado opaco (alfa = 1)."""
     a = alpha[..., None]
@@ -250,10 +343,15 @@ def default_output_name(video_path, fmt_key):
 
 
 def export(path, out, params: KeyParams, opts: ExportOptions | None = None,
-           progress=None, should_cancel=None, background=None):
+           progress=None, should_cancel=None, background=None, stage=None):
     """Exporta o intervalo escolhido. `out` = pasta (sequências) ou arquivo (animações).
+    stage(nome): "track" (analisando o movimento do objeto) / "export".
     Retorna {"count", "output", "fps", "cancelled"}."""
     opts = opts or ExportOptions()
+    params = copy.copy(params)          # cópia rasa: frame_idx/glow mudam só aqui
+    params.glow = dict(getattr(params, "glow", None) or {})
+    if not params.glow.get("export", True):
+        params.glow["on"] = False
     fmt = FORMAT_BY_KEY.get(opts.fmt)
     if fmt is None:
         raise ValueError(f"formato desconhecido: {opts.fmt}")
@@ -270,11 +368,39 @@ def export(path, out, params: KeyParams, opts: ExportOptions | None = None,
         if os.path.isdir(out):
             out = os.path.join(out, default_output_name(path, fmt.key))
         os.makedirs(os.path.dirname(os.path.abspath(out)) or ".", exist_ok=True)
-        writer = _GifWriter(out, opts, fps) if fmt.key == "gif" else _FFmpegWriter(out, opts, fps)
     else:
-        writer = _SeqWriter(out, opts, fmt.ext)
+        os.makedirs(out, exist_ok=True)
     bg = background if (opts.include_bg and background is not None and background.active) else None
     crop, ow, oh = export_geometry(v.width, v.height, opts)
+    path_rects = None
+    if getattr(opts, "crop_motion", "fixed") in ("follow", "keys"):
+        if stage:
+            stage("track")
+        try:
+            path_rects = motion_path(v, params, opts, progress=progress, should_cancel=should_cancel)
+        except InterruptedError:
+            v.release()
+            return {"count": 0, "output": None, "fps": fps, "cancelled": True}
+        if stage:
+            stage("export")
+        if path_rects:
+            r0 = next(iter(path_rects.values()))
+            s_ = float(opts.scale)
+            ow, oh = max(1, int(round(r0[2] * s_))), max(1, int(round(r0[3] * s_)))
+            if opts.even or opts.fmt in EVEN_FORMATS:
+                ow -= ow % 2 if ow > 1 else 0
+                oh -= oh % 2 if oh > 1 else 0
+            crop = r0
+        v.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+    if fmt.single_file:
+        if fmt.key == "gif":
+            writer = _GifWriter(out, opts, fps)
+        elif fmt.key == "sheet":
+            writer = _SheetWriter(out, opts, fps)
+        else:
+            writer = _FFmpegWriter(out, opts, fps)
+    else:
+        writer = _SeqWriter(out, opts, fmt.ext)
     cap = v.cap
     if start > 0:
         cap.set(cv2.CAP_PROP_POS_FRAMES, start)
@@ -292,8 +418,11 @@ def export(path, out, params: KeyParams, opts: ExportOptions | None = None,
             ok, frame = cap.read()
             if not ok:
                 break
-            if crop is not None and frame.shape[:2] != (v.height, v.width):
+            if path_rects:
+                crop = path_rects.get(idx, crop)
+            elif crop is not None and frame.shape[:2] != (v.height, v.width):
                 crop, ow, oh = export_geometry(frame.shape[1], frame.shape[0], opts)
+            params.frame_idx = idx
             color, alpha = key_for_export(frame, params, opts.scale, crop, (ow, oh) if crop else None)
             if bg is not None:
                 hh, ww = alpha.shape

@@ -33,6 +33,9 @@ def keys():
                 out.append(tip)
     out += [f.label for f in exporters.FORMATS] + app.VIEWS + app.BG_LABELS + [l for _, l in app.BG_MODES]
     out += [n for n, _ in widgets.PLAY_QUALITY] + [l for _, l in dialogs.RENDER_MODES] + list(core.PRESETS)
+    from chromaqui import ai, app_extras
+    out += [m["label"] for m in ai.MODELS.values()] + [l for _, l in app_extras.BRUSH_MODES]
+    out += [l for _, l in app_extras.MOTIONS] + [g[1] for g in app_extras.GLOW_KEYS]
     seen, res = set(), []
     for k in out:
         if k not in seen:

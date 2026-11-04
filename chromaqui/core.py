@@ -1,6 +1,7 @@
 """Chromaqui! — lógica de keying profissional e leitura de vídeo (sem interface)."""
 from __future__ import annotations
 
+import copy
 import json
 import os
 import sys
@@ -75,11 +76,23 @@ PARAM_SECTIONS = [
 PARAM_DEFAULTS = {k: d for _, items in PARAM_SECTIONS for k, _, _, _, d, _ in items}
 
 
+GLOW_DEFAULTS = {"on": False, "mode": "shadow", "color": [0, 0, 0], "blur": 12, "dx": 10, "dy": 10,
+                 "opacity": 60, "spread": 0, "export": True}
+GLOW_PRESETS = {"shadow": {"color": [0, 0, 0], "blur": 12, "dx": 10, "dy": 10, "opacity": 60, "spread": 0},
+                "neon": {"color": [57, 255, 120], "blur": 18, "dx": 0, "dy": 0, "opacity": 95, "spread": 3}}
+MATTE_SOURCES = ("chroma", "ai")
+
+
 @dataclass
 class KeyParams:
     key_rgb: tuple = PRESETS["Verde"]
     values: dict = field(default_factory=lambda: dict(PARAM_DEFAULTS))
     enabled: bool = True
+    source: str = "chroma"          # origem do alfa: "chroma" (cor-chave) | "ai" (segmentação por IA)
+    ai_model: str = "modnet"        # ver ai.MODELS
+    glow: dict = field(default_factory=lambda: dict(GLOW_DEFAULTS))   # sombra / brilho atrás do objeto
+    retouch: object = None          # retouch.Retouch (pincel manter/remover) ou None
+    frame_idx: int = -1             # quadro em processamento (máscaras de retoque por quadro)
 
     def __getattr__(self, name):
         vals = self.__dict__.get("values")
@@ -88,7 +101,8 @@ class KeyParams:
         raise AttributeError(name)
 
     def to_dict(self):
-        return {"key_rgb": list(self.key_rgb), "enabled": self.enabled, **self.values}
+        return {"key_rgb": list(self.key_rgb), "enabled": self.enabled, **self.values,
+                "source": self.source, "ai_model": self.ai_model, "glow": dict(self.glow)}
 
     @classmethod
     def from_dict(cls, d):
@@ -96,7 +110,15 @@ class KeyParams:
         for k in vals:
             if k in d:
                 vals[k] = int(d[k])
-        return cls(tuple(int(c) for c in d.get("key_rgb", PRESETS["Verde"])), vals, bool(d.get("enabled", True)))
+        glow = dict(GLOW_DEFAULTS)
+        if isinstance(d.get("glow"), dict):
+            for k, v in d["glow"].items():
+                if k in glow:
+                    glow[k] = v
+        glow["color"] = [int(c) for c in glow.get("color", [0, 0, 0])][:3]
+        src = d.get("source", "chroma")
+        return cls(tuple(int(c) for c in d.get("key_rgb", PRESETS["Verde"])), vals, bool(d.get("enabled", True)),
+                   src if src in MATTE_SOURCES else "chroma", str(d.get("ai_model", "modnet")), glow)
 
 
 @dataclass
@@ -123,6 +145,15 @@ class ExportOptions:
     tiff_compress: bool = True
     crop: tuple | None = None   # (x, y, largura, altura) em pixels do vídeo ORIGINAL; None = quadro inteiro
     even: bool = False          # força largura/altura pares na saída recortada
+    crop_motion: str = "fixed"  # "fixed" | "follow" (segue o objeto) | "keys" (quadros-chave)
+    crop_keys: dict | None = None   # {quadro: (x, y, w, h)} para crop_motion == "keys"
+    track_margin: int = 16      # margem (px do original) ao redor do objeto no modo "follow"
+    track_smooth: int = 9       # suavização do movimento (quadros)
+    sheet_cols: int = 0         # sprite sheet: colunas (0 = automático, ~quadrado)
+    sheet_pad: int = 2          # espaço entre quadros (px)
+    sheet_max: int = 4096       # tamanho máximo da folha (px); excedendo, gera várias folhas
+    sheet_trim: bool = True     # recorta o espaço transparente de cada quadro
+    sheet_json: str = "hash"    # "hash" | "array" (formato JSON do TexturePacker)
 
 
 def save_preset(path, params: KeyParams, extra: dict | None = None):
@@ -334,6 +365,157 @@ def auto_crop(video, p: "KeyParams", samples=30, margin=8, max_w=640, threshold=
 
 
 # --------------------------------------------------------------------------------------
+CROP_MOTIONS = ("fixed", "follow", "keys")
+
+
+def export_indices(n, opts):
+    """Quadros exportados (mesma regra da exportação: início, fim inclusive, passo)."""
+    end = n - 1 if opts.end < 0 else min(opts.end, n - 1)
+    return list(range(max(0, opts.start), end + 1, max(1, opts.step)))
+
+
+def subject_boxes(video, p: "KeyParams", idxs, max_w=480, threshold=0.1, progress=None, should_cancel=None):
+    """Caixa do objeto (x0, y0, x1, y1 em px do original) em cada quadro de `idxs` (None = vazio).
+    Retorna dict ou None se cancelado."""
+    own = isinstance(video, str)
+    v = Video(video) if own else video
+    out = {}
+    kern = np.ones((3, 3), np.uint8)
+    try:
+        for j, i in enumerate(idxs):
+            if should_cancel and should_cancel():
+                return None
+            f = v.read(i)
+            box = None
+            if f is not None:
+                fh, fw = f.shape[:2]
+                sc = min(1.0, max_w / max(1, fw))
+                small = cv2.resize(f, (max(1, int(round(fw * sc))), max(1, int(round(fh * sc)))),
+                                   interpolation=cv2.INTER_AREA) if sc < 1.0 else f
+                sx, sy = small.shape[1] / fw, small.shape[0] / fh
+                q = copy.copy(p)
+                q.frame_idx = i
+                a = compute_alpha(small, q, sc) if p.enabled else np.ones(small.shape[:2], np.float32)
+                m = cv2.morphologyEx((a > threshold).astype(np.uint8), cv2.MORPH_OPEN, kern)
+                if m.any():
+                    bx, by, bw, bh = cv2.boundingRect(m)
+                    box = (int(np.floor(bx / sx)), int(np.floor(by / sy)),
+                           int(np.ceil((bx + bw) / sx)), int(np.ceil((by + bh) / sy)))
+            out[i] = box
+            if progress:
+                progress(j + 1, len(idxs))
+        return out
+    finally:
+        if own:
+            v.release()
+
+
+def _fill_series(vals):
+    """Preenche None por interpolação linear (bordas: valor mais próximo)."""
+    idx = [k for k, v in enumerate(vals) if v is not None]
+    if not idx:
+        return None
+    xs = np.arange(len(vals), dtype=np.float64)
+    return np.interp(xs, idx, [vals[k] for k in idx])
+
+
+def _smooth(x, win):
+    win = int(win)
+    if win <= 1 or len(x) < 3:
+        return x
+    r = win // 2
+    k = np.exp(-0.5 * (np.arange(-r, r + 1) / max(1.0, r / 2.0)) ** 2)
+    k /= k.sum()
+    xp = np.pad(x, r, mode="edge")
+    return np.convolve(xp, k, mode="valid")
+
+
+def track_path(boxes: dict, W, H, margin=16, smooth=9, even=False):
+    """Recorte que SEGUE o objeto: centro suavizado por quadro e tamanho FIXO (o maior necessário),
+    para todos os quadros terem as mesmas dimensões. Retorna {quadro: (x, y, w, h)} ou None."""
+    idxs = sorted(boxes)
+    if not idxs:
+        return None
+    cxs = _fill_series([None if boxes[i] is None else (boxes[i][0] + boxes[i][2]) / 2 for i in idxs])
+    if cxs is None:
+        return None
+    cys = _fill_series([None if boxes[i] is None else (boxes[i][1] + boxes[i][3]) / 2 for i in idxs])
+    cxs, cys = _smooth(cxs, smooth), _smooth(cys, smooth)
+    need_w = need_h = CROP_MIN
+    for k, i in enumerate(idxs):     # tamanho que contém o objeto mesmo com o centro suavizado
+        b = boxes[i]
+        if b is None:
+            continue
+        need_w = max(need_w, 2 * max(cxs[k] - b[0], b[2] - cxs[k]))
+        need_h = max(need_h, 2 * max(cys[k] - b[1], b[3] - cys[k]))
+    cw = int(min(W, np.ceil(need_w) + 2 * max(0, int(margin))))
+    ch = int(min(H, np.ceil(need_h) + 2 * max(0, int(margin))))
+    if even:
+        cw -= cw % 2 if cw > 2 else 0
+        ch -= ch % 2 if ch > 2 else 0
+    return {i: clamp_crop((int(round(cxs[k] - cw / 2)), int(round(cys[k] - ch / 2)), cw, ch), W, H)
+            for k, i in enumerate(idxs)}
+
+
+def keyframe_rect(keys: dict, idx, W, H, size=None):
+    """Recorte interpolado (linear) entre quadros-chave {quadro: (x, y, w, h)}. size=(w, h) fixa o
+    tamanho (centro interpolado). None se não houver chaves."""
+    if not keys:
+        return None
+    ks = sorted(int(k) for k in keys)
+    vals = {int(k): tuple(int(v) for v in keys[k]) for k in keys}
+    if idx <= ks[0]:
+        r = vals[ks[0]]
+    elif idx >= ks[-1]:
+        r = vals[ks[-1]]
+    else:
+        j = int(np.searchsorted(ks, idx))
+        a, b = ks[j - 1], ks[j]
+        t = (idx - a) / max(1, b - a)
+        ra, rb = vals[a], vals[b]
+        r = tuple(ra[n] + (rb[n] - ra[n]) * t for n in range(4))
+    if size is None:
+        return clamp_crop(r, W, H)
+    cx, cy = r[0] + r[2] / 2, r[1] + r[3] / 2
+    return clamp_crop((int(round(cx - size[0] / 2)), int(round(cy - size[1] / 2)), size[0], size[1]), W, H)
+
+
+def keyframe_path(keys: dict, idxs, W, H, even=False):
+    """{quadro: recorte} com tamanho fixo = maior largura/altura entre as chaves."""
+    if not keys:
+        return None
+    cw = max(int(v[2]) for v in keys.values())
+    ch = max(int(v[3]) for v in keys.values())
+    cw, ch = min(cw, W), min(ch, H)
+    if even:
+        cw -= cw % 2 if cw > 2 else 0
+        ch -= ch % 2 if ch > 2 else 0
+    return {i: keyframe_rect(keys, i, W, H, (cw, ch)) for i in idxs}
+
+
+def motion_path(video, p: "KeyParams", opts: "ExportOptions", progress=None, should_cancel=None):
+    """Recortes por quadro para crop_motion "follow"/"keys" (None = recorte fixo / sem recorte).
+    Levanta InterruptedError se cancelado."""
+    mode = getattr(opts, "crop_motion", "fixed")
+    if mode not in ("follow", "keys"):
+        return None
+    own = isinstance(video, str)
+    v = Video(video) if own else video
+    try:
+        W, H = v.width, v.height
+        idxs = export_indices(v.frame_count, opts)
+        even = bool(opts.even) or opts.fmt in EVEN_FORMATS
+        if mode == "keys":
+            return keyframe_path(opts.crop_keys or {}, idxs, W, H, even)
+        boxes = subject_boxes(v, p, idxs, progress=progress, should_cancel=should_cancel)
+        if boxes is None:
+            raise InterruptedError
+        return track_path(boxes, W, H, opts.track_margin, opts.track_smooth, even)
+    finally:
+        if own:
+            v.release()
+
+
 def _rgb_to_crcb(rgb):
     px = np.uint8([[list(rgb[::-1])]])
     ycc = cv2.cvtColor(px, cv2.COLOR_BGR2YCrCb)[0, 0].astype(np.float32)
@@ -448,7 +630,13 @@ def compute_alpha(frame_bgr, p: KeyParams, px_scale: float = 1.0, frame_box=None
     px_scale = fator de escala do quadro em relação ao original (para raios de filtros).
     frame_box = (x, y, largura, altura do quadro inteiro) quando `frame_bgr` é só um pedaço do quadro
     (exportação recortada): o garbage matte em % continua relativo ao quadro inteiro."""
-    a, ycc = _raw_alpha(frame_bgr, p, px_scale)
+    a = None
+    if getattr(p, "source", "chroma") == "ai":
+        a = ai_alpha(frame_bgr, p)
+    if a is None:
+        a, ycc = _raw_alpha(frame_bgr, p, px_scale)
+    else:
+        ycc = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2YCrCb).astype(np.float32)
     if p.values.get("refine", 0):
         a = _color_line_alpha(frame_bgr, a, px_scale)
     ref = p.values.get("refine", 0)
@@ -490,8 +678,13 @@ def compute_alpha(frame_bgr, p: KeyParams, px_scale: float = 1.0, frame_box=None
         k = 1.0 + p.contrast / 100.0 * 15
         a = np.clip(0.5 + (a - p.midpoint / 100.0) * k, 0, 1)
 
-    # --- recorte (garbage matte, em % do quadro inteiro)
+    # --- retoque com pincel (manter / remover)
     h, w = a.shape
+    rt = getattr(p, "retouch", None)
+    if rt is not None:
+        a = rt.apply(np.ascontiguousarray(a, np.float32), getattr(p, "frame_idx", -1), frame_box)
+
+    # --- recorte (garbage matte, em % do quadro inteiro)
     bx, by, FW, FH = frame_box if frame_box is not None else (0, 0, w, h)
     ct, cb = int(FH * p.crop_top / 100), int(FH * p.crop_bottom / 100)
     cl, cr = int(FW * p.crop_left / 100), int(FW * p.crop_right / 100)
@@ -500,6 +693,20 @@ def compute_alpha(frame_bgr, p: KeyParams, px_scale: float = 1.0, frame_box=None
     if cl: a[:, :max(0, cl - bx)] = 0
     if cr: a[:, max(0, FW - cr - bx):] = 0
     return a.astype(np.float32)
+
+
+def ai_alpha(frame_bgr, p):
+    """Alfa da segmentação por IA (None se o modelo/onnxruntime não estiver disponível)."""
+    from . import ai
+    name = getattr(p, "ai_model", "modnet")
+    if not ai.is_ready(name):
+        return None
+    try:
+        return np.array(ai.predict(frame_bgr, name), np.float32)
+    except Exception:
+        from . import crashlog
+        crashlog.log_exception("ai.predict")
+        return None
 
 
 def decontaminate(img, alpha, key_rgb, amount, px_scale=1.0):
@@ -629,7 +836,7 @@ def process_color(frame_bgr, p: KeyParams, alpha=None, px_scale=1.0, debug=None)
         if debug is not None:
             debug["cw"] = cw
     lum_w = np.array([0.114, 0.587, 0.299], np.float32)  # pesos BGR
-    if p.spill:
+    if p.spill and getattr(p, "source", "chroma") != "ai":   # IA: fundo sem cor-chave, sem spill
         key_bgr = np.array(p.key_rgb[::-1], np.float32)
         dom = int(np.argmax(key_bgr))
         o1, o2 = [c for c in range(3) if c != dom]
@@ -673,7 +880,37 @@ def key_frame_float(frame_bgr, p: KeyParams, px_scale=1.0, frame_box=None):
     if not p.enabled:
         return frame_bgr.astype(np.float32), np.ones(frame_bgr.shape[:2], np.float32)
     alpha = compute_alpha(frame_bgr, p, px_scale, frame_box)
-    return process_color(frame_bgr, p, alpha, px_scale), alpha
+    color = process_color(frame_bgr, p, alpha, px_scale)
+    return add_glow(color, alpha, getattr(p, "glow", None), px_scale)
+
+
+def add_glow(color, alpha, g, px_scale=1.0):
+    """Sombra projetada / brilho neon ATRÁS do objeto: camada de cor `g["color"]` com a forma do alfa
+    (expandida, deslocada e desfocada), composta por baixo. Retorna (cor, alfa) novos."""
+    if not g or not g.get("on") or g.get("opacity", 0) <= 0:
+        return color, alpha
+    h, w = alpha.shape
+    m = alpha
+    sp = int(round(float(g.get("spread", 0)) * px_scale))
+    if sp >= 1:
+        k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * sp + 1, 2 * sp + 1))
+        m = cv2.dilate(m, k)
+    dx, dy = float(g.get("dx", 0)) * px_scale, float(g.get("dy", 0)) * px_scale
+    if abs(dx) >= 0.5 or abs(dy) >= 0.5:
+        M = np.float32([[1, 0, dx], [0, 1, dy]])
+        m = cv2.warpAffine(m, M, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=0)
+    sig = float(g.get("blur", 0)) * px_scale
+    if sig > 0.3:
+        m = gpu.GaussianBlur(np.ascontiguousarray(m, np.float32), (0, 0), sig)
+    op = float(g.get("opacity", 60)) / 100.0
+    if g.get("mode") == "neon":
+        m = np.clip(m * 1.6, 0, 1)      # brilho: núcleo mais denso
+    gl = np.clip(m, 0, 1) * op * (1.0 - alpha)
+    a2 = alpha + gl
+    rgb = g.get("color", [0, 0, 0])
+    gc = np.array([rgb[2], rgb[1], rgb[0]], np.float32)
+    c2 = (color * alpha[..., None] + gc * gl[..., None]) / np.maximum(a2, 1e-4)[..., None]
+    return np.clip(c2, 0, 255).astype(np.float32), a2.astype(np.float32)
 
 
 def to_bgra(color, alpha, bit16=False) -> np.ndarray:
@@ -720,6 +957,8 @@ def render_view(frame_bgr, p: KeyParams, view="Resultado", bg="xadrez", bg_rgb=(
         alpha = compute_alpha(frame_bgr, p, px_scale)
         dbg = {}
         color = process_color(frame_bgr, p, alpha, px_scale, debug=dbg)
+        if view not in ("Máscara (alfa)", "Máscara da colorização"):
+            color, alpha = add_glow(color, alpha, getattr(p, "glow", None), px_scale)
     if view == "Máscara (alfa)":
         g = (alpha * 255).astype(np.uint8)
         return cv2.cvtColor(g, cv2.COLOR_GRAY2BGR)

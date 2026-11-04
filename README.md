@@ -22,6 +22,7 @@
 | ![Tema escuro](docs/screenshot_escuro.png) | ![Tema claro](docs/screenshot_claro.png) |
 | ![Exportar (escuro)](docs/screenshot_exportar_escuro.png) | ![Exportar (claro)](docs/screenshot_exportar_claro.png) |
 | ![Recorte (escuro)](docs/recorte_escuro.png) | ![Recorte (claro)](docs/recorte_claro.png) |
+| ![Comparar + brilho neon (beta)](docs/beta_comparar_brilho_escuro.png) | ![Exportação em lote (beta)](docs/beta_lote_escuro.png) |
 
 ## Download
 
@@ -32,6 +33,9 @@ Baixe o `.zip` mais recente em **[Releases](https://github.com/cleitinhodev/chro
 
 Não precisa instalar nada: descompacte e execute. Windows 10/11 64 bits.
 Na primeira execução o SmartScreen pode avisar ("Executar assim mesmo"), porque o executável não é assinado.
+
+> 🧪 **Versão de testes:** a **3.2.0-beta.1** está nas Releases como *pre-release* (recursos marcados
+> **(beta)** abaixo). A versão estável recomendada continua sendo a **3.1.0** (marcada como *Latest*).
 
 Se algo der errado, os detalhes ficam em `%APPDATA%\Chromaqui\logs` (`erros.log`, `travamento.log`).
 
@@ -49,6 +53,16 @@ Se algo der errado, os detalhes ficam em `%APPDATA%\Chromaqui\logs` (`erros.log`
   margem). O recorte vale para **todos os quadros e todos os formatos** (e para o fundo incluído), é
   aplicado antes da escala, deixa a exportação mais rápida e fica salvo para vídeos do mesmo tamanho.
   Opção de largura/altura pares (WebM e ProRes sempre usam pares). **Redefinir** volta ao quadro inteiro.
+- **Recorte que segue o objeto** *(beta, 3.2)*: *Movimento* = **Seguir o objeto** (a área acompanha o
+  objeto, com suavização) ou **Quadros-chave** (você posiciona a área em alguns quadros e ela é interpolada).
+- **Exportar só um trecho**: campos *De / Até / 1 a cada N* em "Opções de exportação".
+- **Retoque com pincel** *(beta)*: Manter / Remover / Borracha direto na prévia (todos os quadros ou só um).
+- **Remoção por IA, sem tela verde** *(beta)*: onnxruntime na CPU; o modelo (MODNet 26 MB ou U²-Net
+  pequeno 4,6 MB) é baixado uma vez, no primeiro uso, para `%APPDATA%\Chromaqui\models`.
+- **Sombra projetada / brilho neon** atrás do objeto *(beta)*, na prévia e opcionalmente no arquivo.
+- **Desfazer/Refazer** (Ctrl+Z / Ctrl+Y) e **comparar antes/depois** (prévia dividida e botão "Antes") *(beta)*.
+- **Exportação em lote** *(beta)*: vários vídeos com os ajustes atuais ou um preset.
+- **Verificação de atualizações** *(beta)*: avisa quando há versão nova nas Releases (desligável).
 - **Fundo de teste**: xadrez, preto, branco, cor, **imagem ou vídeo** (preencher/ajustar/esticar).
   Só vai para o arquivo se você marcar **"Incluir fundo na exportação"** (resultado opaco).
 - **Exportação** (sempre com transparência, respeitando intervalo, passo "1 a cada N", escala e FPS):
@@ -61,6 +75,7 @@ Se algo der errado, os detalhes ficam em `%APPDATA%\Chromaqui\logs` (`erros.log`
   | WebP animado / APNG | alfa completo (8 bits), repetições |
   | WebM VP9 | `yuva420p` com alfa (navegadores, OBS, editores) |
   | MOV ProRes 4444 | `yuva444p10le` com alfa (Premiere, DaVinci Resolve, Final Cut) |
+  | Sprite sheet *(beta)* | PNG + JSON do TexturePacker (hash/array), colunas, espaçamento, tamanho máximo e *trim* |
 
   WebM/ProRes/WebP/APNG usam o **ffmpeg embutido** (imageio-ffmpeg); nada para instalar.
 - **Temas Claro/Escuro** com gradientes nas cores do logo, **animações** e **brilho neon**
@@ -126,7 +141,8 @@ Os textos-fonte numerados ficam em `tools/i18n_src/*.txt` → `python tools/i18n
 ## Estrutura
 
 ```
-chromaqui/      app.py (janela), core.py (chroma key), exporters.py (formatos), gpu.py (OpenCL),
+chromaqui/      app.py (janela), app_extras.py (recursos 3.2), core.py (chroma key), exporters.py (formatos),
+                ai.py (IA/onnxruntime), retouch.py (pincel), batch.py (lote), updates.py, gpu.py (OpenCL),
                 theme.py, fx.py, i18n.py, dialogs.py, widgets.py, settings.py, selftest.py
 assets/         logo.png, icon.ico, favicon.ico, icons/, i18n/
 tools/          build_exe.py, make_icon.py, prepare_logo.py, logo_preview.py, extract_strings.py, i18n_build.py
@@ -153,6 +169,11 @@ animated WebP, APNG, WebM VP9 with alpha and MOV ProRes 4444 with alpha** (bundl
   containing the subject across 30 frames (plus a margin). The crop applies to every frame and every format
   (and to the included background), is applied before scaling, speeds up export and is remembered per video
   size. Optional even width/height (always even for WebM/ProRes).
+- **New in 3.2.0-beta.1 (pre-release; 3.1.0 stays the stable "Latest")**: crop that **follows the subject**
+  or is interpolated between **keyframes**; **brush retouch** (keep/remove/eraser); **sprite sheet + TexturePacker
+  JSON**; **batch export**; **AI background removal without a green screen** (onnxruntime, model downloaded on
+  first use to `%APPDATA%\Chromaqui\models`); **drop shadow / neon glow**; **undo/redo** and **before/after
+  compare**; **update checker**. Range export (from/to/every N frames) was already available.
 - Preview over checkerboard/solid color or **your own image/video background**; it is only baked into
   the export when **"Include background in export"** is checked.
 - **Light/Dark themes**, optional animations and neon glow, **8 languages switchable at runtime**

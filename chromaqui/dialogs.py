@@ -4,9 +4,9 @@ from __future__ import annotations
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (QCheckBox, QComboBox, QDialog, QDialogButtonBox, QFormLayout, QGroupBox,
-                               QHBoxLayout, QLabel, QVBoxLayout)
+                               QHBoxLayout, QLabel, QPushButton, QVBoxLayout)
 
-from . import APP_NAME, URL_DONATE, URL_REPO, URL_SITE, __version__, gpu
+from . import APP_NAME, IS_BETA, URL_DONATE, URL_REPO, URL_SITE, __version__, gpu
 from .fx import set_neon, FX
 from .widgets import GradientTitle
 from .i18n import LANGUAGES, T
@@ -48,9 +48,15 @@ class AboutDialog(QDialog):
         col = QVBoxLayout()
         self.title = GradientTitle(APP_NAME)
         col.addWidget(self.title)
-        ver = QLabel(T("Versão {v}").format(v=__version__))
+        ver = QLabel(T("Versão {v}").format(v=__version__) + ("  ·  " + T("BETA (versão de testes)") if IS_BETA else ""))
         ver.setObjectName("appVersion")
         col.addWidget(ver)
+        if IS_BETA:
+            beta = QLabel(T("Esta é uma versão de testes: os recursos novos podem mudar. A versão estável "
+                            "continua disponível na página de Releases."))
+            beta.setWordWrap(True)
+            beta.setObjectName("muted")
+            col.addWidget(beta)
         desc = QLabel(T("Remova o fundo verde ou azul (chroma key) de vídeos e exporte quadros e animações "
                         "com transparência: PNG, GIF, WebP, APNG, WebM e ProRes."))
         desc.setWordWrap(True)
@@ -127,6 +133,28 @@ class SettingsDialog(QDialog):
         lay.addWidget(g2)
         self._update_backend()
 
+        g3 = QGroupBox(T("Atualizações"))
+        f3 = QVBoxLayout(g3)
+        self.chk_upd = QCheckBox(T("Verificar atualizações ao iniciar"))
+        self.chk_upd.setChecked(s.get("update_check"))
+        self.chk_upd.setToolTip(T("Consulta as Releases do GitHub em segundo plano; sem internet, nada acontece."))
+        f3.addWidget(self.chk_upd)
+        self.chk_betas = QCheckBox(T("Incluir versões beta (de testes)"))
+        self.chk_betas.setChecked(s.get("update_betas"))
+        f3.addWidget(self.chk_betas)
+        row = QHBoxLayout()
+        self.btn_check = QPushButton(T("Verificar agora"))
+        self.btn_check.clicked.connect(self._check_now)
+        row.addWidget(self.btn_check)
+        self.lbl_upd = QLabel("")
+        self.lbl_upd.setObjectName("muted")
+        self.lbl_upd.setWordWrap(True)
+        row.addWidget(self.lbl_upd, 1)
+        f3.addLayout(row)
+        lay.addWidget(g3)
+        self.chk_upd.toggled.connect(lambda on: s.set("update_check", bool(on)))
+        self.chk_betas.toggled.connect(lambda on: s.set("update_betas", bool(on)))
+
         bb = QDialogButtonBox(QDialogButtonBox.Close)
         bb.button(QDialogButtonBox.Close).setText(T("Fechar"))
         bb.rejected.connect(self.reject)
@@ -137,6 +165,12 @@ class SettingsDialog(QDialog):
         self.chk_anim.toggled.connect(lambda on: ctrl.set_fx(animations=on))
         self.chk_neon.toggled.connect(lambda on: ctrl.set_fx(neon=on))
         self.cmb_render.currentIndexChanged.connect(self._render)
+
+    def _check_now(self):
+        w = getattr(self.ctrl, "window", None)
+        if w is not None and hasattr(w, "check_updates"):
+            self.lbl_upd.setText(T("Verificando…"))
+            w.check_updates(manual=True, label=self.lbl_upd)
 
     def _lang(self):
         self.accept()

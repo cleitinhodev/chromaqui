@@ -1,6 +1,6 @@
 """Testes da interface real (offscreen): exportar clicando no botão (diálogos simulados) para TODOS os
 formatos, com configurações novas e já salvas; e estresse da reprodução trocando a qualidade.
-Uso: python tests/test_ui_flows.py [export|crop|stress|all]"""
+Uso: python tests/test_ui_flows.py [export|crop|beta|stress|all]"""
 import os, sys, tempfile, time, shutil
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, os.path.dirname(HERE)); sys.path.insert(0, HERE)
@@ -291,12 +291,245 @@ def test_crop_ui():
           f"exportação pelo botão (png/pares/webm), idioma e preferências por tamanho")
 
 
+def test_beta_ui():
+    """Recursos da 3.2 (beta) pela interface: pincel + desfazer/refazer, comparar, sombra/brilho, IA (erro e
+    modelo local), recorte que segue / quadros-chave, sprite sheet, lote, atualização e troca de idioma."""
+    from PIL import Image
+    from chromaqui import ai, core
+    print("beta: interface …")
+    os.environ["CHROMAQUI_MODELS_DIR"] = os.path.join(TMP, "models")
+    ctrl, w = make_window(VID)
+    W, H = w.video.width, w.video.height
+    pv = w.preview
+    w.render_preview(); pump(0.3)
+    # ---- pincel: manter/remover, só neste quadro, desfazer/refazer
+    assert w.retouch is not None and w.retouch.is_empty() and w.btn_brush.isEnabled()
+    w.btn_crop.setChecked(True)
+    w.btn_brush.setChecked(True); pump(0.05)
+    assert pv.brush_mode and not w.btn_crop.isChecked(), "pincel e recorte devem se excluir"
+    pane = pv._panes()[0]
+    sx = pane.width() / W
+    to = lambda x, y: (pane.left() + x * sx, pane.top() + y * sx)
+    w.sl_brush_size.setValue(20)
+    w.set_brush_mode_key("remove")
+    _drag(pv, to(100, 180), to(160, 180))           # remove um trecho do objeto
+    assert not w.retouch.is_empty() and w.retouch.static is not None, "pincelada não registrada"
+    p = w.params()
+    f0 = w.video.read(0)
+    a = core.compute_alpha(f0, p)
+    assert a[180, 130] < 0.05, a[180, 130]
+    assert len(w._undo) == 1 and w._undo[-1][0] == "brush", w._undo
+    w.undo(); pump(0.05)
+    assert w.retouch.is_empty() or not w.retouch.static.any(), "desfazer o pincel"
+    w.redo(); pump(0.05)
+    assert w.retouch.static.any(), "refazer o pincel"
+    w.chk_brush_frame.setChecked(True); w.set_brush_mode_key("keep")
+    w.slider.setValue(3); pump(0.1)
+    _drag(pv, to(400, 80), to(440, 80))             # mantém um trecho do fundo, só no quadro 4
+    assert w.retouch.frame_count() == 1 and 3 in w.retouch.frames, w.retouch.frames
+    pf = w.params(); pf.frame_idx = 3
+    assert core.compute_alpha(w.video.read(3), pf)[80, 420] > 0.95
+    pf.frame_idx = 4
+    assert core.compute_alpha(w.video.read(4), pf)[80, 420] < 0.05, "retoque de um quadro vazou para outro"
+    w.btn_rt_clear_frame.click()
+    assert w.retouch.frame_count() == 0 or not w.retouch.frames[3].any()
+    w.undo()
+    assert w.retouch.frames[3].any(), "desfazer 'limpar quadro'"
+    w.btn_brush.setChecked(False)
+    # ---- desfazer/refazer de parâmetros (Ctrl+Z / Ctrl+Y), agrupando mudanças seguidas
+    key, s = next((k, s) for k, s in w.sliders.items() if hasattr(s, "slider") and
+                  s.slider.maximum() - s.value() > 5)
+    v0 = s.value()
+    for v in (v0 + 1, v0 + 2, v0 + 3):
+        s.setValue(v); pump(0.02)
+    pump(0.6)
+    v1 = s.value()
+    w.set_key((0, 0, 255)); pump(0.6)
+    from PySide6.QtCore import Qt
+    from PySide6.QtTest import QTest
+    QTest.keyClick(w, Qt.Key_Z, Qt.ControlModifier); pump(0.05)
+    assert tuple(w.key_rgb) != (0, 0, 255), w.key_rgb
+    QTest.keyClick(w, Qt.Key_Z, Qt.ControlModifier); pump(0.05)
+    assert s.value() == v0, (s.value(), v0)
+    QTest.keyClick(w, Qt.Key_Y, Qt.ControlModifier); pump(0.05)
+    assert s.value() == v1, (s.value(), v1)
+    w.redo()
+    assert tuple(w.key_rgb) == (0, 0, 255)
+    w.undo(); w.undo()
+    # ---- comparar antes/depois
+    w.btn_compare.setChecked(True); w.render_preview(); pump(0.3)
+    assert pv.compare_active() and pv._before is not None
+    pv.set_split(0.3); pv.grab()
+    w.btn_before.pressed.emit(); pump(0.05)
+    assert pv.show_before
+    pv.grab()
+    w.btn_before.released.emit()
+    assert not pv.show_before
+    w.btn_compare.setChecked(False)
+    # ---- sombra / brilho
+    w.chk_glow.setChecked(True)
+    w.cmb_glow_mode.setCurrentIndex(1); w._on_glow_mode()
+    assert w.glow["on"] and w.glow["mode"] == "neon" and w.params().glow["mode"] == "neon"
+    w.glow_sliders["opacity"].setValue(80)
+    assert w.params().glow["opacity"] == 80
+    out_dir = os.path.join(TMP, "beta"); os.makedirs(out_dir, exist_ok=True)
+    QFileDialog.getExistingDirectory = staticmethod(lambda *a, **k: out_dir)
+    QFileDialog.getSaveFileName = staticmethod(lambda *a, **k: (os.path.join(out_dir, "anim"), ""))
+    w.retouch.clear()
+    w.sp_in.setValue(1); w.sp_out.setValue(3)
+    w.cmb_fmt.setCurrentIndex([f.key for f in FORMATS].index("png"))
+    def export_alpha():
+        w.btn_export.click()
+        assert wait(lambda: not w.is_exporting()), "exportação não terminou"
+        pump(0.05)
+        n, canc, err, out = w.last_export
+        assert not err and n == 3, w.last_export
+        fn = sorted(f for f in os.listdir(out) if f.endswith(".png"))[0]
+        return np.asarray(Image.open(os.path.join(out, fn)).convert("RGBA"))[..., 3]
+    with_glow = export_alpha()
+    w.chk_glow_export.setChecked(False)
+    without = export_alpha()
+    assert (with_glow > 0).sum() > (without > 0).sum() * 1.02, ((with_glow > 0).sum(), (without > 0).sum())
+    w.chk_glow.setChecked(False); w.chk_glow_export.setChecked(True)
+    # ---- IA: erro de download volta para a cor-chave; modelo presente ativa a IA
+    orig = dict(ai.MODELS["u2netp"])
+    ai.MODELS["u2netp"]["url"] = "http://127.0.0.1:9/nada.onnx"
+    w.cmb_ai_model.setCurrentIndex(w.cmb_ai_model.findData("u2netp"))
+    n_err = len(errors)
+    w.cmb_source.setCurrentIndex(1); w._on_source()
+    assert wait(lambda: not w.is_downloading(), 60)
+    pump(0.1)
+    assert w.matte_source == "chroma" and w.cmb_source.currentData() == "chroma", w.matte_source
+    assert w.last_model_download[1] and "modelo" in w.lbl_ai.text().lower(), (w.last_model_download, w.lbl_ai.text())
+    assert len(errors) == n_err and not w.btn_ai_dl.isHidden(), errors[n_err:]
+    ai.MODELS["u2netp"].update(orig)
+    local = os.path.join(os.environ.get("CHROMAQUI_TEST_MODELS", "/workspace/models"), "u2netp.onnx")
+    if os.path.exists(local) and ai.runtime_available():
+        ai.MODELS["u2netp"]["url"] = "file://" + local
+        w.cmb_source.setCurrentIndex(1); w._on_source()
+        assert wait(lambda: not w.is_downloading(), 60)
+        pump(0.1)
+        assert w.matte_source == "ai" and w.params().source == "ai" and w.params().ai_model == "u2netp", \
+            w.last_model_download
+        w.render_preview(); pump(0.5)
+        ai.MODELS["u2netp"].update(orig)
+        print("   IA: modelo local baixado e ativado")
+    else:
+        print("   IA: modelo local ausente (CI) — só o caminho de erro foi testado")
+    w.cmb_source.setCurrentIndex(0); w._on_source()
+    assert w.params().source == "chroma"
+    # ---- recorte que segue o objeto
+    w.cmb_motion.setCurrentIndex(w.cmb_motion.findData("follow")); w._on_motion()
+    assert not w.btn_crop.isEnabled() and w.export_options().crop_motion == "follow"
+    w.sp_in.setValue(1); w.sp_out.setValue(10)
+    w.btn_track.click()
+    assert wait(lambda: not w.is_tracking() and w.track_path, 60), "análise do movimento não terminou"
+    pump(0.1)
+    tw, th = next(iter(w.track_path.values()))[2:]
+    w.slider.setValue(5); pump(0.1)
+    assert w.crop_rect[2:] == (tw, th), (w.crop_rect, tw, th)
+    assert f"{tw}×{th}" in w.lbl_out_info.text(), (w.lbl_out_info.text(), w._track_sig, w._track_signature())
+    w.cmb_fmt.setCurrentIndex([f.key for f in FORMATS].index("gif"))
+    w.btn_export.click()
+    assert wait(lambda: not w.is_exporting()), "exportação não terminou"
+    pump(0.05)
+    n, canc, err, out = w.last_export
+    assert not err and n == 10, w.last_export
+    assert Image.open(out).size == (tw, th), (Image.open(out).size, (tw, th))
+    # ---- quadros-chave: mover a área num quadro marca um quadro-chave
+    w.cmb_motion.setCurrentIndex(w.cmb_motion.findData("keys")); w._on_motion()
+    w.clear_crop_keys()
+    w.slider.setValue(0); pump(0.1); w.set_crop((0, 0, 200, 120)); pump(0.5)   # pausa: passos de desfazer separados
+    w.slider.setValue(9); pump(0.1); w.set_crop((400, 200, 200, 120)); pump(0.5)
+    assert sorted(w.crop_keys) == [0, 9], w.crop_keys
+    w.slider.setValue(4); pump(0.1)
+    assert 0 < w.crop_rect[0] < 400 and sorted(w.crop_keys) == [0, 9], (w.crop_rect, w.crop_keys)
+    o = w.export_options()
+    assert o.crop_motion == "keys" and o.crop_keys[9] == (400, 200, 200, 120)
+    w.undo()                                    # desfaz o último quadro-chave
+    assert sorted(w.crop_keys) == [0], w.crop_keys
+    w.cmb_motion.setCurrentIndex(0); w._on_motion()
+    w.reset_crop()
+    # ---- sprite sheet pelas opções da interface
+    w.cmb_fmt.setCurrentIndex([f.key for f in FORMATS].index("sheet"))
+    assert w.sp_sheet_cols.isVisible() or not w.isVisible()
+    w.sp_sheet_cols.setValue(5); w.sp_sheet_pad.setValue(4); w.chk_sheet_trim.setChecked(False)
+    w.cmb_sheet_json.setCurrentIndex(1)
+    w.btn_export.click()
+    assert wait(lambda: not w.is_exporting()), "exportação não terminou"
+    pump(0.05)
+    n, canc, err, out = w.last_export
+    assert not err and n == 10, w.last_export
+    import json as _json
+    js = _json.load(open(os.path.splitext(out)[0] + ".json"))
+    assert isinstance(js["frames"], list) and len(js["frames"]) == 10, js.keys()
+    assert Image.open(out).size == (5 * W + 4 * 4, 2 * H + 4), Image.open(out).size
+    assert "Sprite sheet" in w.lbl_out_info.text(), w.lbl_out_info.text()
+    # ---- exportação em lote (2 vídeos) e cancelamento
+    w.cmb_fmt.setCurrentIndex([f.key for f in FORMATS].index("gif"))
+    d = w.open_batch()
+    d.add_videos([VID, os.path.join(OUT, "teste_cabelo_loiro.mp4"), VID])     # repetido é ignorado
+    assert len(d.paths) == 2
+    bdir = os.path.join(TMP, "lote"); d.ed_out.setText(bdir)
+    assert d.start()
+    assert wait(lambda: not d.running(), 240), "lote não terminou"
+    pump(0.1)
+    canc, res = d.last_result
+    assert not canc and all(r and not r[1] for r in res), res
+    for r in res:
+        assert os.path.exists(r[2]) and r[2].endswith(".gif"), r
+    assert d.start(); pump(0.05); d.cancel()
+    assert wait(lambda: not d.running(), 120)
+    pump(0.1)
+    assert d.last_result[0], "cancelamento do lote"
+    d.close()
+    # ---- atualização (sem rede: fetch simulado)
+    info = {"version": "9.9.9", "url": "https://github.com/cleitinhodev/chromaqui/releases/tag/v9.9.9",
+            "prerelease": False, "name": "v9.9.9"}
+    w.last_update_info = "?"
+    w.check_updates(manual=True, fetch=lambda cur, b: info)
+    assert wait(lambda: w.last_update_info != "?", 10)
+    assert w.last_update_info == info
+    ctrl.quiet = False
+    w.last_update_info = "?"
+    w.check_updates(manual=False, fetch=lambda cur, b: info)
+    assert wait(lambda: w.last_update_info != "?", 10)
+    pump(0.05)
+    assert w.update_box.isVisible() and "9.9.9" in w.update_box.text()
+    w.update_box.close()
+    ctrl.quiet = True
+    def boom(cur, b):
+        raise OSError("sem rede")
+    w.last_update_info = "?"
+    w.check_updates(manual=False, fetch=boom)              # falha de rede: silenciosa
+    assert wait(lambda: w.last_update_info != "?", 10) and w.last_update_info is None
+    os.environ["CHROMAQUI_NO_UPDATE_CHECK"] = "1"
+    assert not w.schedule_update_check()
+    # ---- troca de idioma mantém sombra, retoque e modo do recorte
+    w.chk_glow.setChecked(True)
+    w.btn_brush.setChecked(True); w.chk_brush_frame.setChecked(False)
+    _drag(pv, to(300, 180), to(330, 180))
+    rt = w.retouch
+    w2 = ctrl.set_language("en") or ctrl.window; pump(0.4)
+    assert w2.glow["on"] and w2.retouch is rt and w2.chk_glow.isChecked(), "estado perdido na troca de idioma"
+    assert "beta" in w2.windowTitle().lower(), w2.windowTitle()
+    ctrl.set_language("pt-BR"); pump(0.3); w = ctrl.window
+    import chromaqui.app as appmod
+    w.shutdown(); w.close(); pump(0.2)
+    assert wait(lambda: not appmod._RETIRED, 30), "threads pendentes"
+    assert not errors, errors
+    print("BETA NA INTERFACE OK: pincel, desfazer/refazer, comparar, sombra/brilho, IA, seguir/quadros-chave, "
+          "sprite sheet, lote, atualização e idioma")
+
+
 if __name__ == "__main__":
     what = sys.argv[1] if len(sys.argv) > 1 else "all"
     if what in ("export", "all"):
         test_export()
     if what in ("crop", "all"):
         test_crop_ui()
+    if what in ("beta", "all"):
+        test_beta_ui()
     if what in ("stress", "all"):
         test_stress(VID, 15)
         make_1080p()

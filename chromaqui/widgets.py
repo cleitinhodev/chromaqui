@@ -40,6 +40,7 @@ def preview_frame(f, max_w=PREVIEW_MAX_W):
 def render_job(frame, idx, job, px_scale):
     """job = (params, view, bg, bg_rgb, background|None)"""
     params, view, bg, bg_rgb, background = job
+    params.frame_idx = idx              # retoque por quadro (o job é uma cópia só desta thread)
     bg_img = None
     if background is not None and background.active and view in ("Resultado", "Lado a lado"):
         h, w = frame.shape[:2]
@@ -201,6 +202,7 @@ class PlaybackWorker(QObject):
 class ExportWorker(QObject):
     progress = Signal(int, int)
     finished = Signal(int, bool, str, str)       # n, cancelado, erro, saída
+    stage = Signal(str)                          # "track" | "export"
 
     def __init__(self, path, out, params, opts, background=None):
         super().__init__()
@@ -215,13 +217,115 @@ class ExportWorker(QObject):
         try:
             r = export(self.path, self.out, self.params, self.opts,
                        progress=lambda c, t: self.progress.emit(c, t),
-                       should_cancel=lambda: self._cancel, background=self.background)
+                       should_cancel=lambda: self._cancel, background=self.background,
+                       stage=self.stage.emit)
             self.finished.emit(r["count"], r["cancelled"], "", r["output"] or "")
         except Exception as e:  # noqa: BLE001
             self.finished.emit(0, self._cancel, str(e), "")
         finally:
             if self.background is not None:
                 self.background.clear()
+
+
+class BatchWorker(QObject):
+    """Exporta uma fila de vídeos, um após o outro (mesmas opções/ajustes para todos)."""
+    item_started = Signal(int)                   # índice na fila
+    progress = Signal(int, int, int)             # índice, quadro, total
+    item_done = Signal(int, int, str, str)       # índice, quadros, erro, saída
+    finished = Signal(bool)                      # cancelado
+
+    def __init__(self, jobs):
+        """jobs: lista de (vídeo, saída, params, ExportOptions)."""
+        super().__init__()
+        self.jobs = jobs
+        self._cancel = False
+
+    def cancel(self):
+        self._cancel = True
+
+    def run(self):
+        for i, (path, out, params, opts) in enumerate(self.jobs):
+            if self._cancel:
+                break
+            self.item_started.emit(i)
+            try:
+                r = export(path, out, params, opts,
+                           progress=lambda c, t, i=i: self.progress.emit(i, c, t),
+                           should_cancel=lambda: self._cancel)
+                self.item_done.emit(i, r["count"], "", r["output"] or "")
+            except Exception as e:  # noqa: BLE001
+                self.item_done.emit(i, 0, str(e) or e.__class__.__name__, "")
+        self.finished.emit(self._cancel)
+
+
+class ModelDownloadWorker(QObject):
+    """Baixa um modelo de IA (ai.download) fora da thread da interface."""
+    progress = Signal(int, int)                  # bytes, total
+    finished = Signal(str, str)                  # nome, erro ("" = ok)
+
+    def __init__(self, name):
+        super().__init__()
+        self.name = name
+        self._cancel = False
+
+    def cancel(self):
+        self._cancel = True
+
+    def run(self):
+        from . import ai
+        try:
+            ai.download(self.name, progress=lambda g, t: self.progress.emit(int(g), int(t)),
+                        should_cancel=lambda: self._cancel)
+            if not ai.runtime_available():
+                raise ai.AIError("onnxruntime indisponível")
+            ai.session(self.name)                # valida o arquivo (abre o modelo)
+            self.finished.emit(self.name, "")
+        except Exception as e:  # noqa: BLE001
+            self.finished.emit(self.name, str(e) or e.__class__.__name__)
+
+
+class TrackWorker(QObject):
+    """Analisa o movimento do objeto (recorte que segue) para mostrar na prévia."""
+    progress = Signal(int, int)
+    finished = Signal(object, str)               # {quadro: recorte} | None, erro
+
+    def __init__(self, path, params, opts):
+        super().__init__()
+        self.path, self.params, self.opts = path, params, opts
+        self._cancel = False
+
+    def cancel(self):
+        self._cancel = True
+
+    def run(self):
+        try:
+            r = core.motion_path(self.path, self.params, self.opts,
+                                 progress=lambda c, t: self.progress.emit(c, t),
+                                 should_cancel=lambda: self._cancel)
+            self.finished.emit(r, "")
+        except InterruptedError:
+            self.finished.emit(None, "")
+        except Exception as e:  # noqa: BLE001
+            self.finished.emit(None, str(e))
+
+
+class UpdateWorker(QObject):
+    """Consulta o GitHub Releases (silencioso em caso de erro)."""
+    finished = Signal(object)                    # dict | None
+
+    def __init__(self, current, include_betas, fetch=None):
+        super().__init__()
+        self.current, self.include_betas, self.fetch = current, include_betas, fetch
+        self.error = ""
+
+    def run(self):
+        from . import updates
+        try:
+            r = (self.fetch or updates.check)(self.current, self.include_betas)
+        except Exception as e:  # noqa: BLE001
+            self.error = str(e) or type(e).__name__
+            r = None
+        self.finished.emit(r)
 
 
 class AutoCropWorker(QObject):
@@ -256,6 +360,8 @@ class PreviewLabel(QLabel):
     clicked = Signal(float, float)
     cropChanged = Signal(int, int, int, int)     # x, y, largura, altura (pixels do original)
     cropEditFinished = Signal()
+    brushStroke = Signal(str, float, float)      # "begin" | "move" | "end", x, y (pixels do original)
+    splitChanged = Signal(float)
 
     HANDLE = 5          # meia largura da alça (px de tela)
     GRAB = 9            # distância para "pegar" uma alça/borda
@@ -275,6 +381,19 @@ class PreviewLabel(QLabel):
         self.side_by_side = False       # "Lado a lado": original | separador 4 px | resultado
         self._img_size = (0, 0)
         self._drag = None               # (modo, pane, ponto inicial no original, recorte inicial)
+        # pincel de retoque
+        self.brush_mode = False
+        self.brush_radius = 20.0        # px do original
+        self.brush_color = QColor(57, 211, 83)
+        self._brush_pos = None          # posição do cursor (tela)
+        self._brushing = None           # índice do painel durante a pincelada
+        # comparação antes/depois
+        self.compare = False            # divisória arrastável
+        self.split = 0.5
+        self.show_before = False        # botão "segure para ver o original"
+        self._before = None             # QImage (quadro original na resolução da prévia)
+        self._before_scaled = None
+        self._split_drag = False
         self.setMouseTracking(True)
 
     # ------------------------------------------------------------- imagem
@@ -282,6 +401,45 @@ class PreviewLabel(QLabel):
         self._img_size = (qimg.width(), qimg.height())
         self._pix = QPixmap.fromImage(qimg)
         self._rescale()
+
+    # ------------------------------------------------------------- antes/depois e pincel
+    def set_before(self, qimg):
+        self._before = qimg
+        self._before_scaled = None
+        self.update()
+
+    def compare_active(self):
+        return (self.compare or self.show_before) and self._before is not None and not self.side_by_side
+
+    def set_compare(self, on):
+        self.compare = bool(on)
+        self.update()
+
+    def set_show_before(self, on):
+        self.show_before = bool(on)
+        self.update()
+
+    def set_split(self, v):
+        self.split = max(0.0, min(1.0, float(v)))
+        self.update()
+        self.splitChanged.emit(self.split)
+
+    def set_brush_mode(self, on):
+        self.brush_mode = bool(on)
+        self._brushing = None
+        if on:
+            self.setCursor(Qt.BlankCursor)
+        else:
+            self._brush_pos = None
+            self.unsetCursor()
+        self.update()
+
+    def _near_split(self, pos):
+        pr = self._pm_rect()
+        if pr is None or not self.compare or not self.compare_active():
+            return False
+        x = pr.left() + pr.width() * self.split
+        return abs(pos.x() - x) <= self.GRAB and pr.top() <= pos.y() <= pr.bottom()
 
     def resizeEvent(self, e):
         super().resizeEvent(e)
@@ -372,7 +530,22 @@ class PreviewLabel(QLabel):
                 "sw": Qt.SizeBDiagCursor, "move": Qt.SizeAllCursor, "new": Qt.CrossCursor}
 
     # ------------------------------------------------------------- mouse
+    def _pane_at(self, pos):
+        for i, pane in enumerate(self._panes()):
+            if pane.contains(pos):
+                return i, pane
+        return -1, None
+
     def mousePressEvent(self, e):
+        if self.brush_mode and e.button() == Qt.LeftButton and self.src_size:
+            i, pane = self._pane_at(e.position())
+            if pane is not None:
+                self._brushing = i
+                self.brushStroke.emit("begin", *self._to_src(pane, e.position()))
+            return
+        if not self.crop_mode and not self.picking and e.button() == Qt.LeftButton and self._near_split(e.position()):
+            self._split_drag = True
+            return
         if self.crop_mode and self.crop and e.button() == Qt.LeftButton:
             mode, i = self._hit(e.position())
             if mode:
@@ -390,7 +563,24 @@ class PreviewLabel(QLabel):
             self.clicked.emit(px / pm.width(), py / pm.height())
 
     def mouseMoveEvent(self, e):
+        if self.brush_mode:
+            self._brush_pos = e.position()
+            if self._brushing is not None:
+                panes = self._panes()
+                if self._brushing < len(panes):
+                    self.brushStroke.emit("move", *self._to_src(panes[self._brushing], e.position()))
+            self.update()
+            return
+        if self._split_drag:
+            pr = self._pm_rect()
+            if pr is not None and pr.width() > 0:
+                self.set_split((e.position().x() - pr.left()) / pr.width())
+            return
         if not self.crop_mode or not self.crop:
+            if self._near_split(e.position()):
+                self.setCursor(Qt.SplitHCursor)
+            elif not self.picking:
+                self.unsetCursor()
             return
         if self._drag:
             self._apply_drag(e.position())
@@ -398,7 +588,22 @@ class PreviewLabel(QLabel):
             mode, _ = self._hit(e.position())
             self.setCursor(self._CURSORS.get(mode, Qt.ArrowCursor))
 
+    def leaveEvent(self, e):
+        if self.brush_mode:
+            self._brush_pos = None
+            self.update()
+        super().leaveEvent(e)
+
     def mouseReleaseEvent(self, e):
+        if self._brushing is not None:
+            panes = self._panes()
+            if self._brushing < len(panes):
+                self.brushStroke.emit("end", *self._to_src(panes[self._brushing], e.position()))
+            self._brushing = None
+            return
+        if self._split_drag:
+            self._split_drag = False
+            return
         if self._drag:
             self._apply_drag(e.position())
             self._drag = None
@@ -446,6 +651,10 @@ class PreviewLabel(QLabel):
 
     def paintEvent(self, ev):
         super().paintEvent(ev)
+        if self.compare_active():
+            self._paint_compare()
+        if self.brush_mode and self._brush_pos is not None and self.src_size:
+            self._paint_brush()
         if not self.crop or not (self.crop_mode or self.is_cropped()):
             return
         panes = self._panes()
@@ -497,6 +706,63 @@ class PreviewLabel(QLabel):
             p.drawRoundedRect(box, 5, 5)
             p.setPen(QColor("#ffffff"))
             p.drawText(box, Qt.AlignCenter, txt)
+        p.end()
+
+
+    def _paint_compare(self):
+        pr = self._pm_rect()
+        if pr is None:
+            return
+        size = pr.size().toSize()
+        if self._before_scaled is None or self._before_scaled.size() != size:
+            self._before_scaled = QPixmap.fromImage(self._before).scaled(size, Qt.IgnoreAspectRatio,
+                                                                          Qt.SmoothTransformation)
+        p = QPainter(self)
+        p.setRenderHint(QPainter.Antialiasing)
+        split = 1.0 if self.show_before else self.split
+        w = pr.width() * split
+        if w > 0:
+            p.drawPixmap(QRectF(pr.left(), pr.top(), w, pr.height()), self._before_scaled,
+                         QRectF(0, 0, w, pr.height()))
+        if not self.show_before:
+            x = pr.left() + w
+            p.setPen(QPen(QColor(0, 0, 0, 170), 3))
+            p.drawLine(QPointF(x, pr.top()), QPointF(x, pr.bottom()))
+            p.setPen(QPen(QColor(255, 255, 255), 1.5))
+            p.drawLine(QPointF(x, pr.top()), QPointF(x, pr.bottom()))
+            p.setBrush(QColor(255, 255, 255))
+            p.drawEllipse(QPointF(x, pr.center().y()), 7, 7)
+        f = QFont(self.font())
+        f.setBold(True)
+        p.setFont(f)
+        fm = p.fontMetrics()
+        labels = [(T("Antes"), pr.left() + 8, True)]
+        if not self.show_before:
+            labels.append((T("Depois"), pr.right() - 8, False))
+        for txt, x, left in labels:
+            tw, th = fm.horizontalAdvance(txt) + 12, fm.height() + 4
+            box = QRectF(x if left else x - tw, pr.top() + 8, tw, th)
+            p.setPen(Qt.NoPen)
+            p.setBrush(QColor(0, 0, 0, 170))
+            p.drawRoundedRect(box, 5, 5)
+            p.setPen(QColor("#ffffff"))
+            p.drawText(box, Qt.AlignCenter, txt)
+        p.end()
+
+    def _paint_brush(self):
+        i, pane = self._pane_at(self._brush_pos)
+        if pane is None:
+            return
+        r = self.brush_radius * pane.width() / max(1, self.src_size[0])
+        p = QPainter(self)
+        p.setRenderHint(QPainter.Antialiasing)
+        p.setBrush(Qt.NoBrush)
+        p.setPen(QPen(QColor(0, 0, 0, 200), 3))
+        p.drawEllipse(self._brush_pos, r, r)
+        p.setPen(QPen(self.brush_color, 1.5))
+        p.drawEllipse(self._brush_pos, r, r)
+        p.drawLine(self._brush_pos - QPointF(3, 0), self._brush_pos + QPointF(3, 0))
+        p.drawLine(self._brush_pos - QPointF(0, 3), self._brush_pos + QPointF(0, 3))
         p.end()
 
 

@@ -95,6 +95,12 @@ def _size(key, out):
     if not f.single_file:
         files = sorted(os.listdir(out))
         im = Image.open(os.path.join(out, files[0])); return im.size, len(files), im.mode
+    if key == "sheet":   # sprite sheet: tamanho de cada quadro (sourceSize) no JSON
+        import json
+        d = json.load(open(os.path.splitext(out)[0] + ".json", encoding="utf-8"))
+        fr = list(d["frames"].values())
+        ss = fr[0]["sourceSize"]
+        return (ss["w"], ss["h"]), len(fr), Image.open(out).mode
     if key in ("gif", "apng", "webp"):
         im = Image.open(out); return im.size, getattr(im, "n_frames", 1), im.mode
     return _ffmpeg_size(out), None, None

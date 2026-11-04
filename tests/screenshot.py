@@ -102,6 +102,40 @@ w = ctrl.window
 w.btn_crop.setChecked(False)
 w.reset_crop()
 
+# Recursos da 3.2 (beta): comparar antes/depois + brilho neon; recorte que segue o objeto; lote
+w = ctrl.window
+open_sections(w, ["Sombra e brilho (beta)", "Retoque com pincel (beta)"])
+w.chk_glow.setChecked(True)
+w.cmb_glow_mode.setCurrentIndex(w.cmb_glow_mode.findData("neon"))
+w._on_glow_mode()
+w.btn_compare.setChecked(True)
+w.render_preview()
+shoot("dark", "beta_comparar_brilho_escuro.png")
+shoot("light", "beta_comparar_brilho_claro.png")
+w = ctrl.window
+w.btn_compare.setChecked(False)
+w.chk_glow.setChecked(False)
+open_sections(w, ["Recorte da área exportada", "Remoção por IA (beta)"])
+w.cmb_motion.setCurrentIndex(w.cmb_motion.findData("follow"))
+w._on_motion()
+w.analyze_motion()
+t_end = time.time() + 60
+while (w.is_tracking() or w.track_path is None) and time.time() < t_end:
+    pump(0.05)
+w.slider.setValue(40)
+pump(0.5)
+w.render_preview()
+shoot("dark", "beta_seguir_objeto_escuro.png")
+w = ctrl.window
+w.cmb_motion.setCurrentIndex(w.cmb_motion.findData("fixed"))
+w._on_motion()
+d = w.open_batch()
+d.add_videos([os.path.join(HERE, "_out", n) for n in ("teste_cabelo_loiro.mp4", "teste_verde.mp4")])
+d.resize(760, 480)
+pump(0.6)
+d.grab().save(os.path.join(DOCS, "beta_lote_escuro.png"))
+d.close()
+
 for theme in ("dark", "light"):
     ctrl.set_theme(theme)
     for cls, nm in ((AboutDialog, "sobre"), (SettingsDialog, "configuracoes")):

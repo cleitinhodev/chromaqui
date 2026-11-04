@@ -284,3 +284,158 @@
 284|Área exportada: {w}×{h} px en la posición {x}, {y} ({pct}% del fotograma).
 285|Recorte automático: fotograma {i} de {n}…
 286|Recorte automático: {w}×{h} px.
+287|Exportar por lotes…
+288|Exporta varios vídeos a la vez con los ajustes actuales o con un preset.
+289|El preset usa eliminación por IA: descarga el modelo en la sección 'Eliminación por IA'.
+290|Analizando el movimiento del objeto…
+291|fotogramas clave
+292|tamaño definido por el análisis del movimiento
+293|Sprite sheet: {n} fotogramas de {size} + JSON ({kind})
+294|siguiendo el objeto
+295|Deshacer
+296|Deshace el último cambio de ajuste, recorte o pincel (Ctrl+Z)
+297|Rehacer
+298|Rehace el cambio deshecho (Ctrl+Y)
+299|Comparar
+300|Divide la vista previa: original a la izquierda, resultado a la derecha. Arrastra el divisor.
+301|Antes
+302|Mantén pulsado para ver el vídeo original; suelta para volver al resultado.
+303|Eliminación por IA (beta)
+304|Clave de color (pantalla verde/azul)
+305|IA — sin pantalla verde
+306|Origen del recorte
+307|IA: separa a la persona/objeto del fondo sin pantalla verde. El refinamiento de bordes, la limpieza, el retoque y el resto de ajustes siguen aplicándose.
+308|Modelo
+309|Personas: retratos y cuerpo entero (mejor para vídeos de gente). Objetos: cualquier objeto destacado.
+310|Descargar modelo
+311|Descargando el modelo de IA…
+312|Modelo de IA listo.
+313|Retoque con pincel (beta)
+314|Pincel
+315|Pinta en la vista previa las áreas que deben quedarse (Mantener) o desaparecer (Eliminar). Atajos: B activa/desactiva, [ y ] cambian el tamaño.
+316|Modo
+317|Mantener: fuerza opaco. Eliminar: fuerza transparente. Borrador: deshace el retoque pintado.
+318|Tamaño
+319|Radio del pincel en píxeles del vídeo original.
+320|Dureza
+321|100 = borde duro; 0 = borde muy suave.
+322|Solo en este fotograma
+323|Desmarcado: el retoque vale para todos los fotogramas (máscara fija). Marcado: solo para el fotograma mostrado.
+324|Limpiar fotograma
+325|Limpiar todo
+326|Sombra y brillo (beta)
+327|Activar sombra/brillo detrás del objeto
+328|Aparece en la vista previa (sobre el fondo de prueba) y, si se marca abajo, en el archivo exportado.
+329|Sombra proyectada
+330|Brillo neón
+331|Tipo
+332|Elegir el tipo aplica valores sugeridos (se pueden ajustar después).
+333|Color
+334|Incluir en la exportación
+335|Desmarcado: el efecto solo aparece en la vista previa.
+336|Color de la sombra/brillo
+337|Movimiento
+338|Fijo: la misma área en todos los fotogramas. Seguir el objeto: el área acompaña al objeto (tamaño fijo = el mayor necesario). Fotogramas clave: colocas el área en algunos fotogramas y se interpola entre ellos.
+339|Suavizado del movimiento: valores mayores hacen la cámara más estable.
+340|Analizar movimiento
+341|Calcula la trayectoria del recorte para verla en la vista previa (la exportación la calcula sola).
+342|Marcar fotograma clave
+343|Guarda el área actual en este fotograma. Mover/redimensionar el área en un fotograma también marca un fotograma clave.
+344|Eliminar
+345|Elimina el fotograma clave del fotograma actual.
+346|Limpiar
+347|Analizando…
+348|Movimiento analizado.
+349|Columnas
+350|Automático = cuadrícula lo más cuadrada posible.
+351|Espaciado
+352|Espacio vacío entre los fotogramas en la hoja.
+353|Tamaño máximo
+354|Si la hoja supera esto, se generan varias hojas (nombre_0.png, nombre_1.png…).
+355|Recortar transparencia (trim)
+356|Quita los bordes transparentes de cada fotograma; el JSON guarda el desplazamiento (spriteSourceSize).
+357|Hash (Phaser, Pixi, Godot)
+358|Array (Phaser, Unity)
+359|JSON
+360|Formato JSON de TexturePacker.
+361|Deshecho.
+362|Rehecho.
+363|beta (de pruebas)
+364|estable
+365|Actualización disponible
+366|Abrir página de descarga
+367|Omitir esta versión
+368|Ahora no
+369|onnxruntime no está disponible en esta instalación.
+370|Eliminación por IA
+371|Pincel: pinta en la vista previa. Verde = mantener, rojo = eliminar.
+372|Ningún retoque pintado.
+373|máscara fija (todos los fotogramas)
+374|fotogramas
+375|Suavizado
+376|Nada que deshacer.
+377|Nada que rehacer.
+378|beta
+379|Descargando el modelo de IA: {a} de {b} MB
+380|Descarga cancelada.
+381|Comprueba la conexión e inténtalo de nuevo. Mientras tanto, la clave de color sigue funcionando.
+382|Retoque: {what}.
+383|En píxeles del vídeo original.
+384|El área sigue al objeto. Haz clic en 'Analizar movimiento' para verlo en la vista previa; la exportación calcula la trayectoria automáticamente.
+385|Analizando movimiento: fotograma {i} de {n}…
+386|No se pudo descargar el modelo de IA:
+387|{n} fotograma(s) con retoque propio
+388|No se pudo comprobar ahora.
+389|Nueva versión disponible: {v}
+390|Hay una nueva versión de {app}: <b>{v}</b> ({kind}).<br>Estás usando la {cur}.
+391|Trayectoria analizada: área de {w}×{h} px siguiendo el objeto.
+392|{n} fotograma(s) clave: {list}
+393|Modelo listo (funciona sin conexión). Carpeta: {p}
+394|Ya tienes la versión más reciente ({v}).
+395|El modelo ({mb} MB) se descarga una vez, en el primer uso, en {p}.
+396|Exportación por lotes (beta)
+397|Añade vídeos a la cola. Todos se exportan en el formato y con las opciones elegidas en 'Opciones de exportación' (vídeo completo). El retoque con pincel y los fotogramas clave no se aplican en el lote.
+398|Añadir vídeos…
+399|Vaciar cola
+400|Ajustes actuales
+401|Elegir preset (.json)…
+402|Elegir…
+403|Usar el recorte guardado para cada tamaño de vídeo
+404|Si ya recortaste un vídeo del mismo tamaño, se usa la misma área; si no, el fotograma completo.
+405|Vídeo %v de %m
+406|Iniciar
+407|Añadir vídeos
+408|Vídeo
+409|Estado
+410|Ajustes
+411|Carpeta de destino
+412|En cola
+413|Lote terminado: {ok} de {n} vídeos exportados.
+414|Formato: {fmt}
+415|Lote cancelado: {ok} de {n} vídeos exportados.
+416|{n} fotogramas
+417|Cancelado
+418|Exportación por lotes
+419|¿Cancelar la exportación por lotes?
+420|Actualizaciones
+421|Buscar actualizaciones al iniciar
+422|Consulta las Releases de GitHub en segundo plano; sin internet, no pasa nada.
+423|Incluir versiones beta (de pruebas)
+424|Comprobar ahora
+425|Esta es una versión de pruebas: las funciones nuevas pueden cambiar. La versión estable sigue disponible en la página de Releases.
+426|Comprobando…
+427|BETA (versión de pruebas)
+428|Después
+429|Sprite sheet (PNG + JSON)
+430|Personas — MODNet (26 MB)
+431|Objetos — U²-Net pequeño (4,6 MB)
+432|Mantener
+433|Borrador
+434|Fijo
+435|Seguir el objeto
+436|Fotogramas clave
+437|Desenfoque
+438|Desplazamiento X
+439|Desplazamiento Y
+440|Opacidad
+441|Expansión
