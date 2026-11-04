@@ -85,6 +85,23 @@ w.render_preview()
 shoot("dark", "screenshot_exportar_escuro.png")
 shoot("light", "screenshot_exportar_claro.png")
 
+# Recorte da área exportada (modo Recortar + Auto)
+w = ctrl.window
+w.cmb_view.setCurrentIndex(VIEWS.index("Resultado"))
+open_sections(w, ["Recorte da área exportada", "Opções de exportação"])
+w.btn_crop.setChecked(True)
+w.last_auto_crop = None
+w.auto_crop()
+t_end = time.time() + 60
+while (w.is_auto_cropping() or w.last_auto_crop is None) and time.time() < t_end:
+    pump(0.05)
+w.render_preview()
+shoot("dark", "recorte_escuro.png")
+shoot("light", "recorte_claro.png")
+w = ctrl.window
+w.btn_crop.setChecked(False)
+w.reset_crop()
+
 for theme in ("dark", "light"):
     ctrl.set_theme(theme)
     for cls, nm in ((AboutDialog, "sobre"), (SettingsDialog, "configuracoes")):

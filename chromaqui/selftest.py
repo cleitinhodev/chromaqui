@@ -331,6 +331,40 @@ def self_test(argv):
             assert img[..., 3].min() == 255, "fundo incluído deveria ser opaco"
             assert abs(int(img[2, 2, 2]) - 200) < 8, img[2, 2]
             log("EXPORT FUNDO OK (fundo composto, resultado opaco)")
+            from .core import export_geometry as core_export_geometry
+            # recorte da área exportada (automático + manual), com fundo e em formato de vídeo (pares)
+            w.chk_include_bg.setChecked(False)
+            w.last_auto_crop = None
+            w.auto_crop()
+            assert _wait(app, lambda: not w.is_auto_cropping() and w.last_auto_crop is not None, 120), \
+                "recorte automático travou"
+            _pump(app, 0.1)
+            arect, aerr = w.last_auto_crop
+            assert not aerr and arect and w.crop_rect == tuple(arect), w.last_auto_crop
+            w.set_crop((101, 41, 301, 201))
+            crop_sizes = []
+            for key, bg in (("png", False), ("png", True), ("webm", False)):
+                w.chk_include_bg.setChecked(bg)
+                w.cmb_fmt.setCurrentIndex([f.key for f in FORMATS].index(key))
+                o = w.export_options()
+                _c, ow, oh = core_export_geometry(w.video.width, w.video.height, o)
+                out = os.path.join(log_dir, f"export_recorte_{key}{'_fundo' if bg else ''}" + (".webm" if key == "webm" else ""))
+                w.start_export(out)
+                assert _wait(app, lambda: not w.is_exporting(), 300), "exportação com recorte travou"
+                n, _c2, err, outp = w.last_export
+                assert not err and n == expected, (key, w.last_export)
+                if key == "png":
+                    img = cv2.imdecode(np.fromfile(os.path.join(outp, "frame_00001.png"), np.uint8), cv2.IMREAD_UNCHANGED)
+                    assert img.shape[:2] == (oh, ow), (img.shape, ow, oh)
+                    if bg:
+                        assert img[..., 3].min() == 255
+                else:
+                    info = _ffmpeg_info(outp)
+                    assert f"{ow}x{oh}" in info and ow % 2 == 0 and oh % 2 == 0, (ow, oh, info[-300:])
+                crop_sizes.append(f"{key}{'+fundo' if bg else ''} {ow}×{oh}")
+            w.reset_crop()
+            w.chk_include_bg.setChecked(False)
+            log(f"RECORTE OK (automático {tuple(arect)}; {', '.join(crop_sizes)})")
             # exportar pelo BOTÃO (sinal clicked(bool)) com os diálogos simulados — antes dava
             # "expected str, bytes or os.PathLike object, not bool"
             from PySide6.QtWidgets import QFileDialog

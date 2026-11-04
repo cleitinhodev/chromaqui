@@ -261,3 +261,26 @@
 261|Azul
 262|Detalles guardados en:
 263|Se produjo un error inesperado:
+264|Área exportada (recorte)
+265|Recortar
+266|Dibuja en la vista previa el área que se exportará: arrastra para crear, arrastra los controladores para ajustar o el centro para mover. Se aplica a todos los fotogramas y formatos.
+267|Auto
+268|Restablecer
+269|Quita el recorte (exporta el fotograma completo).
+270|Espacio extra alrededor del sujeto en el recorte automático.
+271|Ancho y alto pares
+272|Algunos programas y códecs exigen dimensiones pares. WebM y ProRes siempre usan dimensiones pares.
+273|Calculando…
+274|En píxeles del vídeo original (no depende de la vista previa ni de la escala de exportación).
+275|Margen
+276|Recorte: arrastra en la vista previa para dibujar el área; arrastra los controladores para ajustar o el centro para mover.
+277|Recorte quitado: se exporta el fotograma completo.
+278|Ancho
+279|Alto
+280|Encuentra automáticamente el área más pequeña que contiene al sujeto en {n} fotogramas del vídeo (más el margen).
+281|No se encontró ningún sujeto para el recorte automático.
+282|recortado
+283|Sin recorte: fotograma completo ({w}×{h} px).
+284|Área exportada: {w}×{h} px en la posición {x}, {y} ({pct}% del fotograma).
+285|Recorte automático: fotograma {i} de {n}…
+286|Recorte automático: {w}×{h} px.

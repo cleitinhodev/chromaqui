@@ -21,6 +21,7 @@
 |---|---|
 | ![Tema escuro](docs/screenshot_escuro.png) | ![Tema claro](docs/screenshot_claro.png) |
 | ![Exportar (escuro)](docs/screenshot_exportar_escuro.png) | ![Exportar (claro)](docs/screenshot_exportar_claro.png) |
+| ![Recorte (escuro)](docs/recorte_escuro.png) | ![Recorte (claro)](docs/recorte_claro.png) |
 
 ## Download
 
@@ -42,6 +43,12 @@ Se algo der errado, os detalhes ficam em `%APPDATA%\Chromaqui\logs` (`erros.log`
   limpeza da máscara, correção de cor e recorte (garbage matte). Presets em `.json`.
 - **Prévia e reprodução**: resultado, máscara, original, lado a lado; play/pause com FPS ajustável;
   linha do tempo com miniaturas.
+- **Recorte da área exportada**: ative **Recortar** e desenhe na prévia a área que vai para o arquivo
+  (arraste para criar, alças para ajustar, meio para mover) ou digite X/Y/Largura/Altura em pixels do vídeo
+  original. **Auto** encontra sozinho a menor área que contém o objeto em 30 quadros do vídeo (mais a
+  margem). O recorte vale para **todos os quadros e todos os formatos** (e para o fundo incluído), é
+  aplicado antes da escala, deixa a exportação mais rápida e fica salvo para vídeos do mesmo tamanho.
+  Opção de largura/altura pares (WebM e ProRes sempre usam pares). **Redefinir** volta ao quadro inteiro.
 - **Fundo de teste**: xadrez, preto, branco, cor, **imagem ou vídeo** (preencher/ajustar/esticar).
   Só vai para o arquivo se você marcar **"Incluir fundo na exportação"** (resultado opaco).
 - **Exportação** (sempre com transparência, respeitando intervalo, passo "1 a cada N", escala e FPS):
@@ -96,7 +103,7 @@ python tools/build_exe.py --both --zip
 
 Gera `dist/Chromaqui/Chromaqui.exe`, `dist1/Chromaqui.exe` e os dois `.zip`. O workflow
 `.github/workflows/release.yml` faz isso automaticamente no GitHub ao criar uma tag `v*`
-(ex.: `git tag v3.0.2 && git push origin v3.0.2`) e anexa os zips à Release.
+(ex.: `git tag v3.1.0 && git push origin v3.1.0`) e anexa os zips à Release.
 
 ### Trocar o logo / ícone
 
@@ -141,6 +148,11 @@ animated WebP, APNG, WebM VP9 with alpha and MOV ProRes 4444 with alpha** (bundl
 
 - High-quality keying: guided-filter edge refinement, despill, edge decontamination and colorization,
   chroma smoothing, matte cleanup, color correction, garbage matte, presets.
+- **Export-area crop**: toggle **Crop** and draw the region on the preview (drag to create, handles to
+  resize, middle to move) or type X/Y/Width/Height in source pixels. **Auto** finds the smallest region
+  containing the subject across 30 frames (plus a margin). The crop applies to every frame and every format
+  (and to the included background), is applied before scaling, speeds up export and is remembered per video
+  size. Optional even width/height (always even for WebM/ProRes).
 - Preview over checkerboard/solid color or **your own image/video background**; it is only baked into
   the export when **"Include background in export"** is checked.
 - **Light/Dark themes**, optional animations and neon glow, **8 languages switchable at runtime**

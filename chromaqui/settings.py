@@ -8,7 +8,8 @@ from PySide6.QtCore import QSettings
 from . import ORG_NAME
 
 DEFAULTS = {"theme": "dark", "lang": "pt-BR", "animations": True, "neon": True, "render": "auto",
-            "accent": "", "play_quality": 0, "last_dir": ""}
+            "accent": "", "play_quality": 0, "last_dir": "",
+            "crops": "", "crop_margin": 8, "crop_even": False}
 
 
 class Settings:

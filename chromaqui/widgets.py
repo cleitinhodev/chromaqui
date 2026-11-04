@@ -7,8 +7,8 @@ import time
 
 import cv2
 import numpy as np
-from PySide6.QtCore import QEasingCurve, QMargins, QObject, QPropertyAnimation, Qt, Signal
-from PySide6.QtGui import QImage, QPixmap
+from PySide6.QtCore import QEasingCurve, QMargins, QObject, QPointF, QPropertyAnimation, QRectF, Qt, Signal
+from PySide6.QtGui import QBrush, QColor, QFont, QImage, QPainter, QPainterPath, QPen, QPixmap
 from PySide6.QtWidgets import (QCheckBox, QGridLayout, QHBoxLayout, QLabel, QSizePolicy, QSlider,
                                QSpinBox, QToolButton, QVBoxLayout, QWidget)
 
@@ -224,9 +224,41 @@ class ExportWorker(QObject):
                 self.background.clear()
 
 
+class AutoCropWorker(QObject):
+    """Calcula o recorte automático (caixa do objeto em vários quadros) fora da thread da interface."""
+    progress = Signal(int, int)
+    finished = Signal(object, str)              # (x, y, w, h) | None, erro
+
+    def __init__(self, path, params, samples=30, margin=8):
+        super().__init__()
+        self.path, self.params, self.samples, self.margin = path, params, samples, margin
+        self._cancel = False
+
+    def cancel(self):
+        self._cancel = True
+
+    def run(self):
+        try:
+            r = core.auto_crop(self.path, self.params, self.samples, self.margin,
+                               progress=lambda c, t: self.progress.emit(c, t),
+                               should_cancel=lambda: self._cancel)
+            self.finished.emit(r, "")
+        except Exception as e:  # noqa: BLE001
+            from . import crashlog
+            crashlog.log_exception("Erro no recorte automático")
+            self.finished.emit(None, str(e))
+
+
 # ============================================================ widgets
 class PreviewLabel(QLabel):
+    """Prévia do vídeo. Também desenha e edita o retângulo de recorte (em pixels do vídeo ORIGINAL,
+    independente do zoom da prévia, da qualidade da reprodução e da escala de exportação)."""
     clicked = Signal(float, float)
+    cropChanged = Signal(int, int, int, int)     # x, y, largura, altura (pixels do original)
+    cropEditFinished = Signal()
+
+    HANDLE = 5          # meia largura da alça (px de tela)
+    GRAB = 9            # distância para "pegar" uma alça/borda
 
     def __init__(self):
         super().__init__(T("Importe um vídeo para começar"))
@@ -236,8 +268,18 @@ class PreviewLabel(QLabel):
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self._pix = None
         self.picking = False
+        # recorte
+        self.src_size = None            # (largura, altura) do vídeo original
+        self.crop = None                # (x, y, w, h) no original; None = sem vídeo
+        self.crop_mode = False
+        self.side_by_side = False       # "Lado a lado": original | separador 4 px | resultado
+        self._img_size = (0, 0)
+        self._drag = None               # (modo, pane, ponto inicial no original, recorte inicial)
+        self.setMouseTracking(True)
 
+    # ------------------------------------------------------------- imagem
     def set_image(self, qimg: QImage):
+        self._img_size = (qimg.width(), qimg.height())
         self._pix = QPixmap.fromImage(qimg)
         self._rescale()
 
@@ -250,7 +292,95 @@ class PreviewLabel(QLabel):
             self.setPixmap(self._pix.scaled(self.size().shrunkBy(QMargins(2, 2, 2, 2)), Qt.KeepAspectRatio,
                                             Qt.SmoothTransformation))
 
+    def _pm_rect(self):
+        pm = self.pixmap()
+        if pm is None or pm.isNull():
+            return None
+        x0, y0 = (self.width() - pm.width()) / 2, (self.height() - pm.height()) / 2
+        return QRectF(x0, y0, pm.width(), pm.height())
+
+    # ------------------------------------------------------------- recorte: geometria
+    def set_crop_source(self, w, h, rect=None):
+        self.src_size = (int(w), int(h))
+        self.crop = tuple(rect) if rect else core.full_rect(w, h)
+        self.update()
+
+    def set_crop(self, rect):
+        if self.src_size:
+            self.crop = core.clamp_crop(rect, *self.src_size)
+            self.update()
+
+    def set_crop_mode(self, on):
+        self.crop_mode = bool(on)
+        self._drag = None
+        if not on:
+            self.unsetCursor()
+        self.update()
+
+    def set_side_by_side(self, on):
+        if self.side_by_side != bool(on):
+            self.side_by_side = bool(on)
+            self.update()
+
+    def _panes(self):
+        """Retângulos (tela) onde o quadro inteiro do original aparece (1 ou 2 no "Lado a lado")."""
+        pr = self._pm_rect()
+        iw, ih = self._img_size
+        if pr is None or not iw or not ih or not self.src_size:
+            return []
+        d = pr.width() / iw
+        if self.side_by_side and iw > 8:
+            wp = (iw - 4) / 2.0
+            return [QRectF(pr.left(), pr.top(), wp * d, pr.height()),
+                    QRectF(pr.left() + (wp + 4) * d, pr.top(), wp * d, pr.height())]
+        return [pr]
+
+    def _to_screen(self, pane, rect):
+        sw, sh = self.src_size
+        fx, fy = pane.width() / sw, pane.height() / sh
+        x, y, w, h = rect
+        return QRectF(pane.left() + x * fx, pane.top() + y * fy, w * fx, h * fy)
+
+    def _to_src(self, pane, pos):
+        sw, sh = self.src_size
+        return ((pos.x() - pane.left()) * sw / max(1e-6, pane.width()),
+                (pos.y() - pane.top()) * sh / max(1e-6, pane.height()))
+
+    def _hit(self, pos):
+        """(modo, índice do painel). modo: 'n','s','e','w','ne','nw','se','sw','move','new' ou None."""
+        panes = self._panes()
+        for i, pane in enumerate(panes):
+            if not pane.adjusted(-self.GRAB, -self.GRAB, self.GRAB, self.GRAB).contains(pos):
+                continue
+            r = self._to_screen(pane, self.crop)
+            g = self.GRAB
+            near_l, near_r = abs(pos.x() - r.left()) <= g, abs(pos.x() - r.right()) <= g
+            near_t, near_b = abs(pos.y() - r.top()) <= g, abs(pos.y() - r.bottom()) <= g
+            in_x = r.left() - g <= pos.x() <= r.right() + g
+            in_y = r.top() - g <= pos.y() <= r.bottom() + g
+            v = "n" if (near_t and in_x) else "s" if (near_b and in_x) else ""
+            hz = "w" if (near_l and in_y) else "e" if (near_r and in_y) else ""
+            if v or hz:
+                return v + hz, i
+            if r.contains(pos):
+                return "move", i
+            return "new", i
+        return None, -1
+
+    _CURSORS = {"n": Qt.SizeVerCursor, "s": Qt.SizeVerCursor, "e": Qt.SizeHorCursor, "w": Qt.SizeHorCursor,
+                "nw": Qt.SizeFDiagCursor, "se": Qt.SizeFDiagCursor, "ne": Qt.SizeBDiagCursor,
+                "sw": Qt.SizeBDiagCursor, "move": Qt.SizeAllCursor, "new": Qt.CrossCursor}
+
+    # ------------------------------------------------------------- mouse
     def mousePressEvent(self, e):
+        if self.crop_mode and self.crop and e.button() == Qt.LeftButton:
+            mode, i = self._hit(e.position())
+            if mode:
+                p0 = self._to_src(self._panes()[i], e.position())
+                self._drag = (mode, i, p0, tuple(self.crop))
+                if mode == "new":
+                    self._apply_drag(e.position())
+            return
         pm = self.pixmap()
         if not self.picking or pm is None or pm.isNull():
             return
@@ -258,6 +388,116 @@ class PreviewLabel(QLabel):
         px, py = e.position().x() - x0, e.position().y() - y0
         if 0 <= px < pm.width() and 0 <= py < pm.height():
             self.clicked.emit(px / pm.width(), py / pm.height())
+
+    def mouseMoveEvent(self, e):
+        if not self.crop_mode or not self.crop:
+            return
+        if self._drag:
+            self._apply_drag(e.position())
+        else:
+            mode, _ = self._hit(e.position())
+            self.setCursor(self._CURSORS.get(mode, Qt.ArrowCursor))
+
+    def mouseReleaseEvent(self, e):
+        if self._drag:
+            self._apply_drag(e.position())
+            self._drag = None
+            self.cropEditFinished.emit()
+
+    def _apply_drag(self, pos):
+        mode, i, (sx, sy), (x, y, w, h) = self._drag
+        panes = self._panes()
+        if i >= len(panes):
+            return
+        W, H = self.src_size
+        cx, cy = self._to_src(panes[i], pos)
+        cx, cy = max(0.0, min(float(W), cx)), max(0.0, min(float(H), cy))
+        m = core.CROP_MIN
+        if mode == "new":
+            x0, x1 = sorted((sx, cx))
+            y0, y1 = sorted((sy, cy))
+            x0, y0 = int(max(0, x0)), int(max(0, y0))
+            x1, y1 = int(round(min(W, x1))), int(round(min(H, y1)))
+            r = (x0, y0, max(m, x1 - x0), max(m, y1 - y0))
+        elif mode == "move":
+            dx, dy = int(round(cx - sx)), int(round(cy - sy))
+            r = (max(0, min(W - w, x + dx)), max(0, min(H - h, y + dy)), w, h)
+        else:
+            l, t, rr, b = x, y, x + w, y + h
+            ix, iy = int(round(cx)), int(round(cy))
+            if "w" in mode:
+                l = max(0, min(ix, rr - m))
+            if "e" in mode:
+                rr = min(W, max(ix, l + m))
+            if "n" in mode:
+                t = max(0, min(iy, b - m))
+            if "s" in mode:
+                b = min(H, max(iy, t + m))
+            r = (l, t, rr - l, b - t)
+        r = core.clamp_crop(r, W, H)
+        if r != self.crop:
+            self.crop = r
+            self.update()
+            self.cropChanged.emit(*r)
+
+    # ------------------------------------------------------------- desenho
+    def is_cropped(self):
+        return bool(self.crop and self.src_size and tuple(self.crop) != core.full_rect(*self.src_size))
+
+    def paintEvent(self, ev):
+        super().paintEvent(ev)
+        if not self.crop or not (self.crop_mode or self.is_cropped()):
+            return
+        panes = self._panes()
+        if not panes:
+            return
+        p = QPainter(self)
+        p.setRenderHint(QPainter.Antialiasing)
+        accent = QColor(FX.accent or "#39d353")
+        for pane in panes:
+            r = self._to_screen(pane, self.crop)
+            outside = QPainterPath()
+            outside.addRect(pane)
+            inner = QPainterPath()
+            inner.addRect(r)
+            p.fillPath(outside.subtracted(inner), QColor(0, 0, 0, 150 if self.crop_mode else 120))
+            p.setBrush(Qt.NoBrush)
+            p.setPen(QPen(QColor(0, 0, 0, 160), 3))
+            p.drawRect(r)
+            p.setPen(QPen(accent, 1.6, Qt.SolidLine if self.crop_mode else Qt.DashLine))
+            p.drawRect(r)
+            if self.crop_mode:
+                # linhas dos terços (composição) e 8 alças
+                p.setPen(QPen(QColor(255, 255, 255, 70), 1))
+                for k in (1, 2):
+                    xx = r.left() + r.width() * k / 3
+                    yy = r.top() + r.height() * k / 3
+                    p.drawLine(QPointF(xx, r.top()), QPointF(xx, r.bottom()))
+                    p.drawLine(QPointF(r.left(), yy), QPointF(r.right(), yy))
+                hs = self.HANDLE
+                p.setPen(QPen(QColor(0, 0, 0, 200), 1))
+                p.setBrush(QBrush(accent))
+                for hx in (r.left(), r.center().x(), r.right()):
+                    for hy in (r.top(), r.center().y(), r.bottom()):
+                        if hx == r.center().x() and hy == r.center().y():
+                            continue
+                        p.drawRect(QRectF(hx - hs, hy - hs, 2 * hs, 2 * hs))
+            # tamanho em pixels (do original)
+            txt = f"{self.crop[2]} × {self.crop[3]} px"
+            f = QFont(self.font())
+            f.setBold(True)
+            p.setFont(f)
+            fm = p.fontMetrics()
+            tw, th = fm.horizontalAdvance(txt) + 12, fm.height() + 4
+            ty = r.top() - th - 4 if r.top() - th - 4 >= pane.top() else r.top() + 4
+            tx = max(pane.left(), min(r.left(), pane.right() - tw))
+            box = QRectF(tx, ty, tw, th)
+            p.setPen(Qt.NoPen)
+            p.setBrush(QColor(0, 0, 0, 185))
+            p.drawRoundedRect(box, 5, 5)
+            p.setPen(QColor("#ffffff"))
+            p.drawText(box, Qt.AlignCenter, txt)
+        p.end()
 
 
 class Section(QWidget):

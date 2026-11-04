@@ -1,6 +1,6 @@
 """Testes da interface real (offscreen): exportar clicando no botão (diálogos simulados) para TODOS os
 formatos, com configurações novas e já salvas; e estresse da reprodução trocando a qualidade.
-Uso: python tests/test_ui_flows.py [export|stress|all]"""
+Uso: python tests/test_ui_flows.py [export|crop|stress|all]"""
 import os, sys, tempfile, time, shutil
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, os.path.dirname(HERE)); sys.path.insert(0, HERE)
@@ -160,10 +160,143 @@ def test_stress(video, seconds=20):
           f"threads pendentes: {len(leaked)}")
 
 
+def _drag(prev, a, b, steps=6):
+    from PySide6.QtCore import Qt, QPoint
+    from PySide6.QtTest import QTest
+    a, b = QPoint(int(a[0]), int(a[1])), QPoint(int(b[0]), int(b[1]))
+    QTest.mousePress(prev, Qt.LeftButton, Qt.NoModifier, a)
+    for i in range(1, steps + 1):
+        QTest.mouseMove(prev, a + (b - a) * i / steps)
+    QTest.mouseRelease(prev, Qt.LeftButton, Qt.NoModifier, b)
+    app.processEvents()
+
+
+def test_crop_ui():
+    """Recorte pela interface: desenhar/ajustar/mover na prévia, campos, Auto, Redefinir, preferências por
+    tamanho de vídeo, troca de idioma, "Lado a lado" e exportação pelo botão com o recorte."""
+    from PIL import Image
+    print("recorte: interface …")
+    ctrl, w = make_window(VID)
+    W, H = w.video.width, w.video.height
+    assert w.crop_rect == (0, 0, W, H) and w.crop_for_export() is None
+    pv = w.preview
+    w.btn_pick.setChecked(True)
+    w.btn_crop.setChecked(True); pump(0.1)
+    assert pv.crop_mode and not w.btn_pick.isChecked() and not pv.picking, "recorte e conta-gotas devem se excluir"
+    w.render_preview(); pump(0.3)
+    pane = pv._panes()[0]
+    sx, sy = pane.width() / W, pane.height() / H
+    to = lambda x, y: (pane.left() + x * sx, pane.top() + y * sy)
+    # 1) desenhar um retângulo novo (arrastar no meio da imagem a partir de fora do recorte não existe:
+    #    o recorte começa no quadro inteiro, então o clique no meio MOVE; primeiro encolhe pela alça)
+    _drag(pv, to(W, H), to(400, 300))                  # alça "se" no canto
+    x, y, cw, ch = w.crop_rect
+    assert x == 0 and y == 0 and abs(cw - 400) <= 3 and abs(ch - 300) <= 3, w.crop_rect
+    _drag(pv, to(500, 330), to(600, 350))              # fora do recorte: desenha um novo
+    x, y, cw, ch = w.crop_rect
+    assert abs(x - 500) <= 3 and abs(y - 330) <= 3 and abs(cw - 100) <= 4 and abs(ch - 20) <= 4, w.crop_rect
+    _drag(pv, to(550, 340), to(450, 240))              # mover pelo meio (tamanho igual)
+    x2, y2, cw2, ch2 = w.crop_rect
+    assert (cw2, ch2) == (cw, ch) and abs(x2 - (x - 100)) <= 3 and abs(y2 - (y - 100)) <= 3, (w.crop_rect, (x, y, cw, ch))
+    _drag(pv, to(x2 + cw2 / 2, y2 + ch2 / 2), to(x2 + cw2 / 2 + 2000, y2 + ch2 / 2 + 2000))   # não sai do quadro
+    x3, y3, cw3, ch3 = w.crop_rect
+    assert x3 + cw3 == W and y3 + ch3 == H and (cw3, ch3) == (cw, ch), w.crop_rect
+    _drag(pv, to(x3, y3 + ch3 / 2), to(x3 - 50, y3 + ch3 / 2))   # alça "w": só a esquerda
+    assert w.crop_rect[0] < x3 and w.crop_rect[0] + w.crop_rect[2] == W, w.crop_rect
+    # campos sincronizados com a prévia e vice-versa
+    assert (w.sp_cx.value(), w.sp_cy.value(), w.sp_cw.value(), w.sp_ch.value()) == w.crop_rect
+    w.sp_cx.setValue(40); w.sp_cy.setValue(30); w.sp_cw.setValue(201); w.sp_ch.setValue(151)
+    assert w.crop_rect == (40, 30, 201, 151) and pv.crop == (40, 30, 201, 151), (w.crop_rect, pv.crop)
+    w.sp_cw.setValue(W)                                # largura maior que cabe: desloca para a esquerda
+    assert w.crop_rect[0] == 0 and w.crop_rect[2] == W, w.crop_rect
+    w.sp_cw.setValue(201)
+    assert "201×151" in w.lbl_out_info.text().replace(" ", "") or "201×151" in w.lbl_out_info.text(), w.lbl_out_info.text()
+    # Redefinir / Auto
+    w.btn_crop_reset.click()
+    assert w.crop_rect == (0, 0, W, H) and w.crop_for_export() is None
+    w.sp_crop_margin.setValue(4)
+    w.last_auto_crop = None
+    w.btn_crop_auto.click()
+    assert wait(lambda: not w.is_auto_cropping() and w.last_auto_crop is not None, 60), "recorte automático não terminou"
+    pump(0.1)
+    rect, err = w.last_auto_crop
+    assert not err and rect and w.crop_rect == tuple(rect), (w.last_auto_crop, w.crop_rect)
+    assert rect[2] < W and rect[3] < H, rect
+    assert w.btn_crop_auto.isEnabled()
+    auto = w.crop_rect
+    # "Lado a lado": dois painéis, arrastar no da direita também funciona
+    w.cmb_view.setCurrentIndex(4); w.render_preview(); pump(0.4)
+    panes = pv._panes()
+    assert pv.side_by_side and len(panes) == 2, (pv.side_by_side, len(panes))
+    w.set_crop((200, 150, 200, 100))                    # (10, 10) fica fora: arrastar desenha um novo
+    rp = panes[1]; f2 = rp.width() / W
+    _drag(pv, (rp.left() + 10 * f2, rp.top() + 10 * f2), (rp.left() + 110 * f2, rp.top() + 60 * f2))
+    x, y, cw, ch = w.crop_rect
+    assert abs(x - 10) <= 4 and abs(y - 10) <= 4 and abs(cw - 100) <= 6 and abs(ch - 50) <= 6, w.crop_rect
+    w.cmb_view.setCurrentIndex(0)
+    w.set_crop(auto)
+    pv.grab()                                          # pintura do overlay sem erro
+    # exportar pelo botão com o recorte
+    out_dir = os.path.join(TMP, "recorte_ui"); os.makedirs(out_dir, exist_ok=True)
+    QFileDialog.getExistingDirectory = staticmethod(lambda *a, **k: out_dir)
+    QFileDialog.getSaveFileName = staticmethod(lambda *a, **k: (os.path.join(out_dir, "anim"), ""))
+    w.sp_in.setValue(1); w.sp_out.setValue(4)          # campos começam em 1
+    for key, even in (("png", False), ("png", True), ("webm", False)):
+        w.chk_crop_even.setChecked(even)
+        w.cmb_fmt.setCurrentIndex([f.key for f in FORMATS].index(key))
+        o = w.export_options()
+        assert o.crop == auto and o.even == even, (o.crop, o.even)
+        w.btn_export.click()
+        assert wait(lambda: not w.is_exporting()), "exportação não terminou"
+        pump(0.05)
+        n, canc, err, out = w.last_export
+        assert not err and n == 4, w.last_export
+        ew, eh = auto[2], auto[3]
+        if even or key == "webm":
+            ew, eh = ew + ew % 2, eh + eh % 2
+        if key == "png":
+            fn = sorted(f for f in os.listdir(out) if f.endswith(".png"))[-1]
+            size = Image.open(os.path.join(out, fn)).size
+            assert size == (ew, eh), (size, (ew, eh))
+        assert f"{ew}×{eh}" in w.lbl_out_info.text(), w.lbl_out_info.text()
+    w.chk_crop_even.setChecked(False)
+    assert not errors, errors
+    # troca de idioma: janela recriada mantém recorte e o modo
+    w2 = ctrl.set_language("en") or ctrl.window; pump(0.4)
+    assert w2.crop_rect == auto and w2.btn_crop.isChecked() and w2.preview.crop == auto, (w2.crop_rect, auto)
+    ctrl.set_language("pt-BR"); pump(0.4); w = ctrl.window
+    w.shutdown(); w.close(); pump(0.2)
+    # preferências: o recorte volta para vídeos do mesmo tamanho; outro tamanho é ignorado
+    ctrl, w = make_window(VID)
+    assert w.crop_rect == auto and not w.btn_crop.isChecked(), (w.crop_rect, auto)
+    w.load_video(os.path.join(OUT, "teste_cabelo_loiro.mp4")); pump(0.3)
+    assert w.crop_rect == (0, 0, w.video.width, w.video.height), w.crop_rect
+    w.set_crop((900, 500, 60, 40)); w.shutdown(); w.close(); pump(0.2)   # grava o recorte do 960×540
+    ctrl, w = make_window(VID)                          # 640×360: (900, 500…) não caberia
+    assert w.crop_rect == auto
+    w.load_video(os.path.join(OUT, "teste_cabelo_loiro.mp4")); pump(0.3)
+    assert w.crop_rect == (900, 500, 60, 40), w.crop_rect
+    w.reset_crop(); w.shutdown(); w.close(); pump(0.2)
+    import json
+    store = json.loads(ctrl.settings.get("crops"))
+    assert "960x540" not in store and store.get("640x360") == list(auto), store
+    # recorte salvo que não cabe (preferência corrompida/antiga) é ignorado
+    store["640x360"] = [600, 300, 100, 100]; ctrl.settings.set("crops", json.dumps(store))
+    ctrl, w = make_window(VID)
+    assert w.crop_rect == (0, 0, 640, 360), w.crop_rect
+    ctrl.settings.set("crops", "{lixo"); w.load_video(VID); pump(0.2)
+    assert w.crop_rect == (0, 0, 640, 360)
+    w.shutdown(); w.close(); pump(0.2)
+    print(f"RECORTE NA INTERFACE OK: desenhar/alças/mover/lado a lado, campos, Auto={auto}, Redefinir, "
+          f"exportação pelo botão (png/pares/webm), idioma e preferências por tamanho")
+
+
 if __name__ == "__main__":
     what = sys.argv[1] if len(sys.argv) > 1 else "all"
     if what in ("export", "all"):
         test_export()
+    if what in ("crop", "all"):
+        test_crop_ui()
     if what in ("stress", "all"):
         test_stress(VID, 15)
         make_1080p()

@@ -261,3 +261,26 @@
 261|Blau
 262|Details gespeichert unter:
 263|Ein unerwarteter Fehler ist aufgetreten:
+264|Exportbereich (Zuschnitt)
+265|Zuschneiden
+266|Zeichne in der Vorschau den Bereich, der exportiert wird: ziehen zum Erstellen, an den Griffen ziehen zum Anpassen oder in der Mitte zum Verschieben. Gilt für alle Frames und Formate.
+267|Auto
+268|Zurücksetzen
+269|Entfernt den Zuschnitt (exportiert den ganzen Frame).
+270|Zusätzlicher Rand um das Motiv beim automatischen Zuschnitt.
+271|Gerade Breite und Höhe
+272|Manche Programme und Codecs verlangen gerade Abmessungen. WebM und ProRes verwenden immer gerade Abmessungen.
+273|Wird berechnet…
+274|In Pixeln des Originalvideos (unabhängig von der Vorschau und der Exportskalierung).
+275|Rand
+276|Zuschnitt: In der Vorschau ziehen, um den Bereich zu zeichnen; an den Griffen ziehen zum Anpassen oder in der Mitte zum Verschieben.
+277|Zuschnitt entfernt: der ganze Frame wird exportiert.
+278|Breite
+279|Höhe
+280|Findet automatisch den kleinsten Bereich, der das Motiv in {n} Frames des Videos enthält (plus Rand).
+281|Kein Motiv für den automatischen Zuschnitt gefunden.
+282|zugeschnitten
+283|Kein Zuschnitt: ganzer Frame ({w}×{h} px).
+284|Exportbereich: {w}×{h} px an Position {x}, {y} ({pct}% des Frames).
+285|Automatischer Zuschnitt: Frame {i} von {n}…
+286|Automatischer Zuschnitt: {w}×{h} px.

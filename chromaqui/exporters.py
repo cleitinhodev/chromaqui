@@ -12,7 +12,8 @@ import cv2
 import numpy as np
 
 from . import gpu
-from .core import ExportOptions, KeyParams, Video, key_frame_float, resize_rgba, to_bgra, write_png
+from .core import (ExportOptions, KeyParams, Video, crop_box_out, export_geometry, key_for_export, to_bgra,
+                   write_png)
 
 
 @dataclass(frozen=True)
@@ -273,6 +274,7 @@ def export(path, out, params: KeyParams, opts: ExportOptions | None = None,
     else:
         writer = _SeqWriter(out, opts, fmt.ext)
     bg = background if (opts.include_bg and background is not None and background.active) else None
+    crop, ow, oh = export_geometry(v.width, v.height, opts)
     cap = v.cap
     if start > 0:
         cap.set(cv2.CAP_PROP_POS_FRAMES, start)
@@ -290,18 +292,20 @@ def export(path, out, params: KeyParams, opts: ExportOptions | None = None,
             ok, frame = cap.read()
             if not ok:
                 break
-            if opts.scale > 1.0:
-                # aumenta ANTES do recorte (Lanczos): bordas calculadas na resolução final
-                h, w = frame.shape[:2]
-                frame = gpu.resize(frame, (int(round(w * opts.scale)), int(round(h * opts.scale))),
-                                   interpolation=cv2.INTER_LANCZOS4)
-                color, alpha = key_frame_float(frame, params, opts.scale)
-            else:
-                color, alpha = key_frame_float(frame, params)
-                color, alpha = resize_rgba(color, alpha, opts.scale)
+            if crop is not None and frame.shape[:2] != (v.height, v.width):
+                crop, ow, oh = export_geometry(frame.shape[1], frame.shape[0], opts)
+            color, alpha = key_for_export(frame, params, opts.scale, crop, (ow, oh) if crop else None)
             if bg is not None:
                 hh, ww = alpha.shape
-                color, alpha = composite(color, alpha, bg.frame(idx, ww, hh))
+                if crop is None:
+                    back = bg.frame(idx, ww, hh)
+                else:
+                    # o fundo é encaixado no quadro INTEIRO (como na prévia) e recortado na mesma área
+                    bx, by, fw, fh = crop_box_out(crop, frame.shape[1], frame.shape[0], opts.scale, ww, hh)
+                    back = bg.frame(idx, fw, fh)
+                    back = None if back is None else back[by:by + hh, bx:bx + ww]
+                if back is not None:
+                    color, alpha = composite(color, alpha, back)
             writer.write(color, alpha)
             count += 1
             idx += 1

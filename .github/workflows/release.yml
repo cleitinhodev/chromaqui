@@ -33,7 +33,7 @@ jobs:
         env:
           QT_QPA_PLATFORM: offscreen
         run: |
-          foreach ($t in "tests/make_soft_video.py", "tests/test_core.py", "tests/test_exporters.py", "tests/test_ui_flows.py") {
+          foreach ($t in "tests/make_soft_video.py", "tests/test_core.py", "tests/test_exporters.py", "tests/test_ui_flows.py", "tests/test_crop.py") {
             "::group::$t"
             python -u -X faulthandler $t all
             $rc = $LASTEXITCODE

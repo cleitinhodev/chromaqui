@@ -121,16 +121,216 @@ class ExportOptions:
     gif_matte_rgb: tuple = (255, 255, 255)
     include_bg: bool = False    # compõe o fundo (imagem/vídeo) na exportação
     tiff_compress: bool = True
+    crop: tuple | None = None   # (x, y, largura, altura) em pixels do vídeo ORIGINAL; None = quadro inteiro
+    even: bool = False          # força largura/altura pares na saída recortada
 
 
-def save_preset(path, params: KeyParams):
+def save_preset(path, params: KeyParams, extra: dict | None = None):
     with open(path, "w", encoding="utf-8") as f:
-        json.dump({"app": "Chromaqui", "version": 3, **params.to_dict()}, f, ensure_ascii=False, indent=2)
+        json.dump({"app": "Chromaqui", "version": 3, **params.to_dict(), **(extra or {})}, f,
+                  ensure_ascii=False, indent=2)
 
 
 def load_preset(path) -> KeyParams:
     with open(path, encoding="utf-8") as f:
         return KeyParams.from_dict(json.load(f))
+
+
+def load_preset_extra(path) -> dict:
+    """Dados extras do preset (ex.: {"crop": {"size": [w, h], "rect": [x, y, w, h]}})."""
+    with open(path, encoding="utf-8") as f:
+        d = json.load(f)
+    return {k: d[k] for k in ("crop",) if k in d}
+
+
+# --------------------------------------------------------------------------------------
+# Recorte da área exportada (em pixels do vídeo original)
+CROP_MIN = 2                # menor lado aceito (px)
+CROP_PAD = 192              # contexto extra (px do original) processado ao redor do recorte:
+                            # filtros de borda/placa limpa/colorização "enxergam" além do recorte
+CROP_ALIGN = 8              # região processada alinhada à grade dos desfoques em resolução reduzida
+                            # (fator até 8): mesmo resultado do quadro inteiro, sem "costuras"
+EVEN_FORMATS = {"webm", "prores"}   # vídeos: dimensões pares obrigatórias (yuv 4:2:0 / 4:4:4)
+
+
+def full_rect(w, h):
+    return (0, 0, int(w), int(h))
+
+
+def clamp_crop(rect, w, h, min_size=CROP_MIN):
+    """Ajusta (x, y, cw, ch) para caber em w×h (inteiros, lado mínimo min_size)."""
+    w, h = int(w), int(h)
+    x, y, cw, ch = (int(round(float(v))) for v in rect)
+    if cw < 0:
+        x, cw = x + cw, -cw
+    if ch < 0:
+        y, ch = y + ch, -ch
+    m = min(min_size, w, h)
+    cw = max(m, min(cw, w))
+    ch = max(m, min(ch, h))
+    x = max(0, min(x, w - cw))
+    y = max(0, min(y, h - ch))
+    return (x, y, cw, ch)
+
+
+def crop_fits(rect, w, h):
+    """True se o recorte salvo cabe (sem ajustes) num vídeo w×h."""
+    try:
+        x, y, cw, ch = (int(v) for v in rect)
+    except (TypeError, ValueError):
+        return False
+    return x >= 0 and y >= 0 and cw >= CROP_MIN and ch >= CROP_MIN and x + cw <= w and y + ch <= h
+
+
+def normalize_crop(rect, w, h):
+    """Recorte válido ou None (sem recorte / quadro inteiro / inválido)."""
+    if rect is None:
+        return None
+    try:
+        r = clamp_crop(rect, w, h)
+    except (TypeError, ValueError):
+        return None
+    return None if r == full_rect(w, h) else r
+
+
+def even_crop(rect, w, h):
+    """Largura/altura pares: cresce 1 px (para a direita/baixo ou esquerda/cima) ou, se não couber, encolhe."""
+    x, y, cw, ch = rect
+    if cw % 2:
+        if x + cw < w:
+            cw += 1
+        elif x > 0:
+            x, cw = x - 1, cw + 1
+        elif cw > 2:
+            cw -= 1
+    if ch % 2:
+        if y + ch < h:
+            ch += 1
+        elif y > 0:
+            y, ch = y - 1, ch + 1
+        elif ch > 2:
+            ch -= 1
+    return (x, y, cw, ch)
+
+
+def export_geometry(w, h, opts: "ExportOptions"):
+    """(recorte efetivo ou None, largura de saída, altura de saída) — o mesmo cálculo usado na exportação."""
+    s = float(opts.scale)
+    crop = normalize_crop(opts.crop, w, h)
+    if crop is None:
+        return None, max(1, int(round(w * s))), max(1, int(round(h * s)))
+    even = bool(opts.even) or opts.fmt in EVEN_FORMATS
+    if even:
+        crop = even_crop(crop, w, h)
+    ow, oh = max(1, int(round(crop[2] * s))), max(1, int(round(crop[3] * s)))
+    if even:
+        ow -= ow % 2 if ow > 1 else 0
+        oh -= oh % 2 if oh > 1 else 0
+    return crop, ow, oh
+
+
+def crop_box_out(crop, w, h, scale, ow, oh):
+    """Posição (x, y) do recorte no quadro inteiro já escalado (para recortar o fundo igual)."""
+    fw, fh = max(1, int(round(w * scale))), max(1, int(round(h * scale)))
+    x = max(0, min(int(round(crop[0] * scale)), fw - ow))
+    y = max(0, min(int(round(crop[1] * scale)), fh - oh))
+    return x, y, fw, fh
+
+
+def key_for_export(frame_bgr, p: "KeyParams", scale=1.0, crop=None, out_size=None, pad=CROP_PAD):
+    """Recorte de cor + alfa de um quadro do vídeo, na resolução de saída.
+    Com recorte, processa só a região recortada + `pad` px de contexto (mais rápido; bordas iguais
+    às do quadro inteiro) e depois corta exatamente a área pedida. O recorte é em pixels do ORIGINAL;
+    a escala (Lanczos ao ampliar) vem depois."""
+    if crop is None:
+        if scale > 1.0:
+            # aumenta ANTES do recorte (Lanczos): bordas calculadas na resolução final
+            h, w = frame_bgr.shape[:2]
+            frame_bgr = gpu.resize(frame_bgr, (int(round(w * scale)), int(round(h * scale))),
+                                   interpolation=cv2.INTER_LANCZOS4)
+            return key_frame_float(frame_bgr, p, scale)
+        color, alpha = key_frame_float(frame_bgr, p)
+        return resize_rgba(color, alpha, scale)
+    H, W = frame_bgr.shape[:2]
+    x, y, cw, ch = crop
+    al = CROP_ALIGN
+    px0, py0 = max(0, (x - pad) // al * al), max(0, (y - pad) // al * al)
+    px1 = min(W, px0 + -(-(x + cw + pad - px0) // al) * al)
+    py1 = min(H, py0 + -(-(y + ch + pad - py0) // al) * al)
+    sub = frame_bgr[py0:py1, px0:px1]
+    ox, oy = x - px0, y - py0
+    ow, oh = out_size or (max(1, int(round(cw * scale))), max(1, int(round(ch * scale))))
+    if scale > 1.0:
+        sw, sh = max(1, int(round((px1 - px0) * scale))), max(1, int(round((py1 - py0) * scale)))
+        sub = gpu.resize(np.ascontiguousarray(sub), (sw, sh), interpolation=cv2.INTER_LANCZOS4)
+        box = (int(round(px0 * scale)), int(round(py0 * scale)), int(round(W * scale)), int(round(H * scale)))
+        color, alpha = key_frame_float(sub, p, scale, frame_box=box)
+        sx = max(0, min(int(round(ox * scale)), sw - ow))
+        sy = max(0, min(int(round(oy * scale)), sh - oh))
+        return (np.ascontiguousarray(color[sy:sy + oh, sx:sx + ow]),
+                np.ascontiguousarray(alpha[sy:sy + oh, sx:sx + ow]))
+    color, alpha = key_frame_float(np.ascontiguousarray(sub), p, frame_box=(px0, py0, W, H))
+    if abs(scale - 1.0) < 1e-6:
+        return (np.ascontiguousarray(color[oy:oy + oh, ox:ox + ow]),
+                np.ascontiguousarray(alpha[oy:oy + oh, ox:ox + ow]))
+    # reduz a região com contexto (origem alinhada) e corta depois: mesma grade de pixels da
+    # redução do quadro inteiro (sem deslocamento de meio pixel)
+    color, alpha = resize_rgba(color, alpha, scale)
+    sh, sw = alpha.shape
+    bx, by, _fw, _fh = crop_box_out(crop, W, H, scale, ow, oh)
+    sx = max(0, min(bx - int(round(px0 * scale)), sw - ow))
+    sy = max(0, min(by - int(round(py0 * scale)), sh - oh))
+    return (np.ascontiguousarray(color[sy:sy + oh, sx:sx + ow]),
+            np.ascontiguousarray(alpha[sy:sy + oh, sx:sx + ow]))
+
+
+def auto_crop(video, p: "KeyParams", samples=30, margin=8, max_w=640, threshold=0.1,
+              progress=None, should_cancel=None):
+    """Caixa que contém o objeto (alfa > limiar) em `samples` quadros espaçados, + margem (px).
+    Retorna (x, y, w, h) em pixels do original, ou None se nada for encontrado / cancelado."""
+    own = isinstance(video, str)
+    v = Video(video) if own else video
+    try:
+        W, H = v.width, v.height
+        if not p.enabled:
+            return full_rect(W, H)
+        n = max(1, v.frame_count)
+        k = max(1, min(int(samples), n))
+        idxs = sorted(set(int(round(i * (n - 1) / max(1, k - 1))) for i in range(k)))
+        x0 = y0 = None
+        x1 = y1 = 0
+        kern = np.ones((3, 3), np.uint8)
+        for j, i in enumerate(idxs):
+            if should_cancel and should_cancel():
+                return None
+            f = v.read(i)
+            if f is None:
+                continue
+            fh, fw = f.shape[:2]
+            sc = min(1.0, max_w / max(1, fw))
+            small = cv2.resize(f, (max(1, int(round(fw * sc))), max(1, int(round(fh * sc)))),
+                               interpolation=cv2.INTER_AREA) if sc < 1.0 else f
+            sc_x, sc_y = small.shape[1] / fw, small.shape[0] / fh
+            a = compute_alpha(small, p, sc)
+            m = cv2.morphologyEx((a > threshold).astype(np.uint8), cv2.MORPH_OPEN, kern)
+            if m.any():
+                bx, by, bw, bh = cv2.boundingRect(m)
+                fx0, fy0 = int(np.floor(bx / sc_x)), int(np.floor(by / sc_y))
+                fx1, fy1 = int(np.ceil((bx + bw) / sc_x)), int(np.ceil((by + bh) / sc_y))
+                x0 = fx0 if x0 is None else min(x0, fx0)
+                y0 = fy0 if y0 is None else min(y0, fy0)
+                x1, y1 = max(x1, fx1), max(y1, fy1)
+            if progress:
+                progress(j + 1, len(idxs))
+        if x0 is None:
+            return None
+        mg = max(0, int(margin))
+        x0, y0 = max(0, x0 - mg), max(0, y0 - mg)
+        x1, y1 = min(W, x1 + mg), min(H, y1 + mg)
+        return clamp_crop((x0, y0, x1 - x0, y1 - y0), W, H)
+    finally:
+        if own:
+            v.release()
 
 
 # --------------------------------------------------------------------------------------
@@ -243,9 +443,11 @@ def _color_line_alpha(frame_bgr, a0, px_scale):
     return np.where(mixed, acl, a0).astype(np.float32)
 
 
-def compute_alpha(frame_bgr, p: KeyParams, px_scale: float = 1.0) -> np.ndarray:
+def compute_alpha(frame_bgr, p: KeyParams, px_scale: float = 1.0, frame_box=None) -> np.ndarray:
     """Máscara alfa contínua (float32 0..1) na resolução do quadro.
-    px_scale = fator de escala do quadro em relação ao original (para raios de filtros)."""
+    px_scale = fator de escala do quadro em relação ao original (para raios de filtros).
+    frame_box = (x, y, largura, altura do quadro inteiro) quando `frame_bgr` é só um pedaço do quadro
+    (exportação recortada): o garbage matte em % continua relativo ao quadro inteiro."""
     a, ycc = _raw_alpha(frame_bgr, p, px_scale)
     if p.values.get("refine", 0):
         a = _color_line_alpha(frame_bgr, a, px_scale)
@@ -288,14 +490,15 @@ def compute_alpha(frame_bgr, p: KeyParams, px_scale: float = 1.0) -> np.ndarray:
         k = 1.0 + p.contrast / 100.0 * 15
         a = np.clip(0.5 + (a - p.midpoint / 100.0) * k, 0, 1)
 
-    # --- recorte
+    # --- recorte (garbage matte, em % do quadro inteiro)
     h, w = a.shape
-    ct, cb = int(h * p.crop_top / 100), int(h * p.crop_bottom / 100)
-    cl, cr = int(w * p.crop_left / 100), int(w * p.crop_right / 100)
-    if ct: a[:ct] = 0
-    if cb: a[h - cb:] = 0
-    if cl: a[:, :cl] = 0
-    if cr: a[:, w - cr:] = 0
+    bx, by, FW, FH = frame_box if frame_box is not None else (0, 0, w, h)
+    ct, cb = int(FH * p.crop_top / 100), int(FH * p.crop_bottom / 100)
+    cl, cr = int(FW * p.crop_left / 100), int(FW * p.crop_right / 100)
+    if ct: a[:max(0, ct - by)] = 0
+    if cb: a[max(0, FH - cb - by):] = 0
+    if cl: a[:, :max(0, cl - bx)] = 0
+    if cr: a[:, max(0, FW - cr - bx):] = 0
     return a.astype(np.float32)
 
 
@@ -465,11 +668,11 @@ def process_color(frame_bgr, p: KeyParams, alpha=None, px_scale=1.0, debug=None)
     return img
 
 
-def key_frame_float(frame_bgr, p: KeyParams, px_scale=1.0):
+def key_frame_float(frame_bgr, p: KeyParams, px_scale=1.0, frame_box=None):
     """Retorna (cor BGR float 0..255, alfa float 0..1)."""
     if not p.enabled:
         return frame_bgr.astype(np.float32), np.ones(frame_bgr.shape[:2], np.float32)
-    alpha = compute_alpha(frame_bgr, p, px_scale)
+    alpha = compute_alpha(frame_bgr, p, px_scale, frame_box)
     return process_color(frame_bgr, p, alpha, px_scale), alpha
 
 

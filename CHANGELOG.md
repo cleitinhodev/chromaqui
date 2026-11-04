@@ -1,5 +1,26 @@
 # Changelog
 
+## 3.1.0 — 2026-11-03
+
+### Novidade: recorte da área exportada
+Para vídeos em que a maior parte da imagem é fundo verde: escolha só a área que interessa e a sobra
+transparente não vai para os arquivos.
+- Seção **"Recorte da área exportada"**: botão **Recortar** liga o seletor na prévia — arraste para
+  desenhar, use as 8 alças para ajustar e o meio para mover; a área de fora fica escurecida e o tamanho
+  aparece em pixels. Funciona também no modo "Lado a lado".
+- Campos **X / Y / Largura / Altura** em pixels do vídeo original, sincronizados com o seletor.
+- **Auto**: encontra a menor área que contém o objeto em 30 quadros espalhados pelo vídeo, mais uma
+  **margem** configurável. **Redefinir** volta ao quadro inteiro.
+- O recorte vale para **todos os quadros e todos os formatos** (sequências, GIF, WebP, APNG, WebM,
+  ProRes) e para o fundo incluído na exportação (o fundo é recortado na mesma área da prévia).
+  É aplicado no vídeo original e depois vem a escala.
+- Opção **largura e altura pares**; WebM e ProRes sempre usam dimensões pares.
+- Mais rápido: só a área recortada (mais uma margem de contexto) é processada, com o mesmo resultado
+  do quadro inteiro.
+- O recorte fica salvo por tamanho de vídeo (e nos presets `.json`); um recorte que não cabe no vídeo
+  aberto é ignorado. A informação de saída mostra o tamanho final "(recortado)".
+- Traduzido para os 8 idiomas; testes novos (`tests/test_crop.py`, fluxo de interface e auto-teste).
+
 ## 3.0.2 — 2026-11-03
 
 Inclui as correções da 3.0.1 (abaixo) e mais:

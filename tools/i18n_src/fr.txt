@@ -261,3 +261,26 @@
 261|Bleu
 262|Détails enregistrés dans :
 263|Une erreur inattendue s’est produite :
+264|Zone exportée (recadrage)
+265|Recadrer
+266|Dessinez sur l'aperçu la zone qui sera exportée : faites glisser pour créer, faites glisser les poignées pour ajuster ou le centre pour déplacer. S'applique à toutes les images et à tous les formats.
+267|Auto
+268|Réinitialiser
+269|Supprime le recadrage (exporte l'image entière).
+270|Espace supplémentaire autour du sujet pour le recadrage automatique.
+271|Largeur et hauteur paires
+272|Certains logiciels et codecs exigent des dimensions paires. WebM et ProRes utilisent toujours des dimensions paires.
+273|Calcul…
+274|En pixels de la vidéo d'origine (indépendant de l'aperçu et de l'échelle d'exportation).
+275|Marge
+276|Recadrage : faites glisser sur l'aperçu pour dessiner la zone ; faites glisser les poignées pour ajuster ou le centre pour déplacer.
+277|Recadrage supprimé : l'image entière est exportée.
+278|Largeur
+279|Hauteur
+280|Trouve automatiquement la plus petite zone contenant le sujet sur {n} images de la vidéo (plus la marge).
+281|Aucun sujet trouvé pour le recadrage automatique.
+282|recadré
+283|Sans recadrage : image entière ({w}×{h} px).
+284|Zone exportée : {w}×{h} px à la position {x}, {y} ({pct}% de l'image).
+285|Recadrage automatique : image {i} sur {n}…
+286|Recadrage automatique : {w}×{h} px.

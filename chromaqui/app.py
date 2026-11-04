@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import copy
+import json
 import os
 import sys
 
@@ -9,7 +10,7 @@ from PySide6.QtCore import QObject, QSize, Qt, QThread, QTimer
 from PySide6.QtGui import QColor, QIcon, QKeySequence, QPalette, QPixmap, QShortcut
 from PySide6.QtWidgets import (
     QApplication, QButtonGroup, QCheckBox, QColorDialog, QComboBox, QDoubleSpinBox, QFileDialog, QFrame,
-    QHBoxLayout, QLabel, QLineEdit, QMainWindow, QMessageBox, QProgressBar, QPushButton, QScrollArea,
+    QGridLayout, QHBoxLayout, QLabel, QLineEdit, QMainWindow, QMessageBox, QProgressBar, QPushButton, QScrollArea,
     QSlider, QSpinBox, QStyle, QToolButton, QVBoxLayout, QWidget,
 )
 
@@ -19,10 +20,11 @@ from .exporters import FORMAT_BY_KEY, FORMATS, default_output_name, ffmpeg_avail
 from .fx import FX, fade_in, fade_window, set_neon
 from .i18n import LANGUAGES, T
 from .settings import Settings
-from .widgets import (GradientTitle, PLAY_QUALITY, THUMB_H, ExportWorker, ParamCheck, ParamSlider, PlaybackWorker,
+from .widgets import (AutoCropWorker, GradientTitle, PLAY_QUALITY, THUMB_H, ExportWorker, ParamCheck, ParamSlider, PlaybackWorker,
                       PreviewLabel, RenderWorker, Section, ThumbWorker, preview_frame)
 
 MAX_THUMBS = 300
+AUTO_CROP_SAMPLES = 30     # quadros analisados pelo recorte automático
 PLAY_STOP_WAIT_MS = 3000   # espera ao parar a reprodução (os testes usam 0 para forçar threads pendentes)
 _RETIRED: list = []       # (thread, worker) encerrando: mantidas vivas até terminarem de fato
 
@@ -91,6 +93,10 @@ class MainWindow(QMainWindow):
         self.out_path = ""
         self._opt_rows = {}
         self._neon_widgets = []
+        self.crop_rect = None                 # (x, y, w, h) em pixels do vídeo original
+        self.auto_thread = self.auto_worker = None
+        self._crop_save_timer = QTimer(self, singleShot=True, interval=400)
+        self._crop_save_timer.timeout.connect(self._save_crop)
 
         self.render_thread = QThread()
         self.render_worker = RenderWorker()
@@ -137,6 +143,7 @@ class MainWindow(QMainWindow):
         mid = QHBoxLayout()
         self.preview = PreviewLabel()
         self.preview.clicked.connect(self.pick_from_preview)
+        self.preview.cropChanged.connect(lambda x, y, w, h: self.set_crop((x, y, w, h)))
         mid.addWidget(self.preview, 1)
         mid.addWidget(self._build_panel())
         root.addLayout(mid, 1)
@@ -348,6 +355,7 @@ class MainWindow(QMainWindow):
         swl.addWidget(self.lbl_rgb, 1)
         sec.add_row(T("Cor atual"), sw)
         lay.addWidget(sec)
+        lay.addWidget(self._build_crop_section())
 
         dc = T("(duplo clique: padrão)")
         for i, (title, items) in enumerate(core.PARAM_SECTIONS):
@@ -381,6 +389,208 @@ class MainWindow(QMainWindow):
         scroll.setWidget(panel)
         self._update_swatch()
         return scroll
+
+    # ---------------------------------------------------------- recorte (área exportada)
+    def _build_crop_section(self):
+        sec = Section(T("Recorte da área exportada"), expanded=True)
+        self.btn_crop = QPushButton(T("Recortar"))
+        self.btn_crop.setCheckable(True)
+        self.btn_crop.setEnabled(False)
+        self.btn_crop.setIcon(self.style().standardIcon(QStyle.SP_TitleBarNormalButton))
+        self.btn_crop.toggled.connect(self.toggle_crop)
+        sec.add_row("", self.btn_crop, T("Desenhe na prévia a área que será exportada: arraste para criar, "
+                                         "arraste as alças para ajustar ou o meio para mover. Vale para todos "
+                                         "os quadros e formatos."))
+        grid = QWidget()
+        gl = QGridLayout(grid)
+        gl.setContentsMargins(0, 0, 0, 0)
+        gl.setHorizontalSpacing(6)
+        self.sp_cx, self.sp_cy, self.sp_cw, self.sp_ch = (QSpinBox() for _ in range(4))
+        for i, (sp, label) in enumerate(((self.sp_cx, "X"), (self.sp_cy, "Y"),
+                                         (self.sp_cw, T("Largura")), (self.sp_ch, T("Altura")))):
+            sp.setRange(0, 0)
+            sp.setSuffix(" px")
+            sp.setEnabled(False)
+            sp.setToolTip(T("Em pixels do vídeo original (não depende da prévia nem da escala de exportação)."))
+            sp.valueChanged.connect(lambda _v, w=sp: self._on_crop_spin(w))
+            gl.addWidget(QLabel(label), i // 2, (i % 2) * 2)
+            gl.addWidget(sp, i // 2, (i % 2) * 2 + 1)
+        gl.setColumnStretch(1, 1)
+        gl.setColumnStretch(3, 1)
+        sec.add_row("", grid)
+        row = QWidget()
+        rl = QHBoxLayout(row)
+        rl.setContentsMargins(0, 0, 0, 0)
+        self.btn_crop_auto = QPushButton(T("Auto"))
+        self.btn_crop_auto.setToolTip(T("Encontra sozinho a menor área que contém o objeto em {n} quadros do vídeo "
+                                        "(mais a margem).").format(n=AUTO_CROP_SAMPLES))
+        self.btn_crop_auto.clicked.connect(lambda: self.auto_crop())
+        self.btn_crop_reset = QPushButton(T("Redefinir"))
+        self.btn_crop_reset.setToolTip(T("Remove o recorte (exporta o quadro inteiro)."))
+        self.btn_crop_reset.clicked.connect(lambda: self.reset_crop())
+        self.sp_crop_margin = QSpinBox()
+        self.sp_crop_margin.setRange(0, 1000)
+        self.sp_crop_margin.setSuffix(" px")
+        self.sp_crop_margin.setValue(self.ctrl.settings.get("crop_margin"))
+        self.sp_crop_margin.setToolTip(T("Espaço extra em volta do objeto no recorte automático."))
+        self.sp_crop_margin.valueChanged.connect(lambda v: self.ctrl.settings.set("crop_margin", int(v)))
+        for b in (self.btn_crop_auto, self.btn_crop_reset):
+            b.setEnabled(False)
+        rl.addWidget(self.btn_crop_auto)
+        rl.addWidget(self.btn_crop_reset)
+        rl.addWidget(QLabel(T("Margem")))
+        rl.addWidget(self.sp_crop_margin)
+        sec.add_row("", row)
+        self.chk_crop_even = QCheckBox(T("Largura e altura pares"))
+        self.chk_crop_even.setChecked(self.ctrl.settings.get("crop_even"))
+        self.chk_crop_even.toggled.connect(self._on_crop_even)
+        sec.add_row("", self.chk_crop_even, T("Alguns programas e codecs exigem dimensões pares. WebM e ProRes "
+                                              "sempre usam dimensões pares."))
+        self.lbl_crop_info = QLabel("")
+        self.lbl_crop_info.setObjectName("muted")
+        self.lbl_crop_info.setWordWrap(True)
+        sec.add_row("", self.lbl_crop_info)
+        return sec
+
+    def toggle_crop(self, on):
+        if on and self.btn_pick.isChecked():
+            self.btn_pick.setChecked(False)
+        self.preview.set_crop_mode(on)
+        if on:
+            self.statusBar().showMessage(T("Recorte: arraste na prévia para desenhar a área; arraste as alças para "
+                                           "ajustar ou o meio para mover."))
+
+    def set_crop(self, rect, save=True):
+        """Define o recorte (pixels do original). Sincroniza prévia, campos, informação e preferências."""
+        if not self.video:
+            return
+        W, H = self.video.width, self.video.height
+        r = core.clamp_crop(rect, W, H) if rect else core.full_rect(W, H)
+        self.crop_rect = r
+        self.preview.set_crop(r)
+        self._sync_crop_spins()
+        self._update_crop_info()
+        self._update_export_info()
+        if save:
+            self._crop_save_timer.start()
+
+    def reset_crop(self):
+        if self.video:
+            self.set_crop(None)
+            self.statusBar().showMessage(T("Recorte removido: exporta o quadro inteiro."))
+
+    def crop_for_export(self):
+        """Recorte a usar na exportação, ou None (quadro inteiro)."""
+        if not self.video or not self.crop_rect:
+            return None
+        return core.normalize_crop(self.crop_rect, self.video.width, self.video.height)
+
+    def _sync_crop_spins(self):
+        if not self.video or not self.crop_rect:
+            return
+        W, H = self.video.width, self.video.height
+        x, y, w, h = self.crop_rect
+        m = min(core.CROP_MIN, W, H)
+        for sp, lo, hi, v in ((self.sp_cx, 0, W - m, x), (self.sp_cy, 0, H - m, y),
+                              (self.sp_cw, m, W, w), (self.sp_ch, m, H, h)):
+            sp.blockSignals(True)
+            sp.setRange(lo, hi)
+            sp.setValue(v)
+            sp.blockSignals(False)
+
+    def _on_crop_spin(self, sender):
+        if not self.video or not self.crop_rect:
+            return
+        W, H = self.video.width, self.video.height
+        x, y, w, h = self.sp_cx.value(), self.sp_cy.value(), self.sp_cw.value(), self.sp_ch.value()
+        if sender is self.sp_cx:
+            w = min(w, W - x)              # mantém a posição; encolhe se precisar
+        elif sender is self.sp_cy:
+            h = min(h, H - y)
+        elif sender is self.sp_cw:
+            x = min(x, W - w)              # mantém o tamanho; desloca se precisar
+        elif sender is self.sp_ch:
+            y = min(y, H - h)
+        self.set_crop((x, y, w, h))
+
+    def _on_crop_even(self, on):
+        self.ctrl.settings.set("crop_even", bool(on))
+        self._update_crop_info()
+        self._update_export_info()
+
+    def _update_crop_info(self):
+        if not self.video or not self.crop_rect:
+            self.lbl_crop_info.setText("")
+            return
+        W, H = self.video.width, self.video.height
+        x, y, w, h = self.crop_rect
+        if self.crop_for_export() is None:
+            self.lbl_crop_info.setText(T("Sem recorte: quadro inteiro ({w}×{h} px).").format(w=W, h=H))
+        else:
+            pct = 100.0 * w * h / max(1, W * H)
+            self.lbl_crop_info.setText(T("Área exportada: {w}×{h} px na posição {x}, {y} ({pct}% do quadro).").format(
+                w=w, h=h, x=x, y=y, pct=f"{pct:.0f}"))
+
+    # preferências: um recorte salvo por tamanho de vídeo
+    def _crop_store(self):
+        try:
+            d = json.loads(self.ctrl.settings.get("crops") or "{}")
+            return d if isinstance(d, dict) else {}
+        except ValueError:
+            return {}
+
+    def _save_crop(self):
+        if not self.video:
+            return
+        d = self._crop_store()
+        key = f"{self.video.width}x{self.video.height}"
+        r = self.crop_for_export()
+        if r is None:
+            d.pop(key, None)
+        else:
+            d[key] = list(r)
+        self.ctrl.settings.set("crops", json.dumps(d))
+
+    def _saved_crop(self, w, h):
+        r = self._crop_store().get(f"{w}x{h}")
+        return tuple(int(v) for v in r) if r is not None and core.crop_fits(r, w, h) else None
+
+    def auto_crop(self):
+        if not self.path or (self.auto_thread is not None and self.auto_thread.isRunning()):
+            return
+        self.btn_crop_auto.setEnabled(False)
+        self.btn_crop_auto.setText(T("Calculando…"))
+        retire_thread(self.auto_thread, self.auto_worker)
+        self.auto_thread = QThread()
+        self.auto_worker = AutoCropWorker(self.path, copy.deepcopy(self.params()), AUTO_CROP_SAMPLES,
+                                          self.sp_crop_margin.value())
+        self.auto_worker.moveToThread(self.auto_thread)
+        self.auto_thread.started.connect(self.auto_worker.run)
+        self.auto_worker.progress.connect(lambda c, t: self.statusBar().showMessage(
+            T("Recorte automático: quadro {i} de {n}…").format(i=c, n=t)))
+        self.auto_worker.finished.connect(self._on_auto_crop)
+        self.auto_worker.finished.connect(self.auto_thread.quit)
+        self._auto_path = self.path
+        self.auto_thread.start()
+
+    def is_auto_cropping(self):
+        return self.auto_thread is not None and self.auto_thread.isRunning()
+
+    def _on_auto_crop(self, rect, err):
+        self.btn_crop_auto.setText(T("Auto"))
+        self.btn_crop_auto.setEnabled(self.video is not None)
+        self.last_auto_crop = (rect, err)
+        if getattr(self, "_auto_path", None) != self.path:
+            return                              # outro vídeo foi aberto enquanto calculava
+        if err:
+            if not getattr(self.ctrl, "quiet", False):
+                QMessageBox.critical(self, T("Erro"), err)
+            self.statusBar().showMessage(T("Erro") + ": " + err)
+        elif rect is None:
+            self.statusBar().showMessage(T("Nenhum objeto encontrado para o recorte automático."))
+        else:
+            self.set_crop(rect)
+            self.statusBar().showMessage(T("Recorte automático: {w}×{h} px.").format(w=rect[2], h=rect[3]))
 
     def _opt(self, sec, key, label, widget, tip=""):
         lbl, w = sec.add_row(label, widget, tip)
@@ -538,6 +748,9 @@ class MainWindow(QMainWindow):
             return False
         self.stop_play()
         self._stop_thumbs()
+        if self._crop_save_timer.isActive():      # grava o recorte do vídeo anterior
+            self._crop_save_timer.stop()
+            self._save_crop()
         if self.video:
             self.video.release()
         self.video, self.path = v, path
@@ -554,6 +767,15 @@ class MainWindow(QMainWindow):
         self.sp_out.setValue(v.frame_count)
         self.btn_export.setEnabled(True)
         self.btn_play.setEnabled(True)
+        # recorte: o salvo para este tamanho de vídeo (se couber) ou o quadro inteiro
+        saved = self._saved_crop(v.width, v.height)
+        self.crop_rect = saved or core.full_rect(v.width, v.height)
+        self.preview.set_crop_source(v.width, v.height, self.crop_rect)
+        for wdg in (self.btn_crop, self.btn_crop_auto, self.btn_crop_reset, self.sp_cx, self.sp_cy, self.sp_cw,
+                    self.sp_ch):
+            wdg.setEnabled(True)
+        self._sync_crop_spins()
+        self._update_crop_info()
         self.sp_fps.blockSignals(True)
         self.sp_fps.setValue(min(120.0, max(1.0, v.fps or 24.0)))
         self.sp_fps.blockSignals(False)
@@ -638,6 +860,7 @@ class MainWindow(QMainWindow):
 
     def _job(self):
         view = "Original" if self.preview.picking else VIEWS[self.cmb_view.currentIndex()]
+        self.preview.set_side_by_side(view == "Lado a lado")
         bgk = BACKGROUNDS[self.cmb_bg.currentIndex()]
         return (copy.deepcopy(self.params()), view, bgk, self.bg_rgb,
                 self.background if bgk == "midia" and self.background.active else None)
@@ -739,7 +962,11 @@ class MainWindow(QMainWindow):
     def save_preset(self):
         path, _ = QFileDialog.getSaveFileName(self, T("Salvar preset"), "meu_preset.json", "Preset (*.json)")
         if path:
-            core.save_preset(path, self.params())
+            extra = {}
+            r = self.crop_for_export()
+            if r is not None:
+                extra["crop"] = {"size": [self.video.width, self.video.height], "rect": list(r)}
+            core.save_preset(path, self.params(), extra)
             self.statusBar().showMessage(T("Preset salvo: {p}").format(p=path))
 
     def load_preset(self):
@@ -747,9 +974,20 @@ class MainWindow(QMainWindow):
         if path:
             try:
                 self.apply_params(core.load_preset(path))
+                self.apply_preset_crop(core.load_preset_extra(path).get("crop"))
                 self.statusBar().showMessage(T("Preset carregado: {p}").format(p=path))
             except Exception as e:  # noqa: BLE001
                 QMessageBox.critical(self, T("Erro"), T("Preset inválido:") + f"\n{e}")
+
+    def apply_preset_crop(self, c):
+        """Recorte salvo no preset: só é usado se couber no vídeo atual."""
+        if not self.video or not isinstance(c, dict):
+            return False
+        r = c.get("rect")
+        if r is None or not core.crop_fits(r, self.video.width, self.video.height):
+            return False
+        self.set_crop(tuple(int(v) for v in r))
+        return True
 
     def export_options(self) -> core.ExportOptions:
         i = self.cmb_scale.currentIndex()
@@ -764,7 +1002,8 @@ class MainWindow(QMainWindow):
             gif_alpha_threshold=self.sp_gif_thr.value(), gif_palette=self.cmb_gif_pal.currentData(),
             gif_matte=self.chk_gif_matte.isChecked(), gif_matte_rgb=tuple(self.gif_matte_rgb),
             include_bg=self.chk_include_bg.isChecked() and self.background.active,
-            tiff_compress=self.chk_tiffc.isChecked())
+            tiff_compress=self.chk_tiffc.isChecked(), crop=self.crop_for_export(),
+            even=self.chk_crop_even.isChecked())
 
     def _update_export_info(self, *_):
         if not self.video:
@@ -772,7 +1011,10 @@ class MainWindow(QMainWindow):
         o = self.export_options()
         f = FORMAT_BY_KEY[o.fmt]
         n = (o.end - o.start) // o.step + 1
-        size = f"{int(round(self.video.width * o.scale))}×{int(round(self.video.height * o.scale))} px"
+        crop, ow, oh = core.export_geometry(self.video.width, self.video.height, o)
+        size = f"{ow}×{oh} px"
+        if crop is not None:
+            size += " (" + T("recortado") + ")"
         if f.single_file:
             fps = o.fps if o.fps > 0 else (self.video.fps or 30) / o.step
             txt = T("1 arquivo, {n} quadros, {size}, {fps} fps").format(n=n, size=size, fps=f"{fps:.2f}")
@@ -856,6 +1098,8 @@ class MainWindow(QMainWindow):
             self.set_key((c.red(), c.green(), c.blue()))
 
     def toggle_pick(self, on):
+        if on and self.btn_crop.isChecked():
+            self.btn_crop.setChecked(False)
         self.preview.picking = on
         self.preview.setCursor(Qt.CrossCursor if on else Qt.ArrowCursor)
         if on:
@@ -965,13 +1209,16 @@ class MainWindow(QMainWindow):
             "bg_mode": self.cmb_bgmode.currentIndex(), "fmt": self.cmb_fmt.currentIndex(),
             "matte": self.gif_matte_rgb, "fps": self.sp_fps.value(), "loop": self.chk_loop.isChecked(),
             "include_bg": self.chk_include_bg.isChecked(), "geometry": self.saveGeometry(),
-            "maximized": self.isMaximized(),
+            "maximized": self.isMaximized(), "crop": self.crop_rect, "crop_mode": self.btn_crop.isChecked(),
         }
 
     def restore(self, st):
         if st.get("path") and os.path.isfile(st["path"]):
             self.load_video(st["path"], st.get("idx", 0))
         self.apply_params(st["params"])
+        if self.video and st.get("crop") and core.crop_fits(st["crop"], self.video.width, self.video.height):
+            self.set_crop(st["crop"], save=False)
+        self.btn_crop.setChecked(bool(st.get("crop_mode")) and self.video is not None)
         self.cmb_view.setCurrentIndex(st.get("view", 0))
         self.bg_rgb = st.get("bg_rgb", self.bg_rgb)
         self.cmb_bgmode.setCurrentIndex(st.get("bg_mode", 0))
@@ -992,6 +1239,12 @@ class MainWindow(QMainWindow):
 
     def shutdown(self):
         self.stop_play()
+        if self._crop_save_timer.isActive():
+            self._crop_save_timer.stop()
+            self._save_crop()
+        if self.auto_worker:
+            self.auto_worker.cancel()
+        retire_thread(self.auto_thread, self.auto_worker, wait_ms=10000)
         if self.exp_worker:
             self.exp_worker.cancel()
         retire_thread(self.exp_thread, self.exp_worker, wait_ms=10000)

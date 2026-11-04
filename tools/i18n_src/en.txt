@@ -261,3 +261,26 @@
 261|Blue
 262|Details saved to:
 263|An unexpected error occurred:
+264|Export area (crop)
+265|Crop
+266|Draw on the preview the area that will be exported: drag to create, drag the handles to adjust or the middle to move. Applies to every frame and format.
+267|Auto
+268|Reset
+269|Removes the crop (exports the full frame).
+270|Extra space around the subject in the automatic crop.
+271|Even width and height
+272|Some programs and codecs require even dimensions. WebM and ProRes always use even dimensions.
+273|Calculating…
+274|In pixels of the original video (independent of the preview and of the export scale).
+275|Margin
+276|Crop: drag on the preview to draw the area; drag the handles to adjust or the middle to move.
+277|Crop removed: exports the full frame.
+278|Width
+279|Height
+280|Automatically finds the smallest area that contains the subject in {n} frames of the video (plus the margin).
+281|No subject found for the automatic crop.
+282|cropped
+283|No crop: full frame ({w}×{h} px).
+284|Exported area: {w}×{h} px at position {x}, {y} ({pct}% of the frame).
+285|Automatic crop: frame {i} of {n}…
+286|Automatic crop: {w}×{h} px.
