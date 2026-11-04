@@ -32,6 +32,7 @@ jobs:
       - name: Testes (núcleo e exportadores)
         env:
           QT_QPA_PLATFORM: offscreen
+          PYTHONIOENCODING: utf-8
         run: |
           foreach ($t in "tests/make_soft_video.py", "tests/test_core.py", "tests/test_exporters.py", "tests/test_ui_flows.py", "tests/test_crop.py", "tests/test_features.py") {
             "::group::$t"

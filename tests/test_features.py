@@ -5,6 +5,7 @@ import json, os, shutil, sys
 import cv2, numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, os.path.dirname(HERE)); sys.path.insert(0, HERE)
 OUT = os.path.join(HERE, "_out")
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # console do Windows (cp1252) no CI
 os.environ["CHROMAQUI_MODELS_DIR"] = os.path.join(OUT, "models")  # nunca a pasta real do usuário
 from chromaqui import ai, core, exporters as ex, updates
 from chromaqui.retouch import Retouch
