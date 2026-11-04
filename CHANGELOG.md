@@ -1,5 +1,18 @@
 # Changelog
 
+## 3.0.2 — 2026-11-03
+
+Inclui as correções da 3.0.1 (abaixo) e mais:
+
+### Correções
+- **Reprodução: fechamento raro ao parar/reiniciar ou trocar a qualidade** (visto no Windows real durante
+  o auto-teste): uma thread de reprodução antiga podia ser liberada de dentro dela mesma ao terminar,
+  e o Qt abortava o programa. Agora threads antigas são liberadas só pela thread da interface, depois
+  de terminarem de fato; quadros atrasados são identificados por um número de geração.
+- O auto-teste registra mensagens críticas do Qt no `selftest.log` (diagnóstico no CI).
+- CI: cada teste tem o código de saída verificado; o gerador de vídeos de teste usa o ffmpeg embutido;
+  é possível publicar numa Release existente pelo "Run workflow" (`release_tag`).
+
 ## 3.0.1 — 2026-11-03
 
 ### Correções

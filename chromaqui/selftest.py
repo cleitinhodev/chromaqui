@@ -143,6 +143,12 @@ def self_test(argv):
         def _qt_msg(mode, ctx, msg):          # silencia avisos inofensivos da plataforma "offscreen"
             if "propagateSizeHints" in msg:
                 return
+            if "QThread" in msg or "ASSERT" in msg or mode.name in ("QtCriticalMsg", "QtFatalMsg"):
+                try:
+                    live.write(f"QT {mode.name}: {msg}\n")
+                    live.flush()
+                except Exception:  # noqa: BLE001
+                    pass
             if sys.stderr is not None:          # .exe --windowed não tem stderr
                 try:
                     sys.stderr.write(msg + "\n")

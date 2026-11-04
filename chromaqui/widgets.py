@@ -114,11 +114,12 @@ class PlaybackWorker(QObject):
     (aqui só emitimos QImage já copiada); no máximo 1 quadro "em voo" — se a interface ainda não mostrou
     o anterior, o novo é descartado em vez de ir para uma fila (que cresceria sem limite em resolução alta);
     a qualidade (largura máxima) pode mudar a qualquer momento sem reiniciar a thread."""
-    frame = Signal(int, object, float, QImage, float, int)   # idx, quadro, px_scale, imagem, fps real, descartados
+    frame = Signal(int, int, object, float, QImage, float, int)  # geração, idx, quadro, px_scale, imagem, fps, descartados
     finished = Signal()
 
-    def __init__(self, path, start, fps, loop, job, max_w=480):
+    def __init__(self, path, start, fps, loop, job, max_w=480, gen=0):
         super().__init__()
+        self.gen = gen
         self.path, self.start, self.fps, self.loop = path, start, fps, loop
         self.max_w = int(max_w)
         self._job = job
@@ -187,7 +188,7 @@ class PlaybackWorker(QObject):
                     continue
                 self._free.clear()
                 self.pb.mark_shown()
-                self.frame.emit(idx, small, sc, qimg, self.pb.actual_fps, self.pb.dropped)
+                self.frame.emit(self.gen, idx, small, sc, qimg, self.pb.actual_fps, self.pb.dropped)
         except Exception:  # noqa: BLE001
             from . import crashlog
             crashlog.log_exception("Erro na reprodução")

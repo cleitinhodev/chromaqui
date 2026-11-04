@@ -129,13 +129,19 @@ def test_stress(video, seconds=20):
         if i % 13 == 0 and not w.is_playing():
             w.start_play()
         assert len(errors) == 0, errors
-    for k in range(60):                        # reinícios rápidos (corrida entre a thread antiga e a nova)
-        w.stop_play(); w.start_play(); pump(0.0 if k % 2 else 0.02)
-        assert w.is_playing(), "reinício falhou"
+    import chromaqui.app as appmod
+    for nowait in (False, True):               # True: sem esperar a thread antiga (força o caminho "pendente")
+        appmod.PLAY_STOP_WAIT_MS = 0 if nowait else 3000
+        for k in range(60):                    # reinícios rápidos (corrida entre a thread antiga e a nova)
+            w.cmb_playq.setCurrentIndex(k % 3)
+            w.stop_play(); w.start_play(); pump(0.0 if k % 2 else 0.02)
+            assert w.is_playing(), "reinício falhou"
+    appmod.PLAY_STOP_WAIT_MS = 3000
+    assert wait(lambda: not appmod._RETIRED, 30), f"threads pendentes não liberadas: {len(appmod._RETIRED)}"
     w.cmb_playq.setCurrentIndex(2); w.start_play(); pump(1.5)
     assert w.is_playing(), "parou de reproduzir"
     w.stop_play(); pump(0.2)
-    leaked = [t for t in getattr(w, "_old_play_threads", []) if t.isRunning()]
+    leaked = list(appmod._RETIRED)
     # fim do vídeo sem repetir: a interface tem de voltar a "Reproduzir"
     w.chk_loop.setChecked(False); w.sp_fps.setValue(120)
     w.slider.setValue(w.video.frame_count - 8); w.start_play()

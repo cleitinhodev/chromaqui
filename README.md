@@ -96,7 +96,7 @@ python tools/build_exe.py --both --zip
 
 Gera `dist/Chromaqui/Chromaqui.exe`, `dist1/Chromaqui.exe` e os dois `.zip`. O workflow
 `.github/workflows/release.yml` faz isso automaticamente no GitHub ao criar uma tag `v*`
-(ex.: `git tag v3.0.1 && git push origin v3.0.1`) e anexa os zips à Release.
+(ex.: `git tag v3.0.2 && git push origin v3.0.2`) e anexa os zips à Release.
 
 ### Trocar o logo / ícone
 

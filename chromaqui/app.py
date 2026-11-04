@@ -23,11 +23,22 @@ from .widgets import (GradientTitle, PLAY_QUALITY, THUMB_H, ExportWorker, ParamC
                       PreviewLabel, RenderWorker, Section, ThumbWorker, preview_frame)
 
 MAX_THUMBS = 300
-_RETIRED: set = set()      # threads (e workers) encerrando: mantidas vivas até o sinal finished
+PLAY_STOP_WAIT_MS = 3000   # espera ao parar a reprodução (os testes usam 0 para forçar threads pendentes)
+_RETIRED: list = []       # (thread, worker) encerrando: mantidas vivas até terminarem de fato
+
+
+def _reap_threads():
+    """Roda na thread da interface (QTimer): libera só as threads que já terminaram."""
+    for item in list(_RETIRED):
+        if item[0].isFinished() and item[0].wait(50):
+            _RETIRED.remove(item)
+    if _RETIRED:
+        QTimer.singleShot(200, _reap_threads)
 
 
 def retire_thread(thread, worker=None, wait_ms=0):
-    """Encerra uma QThread sem nunca destruí-la em execução (isso derruba o programa no Qt)."""
+    """Encerra uma QThread sem nunca destruí-la em execução (isso derruba o programa no Qt).
+    Importante: a liberação é feita pela thread da interface, nunca por um sinal vindo da própria thread."""
     if thread is None:
         return
     if thread.isRunning():
@@ -35,9 +46,8 @@ def retire_thread(thread, worker=None, wait_ms=0):
         if wait_ms:
             thread.wait(wait_ms)
     if thread.isRunning():
-        item = (thread, worker)
-        _RETIRED.add(item)
-        thread.finished.connect(lambda: _RETIRED.discard(item))
+        _RETIRED.append((thread, worker))
+        QTimer.singleShot(200, _reap_threads)
 VIEWS = ["Resultado", "Máscara (alfa)", "Máscara da colorização", "Original", "Lado a lado"]
 BACKGROUNDS = ["xadrez", "preto", "branco", "cor", "midia"]
 BG_LABELS = ["Xadrez", "Preto", "Branco", "Cor…", "Imagem ou vídeo…"]
@@ -645,8 +655,9 @@ class MainWindow(QMainWindow):
         if start >= self.video.frame_count - 1:
             start = 0
         th = QThread()
+        self._play_gen = getattr(self, "_play_gen", 0) + 1
         wk = PlaybackWorker(self.path, start, self.sp_fps.value(), self.chk_loop.isChecked(),
-                            self._job(), PLAY_QUALITY[self.cmb_playq.currentIndex()][1])
+                            self._job(), PLAY_QUALITY[self.cmb_playq.currentIndex()][1], gen=self._play_gen)
         wk.moveToThread(th)
         th.started.connect(wk.run)
         wk.frame.connect(self._on_play_frame)
@@ -664,12 +675,12 @@ class MainWindow(QMainWindow):
         self.play_thread = self.play_worker = None   # quadros/sinais atrasados dessa thread são ignorados
         if wk:
             wk.stop()
-        retire_thread(th, wk, wait_ms=3000)
+        retire_thread(th, wk, wait_ms=PLAY_STOP_WAIT_MS)
         self._play_ui_stopped()
 
     def _on_play_thread_finished(self):
-        # só reage se for a thread ATUAL (uma thread antiga terminando não pode derrubar a nova)
-        if self.sender() is not None and self.sender() is self.play_thread:
+        # só reage se a thread ATUAL terminou (uma thread antiga terminando não pode derrubar a nova)
+        if self.play_thread is not None and self.play_thread.isFinished():
             self.play_thread = self.play_worker = None
             self._play_ui_stopped()
 
@@ -679,12 +690,11 @@ class MainWindow(QMainWindow):
         if self.video:
             self.on_frame_changed(self.slider.value())
 
-    def _on_play_frame(self, idx, frame, sc, qimg, fps, dropped):
-        wk = self.sender()
-        if wk is not None and hasattr(wk, "ack"):
-            wk.ack()                          # libera o próximo quadro (sem fila acumulando)
-        if not self.is_playing() or wk is not self.play_worker:
-            return
+    def _on_play_frame(self, gen, idx, frame, sc, qimg, fps, dropped):
+        wk = self.play_worker
+        if wk is None or gen != wk.gen or not self.is_playing():
+            return                            # quadro atrasado de uma reprodução anterior
+        wk.ack()                              # libera o próximo quadro (sem fila acumulando)
         self.frame, self.px_scale = frame, sc
         self.preview.set_image(qimg)
         self.slider.blockSignals(True)
