@@ -32,6 +32,8 @@ Baixe o `.zip` mais recente em **[Releases](https://github.com/cleitinhodev/chro
 Não precisa instalar nada: descompacte e execute. Windows 10/11 64 bits.
 Na primeira execução o SmartScreen pode avisar ("Executar assim mesmo"), porque o executável não é assinado.
 
+Se algo der errado, os detalhes ficam em `%APPDATA%\Chromaqui\logs` (`erros.log`, `travamento.log`).
+
 ## Recursos
 
 - **Chroma key de qualidade**: verde, azul ou qualquer cor (conta-gotas na prévia); tolerância, faixa de
@@ -94,7 +96,7 @@ python tools/build_exe.py --both --zip
 
 Gera `dist/Chromaqui/Chromaqui.exe`, `dist1/Chromaqui.exe` e os dois `.zip`. O workflow
 `.github/workflows/release.yml` faz isso automaticamente no GitHub ao criar uma tag `v*`
-(ex.: `git tag v3.0.0 && git push --tags`) e anexa os zips à Release.
+(ex.: `git tag v3.0.1 && git push origin v3.0.1`) e anexa os zips à Release.
 
 ### Trocar o logo / ícone
 

@@ -259,3 +259,5 @@
 259|GPU (OpenCL)
 260|Vert
 261|Bleu
+262|Détails enregistrés dans :
+263|Une erreur inattendue s’est produite :

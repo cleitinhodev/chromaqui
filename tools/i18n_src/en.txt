@@ -259,3 +259,5 @@
 259|GPU (OpenCL)
 260|Green
 261|Blue
+262|Details saved to:
+263|An unexpected error occurred:

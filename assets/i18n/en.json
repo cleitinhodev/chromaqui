@@ -260,5 +260,7 @@
  "Completa": "Full",
  "GPU (OpenCL)": "GPU (OpenCL)",
  "Verde": "Green",
- "Azul": "Blue"
+ "Azul": "Blue",
+ "Detalhes salvos em:": "Details saved to:",
+ "Ocorreu um erro inesperado:": "An unexpected error occurred:"
 }

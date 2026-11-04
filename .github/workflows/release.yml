@@ -31,6 +31,7 @@ jobs:
           python tests/make_soft_video.py
           python tests/test_core.py
           python tests/test_exporters.py
+          python tests/test_ui_flows.py all
 
       - name: Gerar executáveis (pasta + arquivo único) e zips
         run: python tools/build_exe.py --both --zip
@@ -71,10 +72,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
         run: |
+          python tools/release_notes.py "${TAG#v}" > release_notes.md
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo "Release $TAG já existe: substituindo os zips (--clobber)."
             gh release upload "$TAG" Chromaqui-Windows.zip Chromaqui-Windows-onefile.zip --clobber
           else
             gh release create "$TAG" Chromaqui-Windows.zip Chromaqui-Windows-onefile.zip \
-              --title "Chromaqui! ${TAG#v}" --notes-file CHANGELOG.md --verify-tag
+              --title "Chromaqui! ${TAG#v}" --notes-file release_notes.md --verify-tag
           fi

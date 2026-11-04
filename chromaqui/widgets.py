@@ -102,44 +102,65 @@ class RenderWorker(QObject):
             t = time.perf_counter()
             img = render_job(frame, idx, j, px_scale)
             self.result.emit(bgr_to_qimage(img), (time.perf_counter() - t) * 1000)
-        except Exception as e:  # noqa: BLE001
-            print("Erro na pré-visualização:", e, file=sys.stderr)
+        except Exception:  # noqa: BLE001
+            from . import crashlog
+            crashlog.log_exception("Erro na pré-visualização")
 
 
 class PlaybackWorker(QObject):
-    """Reproduz o vídeo com o recorte aplicado, numa thread própria (decodificação sequencial)."""
+    """Reproduz o vídeo com o recorte aplicado, numa thread própria (decodificação sequencial).
+
+    Regras de segurança: a thread tem o próprio VideoCapture; só a thread da interface mexe em widgets
+    (aqui só emitimos QImage já copiada); no máximo 1 quadro "em voo" — se a interface ainda não mostrou
+    o anterior, o novo é descartado em vez de ir para uma fila (que cresceria sem limite em resolução alta);
+    a qualidade (largura máxima) pode mudar a qualquer momento sem reiniciar a thread."""
     frame = Signal(int, object, float, QImage, float, int)   # idx, quadro, px_scale, imagem, fps real, descartados
     finished = Signal()
 
     def __init__(self, path, start, fps, loop, job, max_w=480):
         super().__init__()
         self.path, self.start, self.fps, self.loop = path, start, fps, loop
-        self.max_w = max_w
+        self.max_w = int(max_w)
         self._job = job
         self._lock = threading.Lock()
         self._stop = False
+        self._free = threading.Event()
+        self._free.set()
         self.pb = None
+        self.ui_dropped = 0
 
     def set_job(self, job):
         with self._lock:
             self._job = job
 
+    def set_max_w(self, w):
+        with self._lock:
+            self.max_w = max(64, int(w))
+
     def set_fps(self, fps):
         self.fps = fps
-        if self.pb:
-            self.pb.set_fps(fps)
+        pb = self.pb
+        if pb:
+            pb.set_fps(fps)
 
     def set_loop(self, on):
         self.loop = on
-        if self.pb:
-            self.pb.loop = on
+        pb = self.pb
+        if pb:
+            pb.loop = on
 
     def seek(self, idx):
-        if self.pb:
-            self.pb.seek(idx)
+        pb = self.pb
+        if pb:
+            pb.seek(idx)
+
+    def ack(self):
+        """Chamado pela interface quando terminou de usar o último quadro."""
+        self._free.set()
 
     def stop(self):
         self._stop = True
+        self._free.set()
 
     def run(self):
         try:
@@ -149,9 +170,10 @@ class PlaybackWorker(QObject):
                 if r is None:
                     break
                 idx, f = r
-                small, sc = preview_frame(f, self.max_w)
                 with self._lock:
-                    job = self._job
+                    job, max_w = self._job, self.max_w
+                small, sc = preview_frame(f, max_w)
+                small = np.ascontiguousarray(small)
                 qimg = bgr_to_qimage(render_job(small, idx, job, sc))
                 wt = self.pb.wait_time()
                 while wt > 0 and not self._stop:
@@ -159,10 +181,16 @@ class PlaybackWorker(QObject):
                     wt = self.pb.wait_time()
                 if self._stop:
                     break
+                if not self._free.wait(0.25):        # interface ocupada: descarta este quadro
+                    self.ui_dropped += 1
+                    self.pb.dropped += 1
+                    continue
+                self._free.clear()
                 self.pb.mark_shown()
                 self.frame.emit(idx, small, sc, qimg, self.pb.actual_fps, self.pb.dropped)
-        except Exception as e:  # noqa: BLE001
-            print("Erro na reprodução:", e, file=sys.stderr)
+        except Exception:  # noqa: BLE001
+            from . import crashlog
+            crashlog.log_exception("Erro na reprodução")
         finally:
             if self.pb:
                 self.pb.release()

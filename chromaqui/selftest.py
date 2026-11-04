@@ -268,6 +268,21 @@ def self_test(argv):
             app.processEvents()
             assert not w.is_playing()
             log(f"PLAY OK {len(got)} quadros em 2,5 s com fundo, {fps_txt}")
+            # trocar a qualidade e reiniciar várias vezes durante a reprodução (antes: travava/fechava)
+            w.start_play()
+            for k in range(90):
+                w.cmb_playq.setCurrentIndex(k % 3)
+                if k % 3 == 0:
+                    w.stop_play()
+                    w.start_play()
+                _pump(app, 0.0 if k % 2 else 0.03)
+            w.cmb_playq.setCurrentIndex(2)
+            _pump(app, 1.0)
+            assert w.is_playing(), "reprodução parou ao trocar a qualidade"
+            w.stop_play()
+            w.cmb_playq.setCurrentIndex(0)
+            app.processEvents()
+            log("PLAY QUALIDADE OK (90 trocas Rápida/Média/Completa + reinícios, sem travar)")
 
             # ---- exportação: todos os formatos (pela interface)
             w.sp_in.setValue(3)
@@ -310,6 +325,28 @@ def self_test(argv):
             assert img[..., 3].min() == 255, "fundo incluído deveria ser opaco"
             assert abs(int(img[2, 2, 2]) - 200) < 8, img[2, 2]
             log("EXPORT FUNDO OK (fundo composto, resultado opaco)")
+            # exportar pelo BOTÃO (sinal clicked(bool)) com os diálogos simulados — antes dava
+            # "expected str, bytes or os.PathLike object, not bool"
+            from PySide6.QtWidgets import QFileDialog
+            w.chk_include_bg.setChecked(False)
+            saved = (QFileDialog.getExistingDirectory, QFileDialog.getSaveFileName)
+            bdir = os.path.join(log_dir, "export_botao")
+            os.makedirs(bdir, exist_ok=True)
+            QFileDialog.getExistingDirectory = staticmethod(lambda *a, **k: bdir)
+            QFileDialog.getSaveFileName = staticmethod(lambda *a, **k: (os.path.join(bdir, "botao"), ""))
+            try:
+                ctrl.settings.set("last_dir", os.path.join(log_dir, "pasta_que_nao_existe"))
+                done = []
+                for key in ("png", "gif", "webm"):
+                    w.cmb_fmt.setCurrentIndex([f.key for f in FORMATS].index(key))
+                    w.btn_export.click()
+                    assert _wait(app, lambda: not w.is_exporting(), 300)
+                    n, _c, err, outp = w.last_export
+                    assert not err and n > 0 and os.path.exists(outp), (key, w.last_export)
+                    done.append(key)
+            finally:
+                QFileDialog.getExistingDirectory, QFileDialog.getSaveFileName = saved
+            log(f"EXPORT PELO BOTÃO OK ({', '.join(done)}; diálogo e pasta salva inexistente)")
             # cancelar
             w.chk_include_bg.setChecked(False)
             w.cmb_fmt.setCurrentIndex([f.key for f in FORMATS].index("webm"))

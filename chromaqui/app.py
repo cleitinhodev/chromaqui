@@ -23,6 +23,21 @@ from .widgets import (GradientTitle, PLAY_QUALITY, THUMB_H, ExportWorker, ParamC
                       PreviewLabel, RenderWorker, Section, ThumbWorker, preview_frame)
 
 MAX_THUMBS = 300
+_RETIRED: set = set()      # threads (e workers) encerrando: mantidas vivas até o sinal finished
+
+
+def retire_thread(thread, worker=None, wait_ms=0):
+    """Encerra uma QThread sem nunca destruí-la em execução (isso derruba o programa no Qt)."""
+    if thread is None:
+        return
+    if thread.isRunning():
+        thread.quit()
+        if wait_ms:
+            thread.wait(wait_ms)
+    if thread.isRunning():
+        item = (thread, worker)
+        _RETIRED.add(item)
+        thread.finished.connect(lambda: _RETIRED.discard(item))
 VIEWS = ["Resultado", "Máscara (alfa)", "Máscara da colorização", "Original", "Lado a lado"]
 BACKGROUNDS = ["xadrez", "preto", "branco", "cor", "midia"]
 BG_LABELS = ["Xadrez", "Preto", "Branco", "Cor…", "Imagem ou vídeo…"]
@@ -190,7 +205,7 @@ class MainWindow(QMainWindow):
         self.btn_export.setMinimumWidth(170)
         self.btn_export.setEnabled(False)
         self.btn_export.setToolTip(T("Exporta no formato escolhido em 'Opções de exportação'."))
-        self.btn_export.clicked.connect(self.start_export)
+        self.btn_export.clicked.connect(lambda: self.start_export())
         self.btn_cancel = QPushButton(T("Cancelar"))
         self.btn_cancel.setEnabled(False)
         self.btn_cancel.clicked.connect(self.cancel_export)
@@ -232,7 +247,7 @@ class MainWindow(QMainWindow):
         self.btn_open.setObjectName("primary")
         self.btn_open.setIcon(self.style().standardIcon(QStyle.SP_DialogOpenButton))
         self.btn_open.setToolTip(T("Abrir um vídeo (MP4, MOV, AVI, MKV, WebM…)"))
-        self.btn_open.clicked.connect(self.open_video)
+        self.btn_open.clicked.connect(lambda: self.open_video())
         h.addWidget(self.btn_open)
         h.addStretch(1)
         self.btn_theme = QPushButton()
@@ -498,7 +513,8 @@ class MainWindow(QMainWindow):
     # ---------------------------------------------------------- vídeo
     def open_video(self):
         exts = " ".join(f"*{e}" for e in core.VIDEO_EXTS)
-        path, _ = QFileDialog.getOpenFileName(self, T("Importar vídeo"), self.ctrl.settings.get("last_dir"),
+        last = self.ctrl.settings.get("last_dir")
+        path, _ = QFileDialog.getOpenFileName(self, T("Importar vídeo"), last if os.path.isdir(last) else "",
                                               f"{T('Vídeos')} ({exts});;{T('Todos')} (*.*)")
         if path:
             self.ctrl.settings.set("last_dir", os.path.dirname(path))
@@ -566,6 +582,7 @@ class MainWindow(QMainWindow):
         self._items = {}
 
     def _start_thumbs(self, indices):
+        retire_thread(self.thumb_thread, self.thumb_worker)
         self.thumb_thread = QThread()
         self.thumb_worker = ThumbWorker(self.path, indices)
         self.thumb_worker.moveToThread(self.thumb_thread)
@@ -577,8 +594,7 @@ class MainWindow(QMainWindow):
     def _stop_thumbs(self):
         if self.thumb_thread and self.thumb_thread.isRunning():
             self.thumb_worker.stop()
-            self.thumb_thread.quit()
-            self.thumb_thread.wait(10000)
+            retire_thread(self.thumb_thread, self.thumb_worker, wait_ms=10000)
 
     def _on_thumb(self, idx, qimg):
         it = self._items.get(idx)
@@ -628,37 +644,46 @@ class MainWindow(QMainWindow):
         start = self.slider.value()
         if start >= self.video.frame_count - 1:
             start = 0
-        self.play_thread = QThread()
-        self.play_worker = PlaybackWorker(self.path, start, self.sp_fps.value(), self.chk_loop.isChecked(),
-                                          self._job(), PLAY_QUALITY[self.cmb_playq.currentIndex()][1])
-        self.play_worker.moveToThread(self.play_thread)
-        self.play_thread.started.connect(self.play_worker.run)
-        self.play_worker.frame.connect(self._on_play_frame)
-        self.play_worker.finished.connect(self.play_thread.quit)
-        self.play_thread.finished.connect(self._on_play_stopped)
+        th = QThread()
+        wk = PlaybackWorker(self.path, start, self.sp_fps.value(), self.chk_loop.isChecked(),
+                            self._job(), PLAY_QUALITY[self.cmb_playq.currentIndex()][1])
+        wk.moveToThread(th)
+        th.started.connect(wk.run)
+        wk.frame.connect(self._on_play_frame)
+        wk.finished.connect(th.quit)
+        th.finished.connect(self._on_play_thread_finished)
+        self.play_thread, self.play_worker = th, wk
         self.btn_play.setText(T("Pausar"))
         self.btn_play.setIcon(self.style().standardIcon(QStyle.SP_MediaPause))
-        self.play_thread.start()
+        th.start()
 
     def stop_play(self):
-        if self.play_worker:
-            self.play_worker.stop()
-        if self.play_thread and self.play_thread.isRunning():
-            self.play_thread.quit()
-            self.play_thread.wait(5000)
-        self._on_play_stopped()
-
-    def _on_play_stopped(self):
-        if self.play_thread is None:
+        th, wk = self.play_thread, self.play_worker
+        if th is None:
             return
-        self.play_thread = self.play_worker = None
+        self.play_thread = self.play_worker = None   # quadros/sinais atrasados dessa thread são ignorados
+        if wk:
+            wk.stop()
+        retire_thread(th, wk, wait_ms=3000)
+        self._play_ui_stopped()
+
+    def _on_play_thread_finished(self):
+        # só reage se for a thread ATUAL (uma thread antiga terminando não pode derrubar a nova)
+        if self.sender() is not None and self.sender() is self.play_thread:
+            self.play_thread = self.play_worker = None
+            self._play_ui_stopped()
+
+    def _play_ui_stopped(self):
         self.btn_play.setText(T("Reproduzir"))
         self.btn_play.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
         if self.video:
             self.on_frame_changed(self.slider.value())
 
     def _on_play_frame(self, idx, frame, sc, qimg, fps, dropped):
-        if not self.is_playing():
+        wk = self.sender()
+        if wk is not None and hasattr(wk, "ack"):
+            wk.ack()                          # libera o próximo quadro (sem fila acumulando)
+        if not self.is_playing() or wk is not self.play_worker:
             return
         self.frame, self.px_scale = frame, sc
         self.preview.set_image(qimg)
@@ -670,7 +695,8 @@ class MainWindow(QMainWindow):
 
     def _on_playq(self, i):
         self.ctrl.settings.set("play_quality", int(i))
-        self._restart_play()
+        if self.play_worker:                   # muda na hora, sem reiniciar a thread
+            self.play_worker.set_max_w(PLAY_QUALITY[max(0, min(2, int(i)))][1])
 
     def _restart_play(self, *_):
         if self.is_playing():
@@ -840,7 +866,9 @@ class MainWindow(QMainWindow):
 
     # ---------------------------------------------------------- exportação
     def start_export(self, out=None):
-        if not self.path:
+        if not isinstance(out, (str, os.PathLike)) or not str(out):
+            out = None                          # p.ex. clicked(False) de um botão
+        if not self.path or self.is_exporting():
             return
         opts = self.export_options()
         f = FORMAT_BY_KEY[opts.fmt]
@@ -849,6 +877,8 @@ class MainWindow(QMainWindow):
             return
         if out is None:
             last = self.ctrl.settings.get("last_dir")
+            if not isinstance(last, str) or not os.path.isdir(last):
+                last = os.path.dirname(self.path) if os.path.isdir(os.path.dirname(self.path)) else ""
             if f.single_file:
                 flt = f"{T(f.label)} (*{f.ext})"
                 out, _ = QFileDialog.getSaveFileName(self, T("Salvar como"),
@@ -857,6 +887,8 @@ class MainWindow(QMainWindow):
                     out += f.ext
             else:
                 out = QFileDialog.getExistingDirectory(self, T("Escolha a pasta de destino"), last)
+                if out and not os.path.isdir(out):
+                    out = ""
                 if out and any(n.startswith(opts.prefix) and n.lower().endswith(f.ext) for n in os.listdir(out)):
                     r = QMessageBox.question(self, T("Pasta não vazia"),
                                              T("Esta pasta já tem arquivos {p}*{ext} que podem ser substituídos. "
@@ -866,6 +898,7 @@ class MainWindow(QMainWindow):
             if not out:
                 return
             self.ctrl.settings.set("last_dir", out if os.path.isdir(out) else os.path.dirname(out))
+        out = os.fspath(out)
         self.out_path = out
         self.progress.setRange(0, max(1, (opts.end - opts.start) // opts.step + 1))
         self.progress.setValue(0)
@@ -873,6 +906,7 @@ class MainWindow(QMainWindow):
         self.btn_open.setEnabled(False)
         self.btn_cancel.setEnabled(True)
         bg = self.background.clone() if opts.include_bg else None
+        retire_thread(self.exp_thread, self.exp_worker)
         self.exp_thread = QThread()
         self.exp_worker = ExportWorker(self.path, out, copy.deepcopy(self.params()), opts, bg)
         self.exp_worker.moveToThread(self.exp_thread)
@@ -950,13 +984,9 @@ class MainWindow(QMainWindow):
         self.stop_play()
         if self.exp_worker:
             self.exp_worker.cancel()
-        if self.exp_thread and self.exp_thread.isRunning():
-            self.exp_thread.quit()
-            self.exp_thread.wait(10000)
+        retire_thread(self.exp_thread, self.exp_worker, wait_ms=10000)
         self._stop_thumbs()
-        if self.render_thread.isRunning():
-            self.render_thread.quit()
-            self.render_thread.wait(3000)
+        retire_thread(self.render_thread, self.render_worker, wait_ms=5000)
         if self.video:
             self.video.release()
             self.video = None
@@ -1062,6 +1092,8 @@ class Controller(QObject):
 
 
 def main():
+    from . import crashlog
+    crashlog.install()
     if "--self-test" in sys.argv:
         os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
         from .selftest import self_test

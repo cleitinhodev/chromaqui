@@ -1,5 +1,30 @@
 # Changelog
 
+## 3.0.1 — 2026-11-03
+
+### Correções
+- **Exportar dava "expected str, bytes or os.PathLike object, not bool"**: o botão Exportar passava o
+  estado `checked` (False) do sinal `clicked` no lugar do caminho de saída. Agora o botão chama a
+  exportação sem argumentos, o caminho é validado, e uma pasta salva que não existe mais é ignorada
+  ao abrir os diálogos.
+- **Travava e fechava ao mudar a "Qualidade da reprodução" durante a reprodução**: ao reiniciar a
+  reprodução, o aviso de "terminou" da thread antiga chegava depois e apagava a referência da thread
+  nova ainda em execução, e o Qt encerrava o programa ("QThread destroyed while running"). Agora:
+  - a qualidade muda na hora, sem reiniciar a thread;
+  - threads antigas só são liberadas depois de terminarem (reprodução, miniaturas, exportação, prévia);
+  - sinais e quadros atrasados de uma thread antiga são ignorados;
+  - no máximo 1 quadro "em voo" para a interface: em resolução alta os quadros são descartados em vez
+    de acumular numa fila.
+- **Registro de erros**: erros inesperados e travamentos agora ficam em
+  `%APPDATA%\Chromaqui\logs` (`erros.log` e `travamento.log`), e o programa mostra um aviso em vez de
+  fechar em silêncio.
+
+### Testes
+- Novo `tests/test_ui_flows.py`: exporta clicando no botão (diálogos simulados) em todos os formatos,
+  com configurações novas, salvas e com pasta inexistente; estresse de reprodução trocando a qualidade
+  centenas de vezes, buscas, reinícios rápidos, fim do vídeo e troca de idioma, inclusive com vídeo 1080p.
+- `--self-test` também exporta pelo botão e troca a qualidade durante a reprodução.
+
 ## 3.0.0 — 2026-11-03
 
 **Novo nome: Chromaqui!** (antes "Chroma Frames").
