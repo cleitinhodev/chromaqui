@@ -91,7 +91,12 @@ def make(name, hair, gt_name):
     rng = np.random.default_rng(1)
     bg = background(rng)
     path = os.path.join(OUT, name)
-    ff = subprocess.Popen(["ffmpeg", "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "bgr24",
+    import shutil
+    exe = shutil.which("ffmpeg")
+    if not exe:
+        import imageio_ffmpeg
+        exe = imageio_ffmpeg.get_ffmpeg_exe()
+    ff = subprocess.Popen([exe, "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "bgr24",
                            "-s", f"{W}x{H}", "-r", "24", "-i", "-", "-c:v", "libx264", "-crf", "26",
                            "-preset", "medium", "-pix_fmt", "yuv420p", path], stdin=subprocess.PIPE)
     gts = {}

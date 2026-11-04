@@ -4,6 +4,11 @@ on:
   push:
     tags: ["v*"]
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Publicar nesta Release existente/tag (ex.: v3.0.1). Vazio = só compilar e testar."
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -28,10 +33,13 @@ jobs:
         env:
           QT_QPA_PLATFORM: offscreen
         run: |
-          python tests/make_soft_video.py
-          python tests/test_core.py
-          python tests/test_exporters.py
-          python tests/test_ui_flows.py all
+          foreach ($t in "tests/make_soft_video.py", "tests/test_core.py", "tests/test_exporters.py", "tests/test_ui_flows.py") {
+            "::group::$t"
+            python -u -X faulthandler $t all
+            $rc = $LASTEXITCODE
+            "::endgroup::"
+            if ($rc -ne 0) { "FALHOU: $t (código $rc)"; exit 1 }
+          }
 
       - name: Gerar executáveis (pasta + arquivo único) e zips
         run: python tools/build_exe.py --both --zip
@@ -66,11 +74,11 @@ jobs:
             Chromaqui-Windows-onefile.zip
 
       - name: Publicar Release (cria ou atualiza, sem duplicar)
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v') || inputs.release_tag != ''
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.ref_name }}
+          TAG: ${{ inputs.release_tag || github.ref_name }}
         run: |
           python tools/release_notes.py "${TAG#v}" > release_notes.md
           if gh release view "$TAG" >/dev/null 2>&1; then

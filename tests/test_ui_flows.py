@@ -20,6 +20,10 @@ from chromaqui.exporters import FORMATS
 app = QApplication.instance() or QApplication(sys.argv[:1])
 from chromaqui import crashlog
 crashlog.install(qt_messages=False)
+import faulthandler
+faulthandler.enable(sys.stderr, all_threads=True)      # no CI: travamento nativo aparece no log
+import functools
+print = functools.partial(print, flush=True)
 errors = []
 QMessageBox.critical = staticmethod(lambda *a, **k: errors.append(a[2] if len(a) > 2 else a) or QMessageBox.Ok)
 QMessageBox.warning = QMessageBox.critical
@@ -76,6 +80,7 @@ def test_export():
     QFileDialog.getSaveFileName = staticmethod(fake_save)
     QFileDialog.getExistingDirectory = staticmethod(fake_dir)
     for round_ in ("novas", "salvas", "pasta_inexistente"):
+        print(f"export: configurações {round_} …")
         if round_ == "novas" and os.path.exists(os.environ["CHROMAQUI_SETTINGS"]):
             os.remove(os.environ["CHROMAQUI_SETTINGS"])
         ctrl, w = make_window(VID)
@@ -86,6 +91,7 @@ def test_export():
             target = [os.path.join(TMP, round_, f.key)]; os.makedirs(target[0], exist_ok=True)
             w.cmb_fmt.setCurrentIndex([x.key for x in FORMATS].index(f.key)) if hasattr(w, "cmb_fmt") else None
             assert w.export_options().fmt == f.key, (w.export_options().fmt, f.key)
+            print("  ", f.key)
             n_err = len(errors)
             w.btn_export.click()                       # fluxo real: sinal clicked(bool)
             assert wait(lambda: not w.is_exporting()), "exportação não terminou"
@@ -102,6 +108,7 @@ def test_export():
 
 
 def test_stress(video, seconds=20):
+    print(f"stress: {os.path.basename(video)} …")
     ctrl, w = make_window(video)
     w.sp_fps.setValue(60)
     w.cmb_view.setCurrentIndex(0)
