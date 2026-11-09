@@ -1367,7 +1367,13 @@ def main():
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("bugzinho.Chromaqui")
         except Exception:  # noqa: BLE001
             pass
+    elif sys.platform.startswith("linux") and not os.environ.get("QT_QPA_PLATFORM"):
+        # Wayland nativo quando houver; se o plugin falhar, o Qt tenta o X11 (xcb/XWayland)
+        if os.environ.get("WAYLAND_DISPLAY"):
+            os.environ["QT_QPA_PLATFORM"] = "wayland;xcb"
     app = QApplication(sys.argv)
+    if sys.platform.startswith("linux"):
+        app.setDesktopFileName("chromaqui")     # ícone/agrupamento certo no Wayland (chromaqui.desktop)
     app.setApplicationName("Chromaqui")
     app.setOrganizationName("bugzinho")
     ctrl = Controller(app)

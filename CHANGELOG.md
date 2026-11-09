@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.1.0 — compilação para Linux (adicionada em 2026-11-09)
+
+Os arquivos **Chromaqui-Linux-x86_64.AppImage** e **.tar.gz** desta Release foram gerados do código da 3.1.0
+com apenas os ajustes necessários para Linux (configurações e logs em `~/.config/Chromaqui`, ffmpeg
+executável, Wayland/X11, atalho `.desktop`). Os arquivos do Windows da 3.1.0 não mudaram.
+
 ## 3.1.0 — 2026-11-03
 
 ### Novidade: recorte da área exportada

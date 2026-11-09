@@ -14,3 +14,6 @@ selftest*/
 *.log
 .DS_Store
 Thumbs.db
+*.AppImage
+*.tar.gz
+fakehome/

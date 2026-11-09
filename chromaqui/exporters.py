@@ -40,25 +40,48 @@ FORMAT_BY_KEY = {f.key: f for f in FORMATS}
 
 
 # --------------------------------------------------------------------------------------
+def _ensure_exec(path):
+    """Linux/macOS: o binário do ffmpeg precisa do bit de execução. Se faltar e a pasta for somente
+    leitura (ex.: AppImage), usa uma cópia executável em ~/.cache/Chromaqui."""
+    if not path or os.name == "nt" or os.access(path, os.X_OK):
+        return path
+    try:
+        os.chmod(path, os.stat(path).st_mode | 0o755)
+        if os.access(path, os.X_OK):
+            return path
+    except OSError:
+        pass
+    try:
+        cache = os.path.join(os.environ.get("XDG_CACHE_HOME") or os.path.expanduser("~/.cache"), "Chromaqui")
+        os.makedirs(cache, exist_ok=True)
+        dst = os.path.join(cache, os.path.basename(path))
+        if not os.path.isfile(dst) or os.path.getsize(dst) != os.path.getsize(path):
+            shutil.copyfile(path, dst)
+        os.chmod(dst, 0o755)
+        return dst
+    except OSError:
+        return path
+
+
 def ffmpeg_exe():
     """ffmpeg embutido (imageio-ffmpeg); se faltar, procura no PATH."""
     env = os.environ.get("CHROMAQUI_FFMPEG")
     if env and os.path.isfile(env):
         return env
-    try:
-        import imageio_ffmpeg
-        exe = imageio_ffmpeg.get_ffmpeg_exe()
-        if exe and os.path.isfile(exe):
-            return exe
-    except Exception:  # noqa: BLE001
-        pass
     if getattr(sys, "frozen", False):
         base = getattr(sys, "_MEIPASS", os.path.dirname(sys.executable))
         d = os.path.join(base, "imageio_ffmpeg", "binaries")
         if os.path.isdir(d):
-            for n in os.listdir(d):
+            for n in sorted(os.listdir(d)):
                 if n.startswith("ffmpeg"):
-                    return os.path.join(d, n)
+                    return _ensure_exec(os.path.join(d, n))
+    try:
+        import imageio_ffmpeg
+        exe = imageio_ffmpeg.get_ffmpeg_exe()
+        if exe and os.path.isfile(exe):
+            return _ensure_exec(exe)
+    except Exception:  # noqa: BLE001
+        pass
     return shutil.which("ffmpeg")
 
 

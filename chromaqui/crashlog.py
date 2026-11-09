@@ -16,11 +16,8 @@ _state = {"dir": None, "fault": None, "last_dialog": 0.0, "installed": False}
 def log_dir() -> str:
     d = os.environ.get("CHROMAQUI_LOG_DIR")
     if not d:
-        if sys.platform.startswith("win"):
-            base = os.environ.get("APPDATA") or os.path.expanduser("~")
-        else:
-            base = os.environ.get("XDG_STATE_HOME") or os.path.join(os.path.expanduser("~"), ".local", "state")
-        d = os.path.join(base, "Chromaqui", "logs")
+        from .paths import config_dir
+        d = os.path.join(config_dir(), "logs")
     try:
         os.makedirs(d, exist_ok=True)
     except OSError:
