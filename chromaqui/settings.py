@@ -1,4 +1,5 @@
-"""Preferências persistentes (QSettings: Registro no Windows, arquivo .ini se CHROMAQUI_SETTINGS)."""
+"""Preferências persistentes (QSettings): Registro no Windows; no Linux ~/.config/Chromaqui/Chromaqui.ini
+(respeita $XDG_CONFIG_HOME); arquivo .ini próprio se CHROMAQUI_SETTINGS."""
 from __future__ import annotations
 
 import os
@@ -6,6 +7,7 @@ import os
 from PySide6.QtCore import QSettings
 
 from . import IS_BETA, ORG_NAME
+from .paths import IS_WINDOWS, config_dir
 
 DEFAULTS = {"theme": "dark", "lang": "pt-BR", "animations": True, "neon": True, "render": "auto",
             "accent": "", "play_quality": 0, "last_dir": "",
@@ -14,9 +16,29 @@ DEFAULTS = {"theme": "dark", "lang": "pt-BR", "animations": True, "neon": True, 
             "brush_size": 30, "brush_hardness": 50}
 
 
+def _migrate_native(ini):
+    """Linux: copia as preferências do local antigo (~/.config/bugzinho/Chromaqui.conf) uma única vez."""
+    if os.path.exists(ini):
+        return
+    try:
+        os.makedirs(os.path.dirname(ini), exist_ok=True)
+        old = QSettings(ORG_NAME, "Chromaqui")
+        keys = old.allKeys()
+        if keys:
+            new = QSettings(ini, QSettings.IniFormat)
+            for k in keys:
+                new.setValue(k, old.value(k))
+            new.sync()
+    except Exception:  # noqa: BLE001
+        pass
+
+
 class Settings:
     def __init__(self):
         ini = os.environ.get("CHROMAQUI_SETTINGS")
+        if not ini and not IS_WINDOWS:
+            ini = os.path.join(config_dir(), "Chromaqui.ini")
+            _migrate_native(ini)
         self.q = QSettings(ini, QSettings.IniFormat) if ini else QSettings(ORG_NAME, "Chromaqui")
 
     def get(self, key):

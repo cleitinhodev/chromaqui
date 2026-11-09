@@ -1,0 +1,4 @@
+# Linux (AppImage/.tar.gz): mesmas dependências do Windows, com um ffmpeg estático menor
+# (o binário do imageio-ffmpeg 0.8 para Linux tem ~170 MB; o da 0.7 tem ~75 MB e os mesmos codecs usados).
+-r requirements-build.txt
+imageio-ffmpeg>=0.6,<0.8

@@ -1,0 +1,5 @@
+#!/bin/sh
+# AppRun do Chromaqui! (AppImage): executa o programa empacotado pelo PyInstaller.
+HERE="$(dirname "$(readlink -f "$0")")"
+export CHROMAQUI_APPIMAGE=1
+exec "$HERE/usr/lib/chromaqui/Chromaqui" "$@"

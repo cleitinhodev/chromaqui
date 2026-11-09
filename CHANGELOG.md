@@ -1,5 +1,31 @@
 # Changelog
 
+## 3.2.0-beta.2 — 2026-11-09 (pré-release, versão de testes)
+
+> Versão **de testes** (*pre-release*). A **3.1.0 continua sendo a versão estável** ("Latest").
+
+### Novidade: versão nativa para Linux (x86_64)
+- **Chromaqui-Linux-x86_64.AppImage** (um arquivo; `chmod +x` e execute) e **Chromaqui-Linux-x86_64.tar.gz**
+  (pasta portátil + `install-desktop.sh` para o menu de aplicativos). Mesmos recursos do Windows: ffmpeg
+  embutido, remoção por IA (onnxruntime), GPU via OpenCL com volta automática para a CPU, 8 idiomas.
+- Compilado no Ubuntu 22.04 (glibc 2.35): roda no Ubuntu 22.04+, Debian 12+, Fedora, Mint, Arch etc.
+- **X11 e Wayland**: usa o Wayland nativo quando disponível e cai para o X11/XWayland se precisar
+  (`QT_QPA_PLATFORM=xcb` força o X11). Ícone e atalho `.desktop` (ícones hicolor 16–512 px).
+- Pastas do usuário no padrão Linux: configurações e logs em `~/.config/Chromaqui` (respeita
+  `$XDG_CONFIG_HOME`; as preferências antigas de `~/.config/bugzinho/Chromaqui.conf` são migradas), modelos
+  de IA em `~/.local/share/Chromaqui/models` (`$XDG_DATA_HOME`). No Windows nada muda (`%APPDATA%\Chromaqui`).
+- O ffmpeg embutido ganha permissão de execução automaticamente (cópia em `~/.cache/Chromaqui` se a pasta
+  for somente leitura).
+- Aviso de atualização mostra o arquivo certo para o sistema (AppImage no Linux, .zip no Windows).
+
+### Correções
+- Dependência do Qt limitada a PySide6 < 6.12 (a 6.12.0 com Python 3.11 podia fechar com erro ao sair).
+
+### CI
+- Novo job Linux no `release.yml` (Ubuntu 22.04): testes completos, auto-teste do executável e do AppImage
+  (offscreen e X11/Xvfb) e envio do AppImage e do .tar.gz para a Release. A publicação agora acontece num
+  job único depois de Windows e Linux passarem.
+
 ## 3.2.0-beta.1 — 2026-11-04 (pré-release, versão de testes)
 
 > Versão **de testes**: publicada como *pre-release*. A **3.1.0 continua sendo a versão estável**

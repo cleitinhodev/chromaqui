@@ -872,7 +872,8 @@ class ExtrasMixin:
         box.setTextFormat(Qt.RichText)
         box.setText(T("Há uma nova versão do {app}: <b>{v}</b> ({kind}).<br>Você está usando a {cur}.").format(
             app="Chromaqui!", v=info["version"], kind=kind, cur=__version__) +
-            f'<br><br><a href="{info["url"]}">{info["url"]}</a>')
+            f'<br><br><a href="{info["url"]}">{info["url"]}</a>' +
+            (f'<br><a href="{info["download"]}">{info["asset"]}</a>' if info.get("download") else ""))
         b_open = box.addButton(T("Abrir página de download"), QMessageBox.AcceptRole)
         b_skip = box.addButton(T("Ignorar esta versão"), QMessageBox.DestructiveRole)
         box.addButton(T("Agora não"), QMessageBox.RejectRole)

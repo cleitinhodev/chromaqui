@@ -1,0 +1,22 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Chromaqui!
+GenericName=Chroma key video editor
+GenericName[pt_BR]=Removedor de fundo verde de vídeos
+Comment=Remove green or blue backgrounds from videos and export with transparency
+Comment[pt_BR]=Remova o fundo verde ou azul de vídeos e exporte com transparência
+Comment[es]=Elimina el fondo verde o azul de vídeos y exporta con transparencia
+Comment[fr]=Supprimez le fond vert ou bleu de vos vidéos et exportez avec transparence
+Comment[de]=Grünen oder blauen Hintergrund aus Videos entfernen und mit Transparenz exportieren
+Comment[it]=Rimuovi lo sfondo verde o blu dai video ed esporta con trasparenza
+Comment[ja]=動画のグリーンバック・ブルーバックを除去して透過付きで書き出し
+Comment[zh_CN]=去除视频的绿幕或蓝幕背景并带透明导出
+Exec=chromaqui %f
+Icon=chromaqui
+Terminal=false
+Categories=AudioVideo;Video;Graphics;
+Keywords=chroma;key;green screen;greenscreen;transparent;alpha;gif;webm;prores;sprite;
+MimeType=video/mp4;video/quicktime;video/x-msvideo;video/x-matroska;video/webm;video/mpeg;
+StartupWMClass=Chromaqui
+StartupNotify=true

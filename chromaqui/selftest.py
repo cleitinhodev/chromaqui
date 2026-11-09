@@ -295,6 +295,12 @@ def self_test(argv):
         app.processEvents()
         assert w.windowTitle().startswith(APP_NAME)
         log(f"GUI OK {APP_NAME} {__version__}")
+        from . import paths as _paths
+        from .exporters import ffmpeg_exe as _ff
+        _exe = _ff()
+        assert _exe and os.access(_exe, os.X_OK), f"ffmpeg não executável: {_exe}"
+        log(f"SISTEMA OK ({sys.platform}, Qt {app.platformName()}, ffmpeg {os.path.basename(_exe)}, "
+            f"config {_paths.config_dir()})")
 
         # ---- tema
         for t in ("light", "dark"):

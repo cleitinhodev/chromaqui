@@ -26,7 +26,9 @@
 
 ## Download
 
-Baixe o `.zip` mais recente em **[Releases](https://github.com/cleitinhodev/chromaqui/releases/latest)**:
+Baixe a versão mais recente em **[Releases](https://github.com/cleitinhodev/chromaqui/releases/latest)**.
+
+### Windows
 
 - **Chromaqui-Windows.zip** — pasta com `Chromaqui.exe` (abre mais rápido; recomendado).
 - **Chromaqui-Windows-onefile.zip** — um único `Chromaqui.exe` (mais prático, demora alguns segundos para abrir).
@@ -34,10 +36,42 @@ Baixe o `.zip` mais recente em **[Releases](https://github.com/cleitinhodev/chro
 Não precisa instalar nada: descompacte e execute. Windows 10/11 64 bits.
 Na primeira execução o SmartScreen pode avisar ("Executar assim mesmo"), porque o executável não é assinado.
 
-> 🧪 **Versão de testes:** a **3.2.0-beta.1** está nas Releases como *pre-release* (recursos marcados
+### Linux (x86_64)
+
+Versão nativa, com os mesmos recursos (ffmpeg, IA e GPU/OpenCL inclusos). Funciona em distribuições com
+glibc 2.35 ou mais nova (Ubuntu 22.04+, Debian 12+, Fedora 36+, Mint 21+, openSUSE Leap 15.5+, Arch…),
+em X11 e Wayland.
+
+- **Chromaqui-Linux-x86_64.AppImage** — um arquivo só (recomendado):
+
+  ```bash
+  chmod +x Chromaqui-Linux-x86_64.AppImage
+  ./Chromaqui-Linux-x86_64.AppImage
+  ```
+
+  O AppImage usa o **FUSE** para se montar (só o comando `fusermount3`/`fusermount`, do pacote `fuse3` ou
+  `fuse`, que já vem na maioria das distribuições; **não** precisa do antigo `libfuse2`). Se aparecer
+  "Cannot mount AppImage" / "fusermount: not found", instale `fuse3` (`sudo apt install fuse3`,
+  `sudo dnf install fuse3`, `sudo pacman -S fuse3`) **ou** rode sem FUSE:
+  `./Chromaqui-Linux-x86_64.AppImage --appimage-extract-and-run`.
+- **Chromaqui-Linux-x86_64.tar.gz** — pasta portátil (não precisa de FUSE):
+
+  ```bash
+  tar xzf Chromaqui-Linux-x86_64.tar.gz
+  cd Chromaqui-Linux-x86_64
+  ./Chromaqui/Chromaqui
+  ./install-desktop.sh      # opcional: adiciona ao menu de aplicativos (só para o seu usuário)
+  ```
+
+Configurações e logs ficam em `~/.config/Chromaqui` (ou `$XDG_CONFIG_HOME/Chromaqui`); os modelos de IA em
+`~/.local/share/Chromaqui/models`. Em Wayland o programa usa o Wayland nativo e, se não der, o X11 (XWayland);
+para forçar o X11: `QT_QPA_PLATFORM=xcb ./Chromaqui-Linux-x86_64.AppImage`.
+
+> 🧪 **Versão de testes:** a **3.2.0-beta.2** (Windows e Linux) está nas Releases como *pre-release* (recursos marcados
 > **(beta)** abaixo). A versão estável recomendada continua sendo a **3.1.0** (marcada como *Latest*).
 
-Se algo der errado, os detalhes ficam em `%APPDATA%\Chromaqui\logs` (`erros.log`, `travamento.log`).
+Se algo der errado, os detalhes ficam em `%APPDATA%\Chromaqui\logs` (Windows) ou `~/.config/Chromaqui/logs`
+(Linux) — arquivos `erros.log` e `travamento.log`.
 
 ## Recursos
 
@@ -58,7 +92,8 @@ Se algo der errado, os detalhes ficam em `%APPDATA%\Chromaqui\logs` (`erros.log`
 - **Exportar só um trecho**: campos *De / Até / 1 a cada N* em "Opções de exportação".
 - **Retoque com pincel** *(beta)*: Manter / Remover / Borracha direto na prévia (todos os quadros ou só um).
 - **Remoção por IA, sem tela verde** *(beta)*: onnxruntime na CPU; o modelo (MODNet 26 MB ou U²-Net
-  pequeno 4,6 MB) é baixado uma vez, no primeiro uso, para `%APPDATA%\Chromaqui\models`.
+  pequeno 4,6 MB) é baixado uma vez, no primeiro uso, para `%APPDATA%\Chromaqui\models`
+  (Linux: `~/.local/share/Chromaqui/models`).
 - **Sombra projetada / brilho neon** atrás do objeto *(beta)*, na prévia e opcionalmente no arquivo.
 - **Desfazer/Refazer** (Ctrl+Z / Ctrl+Y) e **comparar antes/depois** (prévia dividida e botão "Antes") *(beta)*.
 - **Exportação em lote** *(beta)*: vários vídeos com os ajustes atuais ou um preset.
@@ -116,9 +151,18 @@ pip install -r requirements-build.txt
 python tools/build_exe.py --both --zip
 ```
 
-Gera `dist/Chromaqui/Chromaqui.exe`, `dist1/Chromaqui.exe` e os dois `.zip`. O workflow
-`.github/workflows/release.yml` faz isso automaticamente no GitHub ao criar uma tag `v*`
-(ex.: `git tag v3.1.0 && git push origin v3.1.0`) e anexa os zips à Release.
+Gera `dist/Chromaqui/Chromaqui.exe`, `dist1/Chromaqui.exe` e os dois `.zip`.
+
+No Linux (de preferência numa distribuição antiga, para funcionar nas mais novas; o CI usa Ubuntu 22.04):
+
+```bash
+pip install -r requirements-linux.txt
+python tools/build_linux.py --package     # Chromaqui-Linux-x86_64.AppImage e .tar.gz
+```
+
+O workflow `.github/workflows/release.yml` faz tudo isso no GitHub (Windows e Linux, com testes e auto-teste
+dos executáveis) ao criar uma tag `v*` (ex.: `git tag v3.1.0 && git push origin v3.1.0`) e anexa os arquivos
+à Release. Tags `-alpha`/`-beta`/`-rc` saem como *pre-release* e nunca viram a *Latest*.
 
 ### Trocar o logo / ícone
 
@@ -172,7 +216,7 @@ animated WebP, APNG, WebM VP9 with alpha and MOV ProRes 4444 with alpha** (bundl
 - **New in 3.2.0-beta.1 (pre-release; 3.1.0 stays the stable "Latest")**: crop that **follows the subject**
   or is interpolated between **keyframes**; **brush retouch** (keep/remove/eraser); **sprite sheet + TexturePacker
   JSON**; **batch export**; **AI background removal without a green screen** (onnxruntime, model downloaded on
-  first use to `%APPDATA%\Chromaqui\models`); **drop shadow / neon glow**; **undo/redo** and **before/after
+  first use to `%APPDATA%\Chromaqui\models`, or `~/.local/share/Chromaqui/models` on Linux); **drop shadow / neon glow**; **undo/redo** and **before/after
   compare**; **update checker**. Range export (from/to/every N frames) was already available.
 - Preview over checkerboard/solid color or **your own image/video background**; it is only baked into
   the export when **"Include background in export"** is checked.
@@ -180,12 +224,22 @@ animated WebP, APNG, WebM VP9 with alpha and MOV ProRes 4444 with alpha** (bundl
   (pt-BR, en, es, fr, de, it, ja, zh-CN).
 - **GPU rendering** via OpenCV OpenCL (Auto/CPU/GPU) with a verification test and safe CPU fallback.
 
-**Download:** grab `Chromaqui-Windows.zip` (folder build, faster start) or
+**Download (Windows):** grab `Chromaqui-Windows.zip` (folder build, faster start) or
 `Chromaqui-Windows-onefile.zip` (single exe) from **[Releases](https://github.com/cleitinhodev/chromaqui/releases/latest)**, unzip and run.
 
+**Download (Linux x86_64, glibc 2.35+, X11 or Wayland):** native build with the same features.
+- `Chromaqui-Linux-x86_64.AppImage`: `chmod +x Chromaqui-Linux-x86_64.AppImage && ./Chromaqui-Linux-x86_64.AppImage`.
+  It mounts itself with FUSE (only the `fusermount3`/`fusermount` command from the `fuse3`/`fuse` package — no
+  `libfuse2` needed); without FUSE run it with `--appimage-extract-and-run`.
+- `Chromaqui-Linux-x86_64.tar.gz` (portable folder, no FUSE): `tar xzf …`, run `Chromaqui/Chromaqui`;
+  `./install-desktop.sh` adds a menu entry for your user.
+- Settings and logs: `~/.config/Chromaqui` (`$XDG_CONFIG_HOME`); AI models: `~/.local/share/Chromaqui/models`.
+  Force X11 on Wayland with `QT_QPA_PLATFORM=xcb`.
+
 **From source:** `pip install -r requirements.txt && python run_chromaqui.py`.
-**Build:** `pip install -r requirements-build.txt && python tools/build_exe.py --both --zip`.
-**Self-test:** `Chromaqui.exe --self-test video.mp4 out_dir` (writes `out_dir/selftest.log`).
+**Build:** `pip install -r requirements-build.txt && python tools/build_exe.py --both --zip` (Windows) or
+`pip install -r requirements-linux.txt && python tools/build_linux.py --package` (Linux).
+**Self-test:** `Chromaqui.exe --self-test video.mp4 out_dir` (Linux: `./Chromaqui-Linux-x86_64.AppImage --self-test …`) (writes `out_dir/selftest.log`).
 
 Notes: GIF only supports 1-bit transparency (use the matte color to avoid jagged edges);
 the bundled ffmpeg adds ~100 MB; the "LZW" option means LZW for 8-bit TIFF and Deflate for 16-bit TIFF.

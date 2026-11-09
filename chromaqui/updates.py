@@ -46,8 +46,28 @@ def pick_update(releases, current: str, include_betas: bool):
     return best
 
 
+# arquivo preferido de cada sistema, em ordem (o primeiro que existir na Release)
+ASSET_PATTERNS = {
+    "windows": (r"Windows\.zip$", r"Windows.*\.zip$"),
+    "linux": (r"x86_64\.AppImage$", r"\.AppImage$", r"Linux.*\.tar\.gz$"),
+}
+
+
+def pick_asset(release, platform=None):
+    """(nome, url de download) do arquivo deste sistema na Release, ou None."""
+    if platform is None:
+        from .paths import platform_tag
+        platform = platform_tag()
+    assets = [a for a in (release or {}).get("assets") or [] if isinstance(a, dict) and a.get("name")]
+    for pat in ASSET_PATTERNS.get(platform, ()):
+        for a in assets:
+            if re.search(pat, a["name"], re.I):
+                return a["name"], a.get("browser_download_url") or ""
+    return None
+
+
 def check(current: str, include_betas: bool, url: str = API, timeout: float = 6.0, raise_errors=False):
-    """{"version", "url", "prerelease", "name"} se houver versão nova; None caso contrário ou em erro
+    """{"version", "url", "prerelease", "name", "asset", "download"} se houver versão nova; None caso contrário ou em erro
     (raise_errors=True: repassa o erro, para a verificação manual mostrar a falha)."""
     try:
         req = urllib.request.Request(url, headers={"Accept": "application/vnd.github+json",
@@ -58,8 +78,10 @@ def check(current: str, include_betas: bool, url: str = API, timeout: float = 6.
         if rel is None:
             return None
         tag = rel.get("tag_name", "")
+        asset = pick_asset(rel)
         return {"version": tag.lstrip("vV"), "url": rel.get("html_url") or PAGE,
-                "prerelease": bool(rel.get("prerelease")) or is_prerelease(tag), "name": rel.get("name") or tag}
+                "prerelease": bool(rel.get("prerelease")) or is_prerelease(tag), "name": rel.get("name") or tag,
+                "asset": asset[0] if asset else "", "download": asset[1] if asset else ""}
     except Exception:
         if raise_errors:
             raise

@@ -9,12 +9,27 @@ on:
         description: "Publicar nesta Release existente/tag (ex.: v3.0.1). Vazio = só compilar e testar."
         required: false
         default: ""
+      only_linux:
+        description: "Só Linux: compila e ENVIA APENAS os arquivos Linux para a Release (não mexe nos do Windows nem na Latest; falha se já existirem)."
+        type: boolean
+        required: false
+        default: false
+      source_ref:
+        description: "Código a compilar no job Linux (branch/tag/commit). Vazio = o mesmo do workflow."
+        required: false
+        default: ""
 
 permissions:
   contents: write
 
+env:
+  TEST_SCRIPTS: >-
+    tests/make_soft_video.py tests/test_core.py tests/test_exporters.py tests/test_ui_flows.py
+    tests/test_crop.py tests/test_features.py tests/test_platform.py
+
 jobs:
   windows:
+    if: ${{ !inputs.only_linux }}
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -34,7 +49,8 @@ jobs:
           QT_QPA_PLATFORM: offscreen
           PYTHONIOENCODING: utf-8
         run: |
-          foreach ($t in "tests/make_soft_video.py", "tests/test_core.py", "tests/test_exporters.py", "tests/test_ui_flows.py", "tests/test_crop.py", "tests/test_features.py") {
+          foreach ($t in ($env:TEST_SCRIPTS -split '\s+' | Where-Object { $_ })) {
+            if (-not (Test-Path $t)) { "pulando $t (não existe nesta versão)"; continue }
             "::group::$t"
             python -u -X faulthandler $t all
             $rc = $LASTEXITCODE
@@ -63,7 +79,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: selftest
+          name: selftest-windows
           path: selftest_out
           if-no-files-found: ignore
 
@@ -74,14 +90,117 @@ jobs:
             Chromaqui-Windows.zip
             Chromaqui-Windows-onefile.zip
 
+  linux:
+    # Ubuntu 22.04 (glibc 2.35): o executável roda nessa e em todas as distribuições mais novas
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_ref || github.ref }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Bibliotecas do sistema (Qt xcb/wayland, Xvfb, file para o appimagetool)
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q --no-install-recommends file xvfb xauth \
+            libxcb-cursor0 libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 \
+            libxcb-render-util0 libxcb-shape0 libxcb-xinerama0 libxcb-xfixes0 libxcb-xkb1 libxcb-sync1 \
+            libegl1 libgl1 libopengl0 libfontconfig1 libdbus-1-3 libglib2.0-0 \
+            libwayland-client0 libwayland-cursor0 libwayland-egl1 libgtk-3-0
+
+      - name: Instalar dependências
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements-linux.txt ]; then pip install -r requirements-linux.txt; else pip install -r requirements-build.txt; fi
+          python -c "import PySide6, imageio_ffmpeg, onnxruntime; print('PySide6', PySide6.__version__, '| ffmpeg', imageio_ffmpeg.get_ffmpeg_exe(), '| onnxruntime', onnxruntime.__version__)"
+
+      - name: Testes (suíte completa)
+        env:
+          QT_QPA_PLATFORM: offscreen
+          PYTHONIOENCODING: utf-8
+        run: |
+          for t in $TEST_SCRIPTS; do
+            if [ ! -f "$t" ]; then echo "pulando $t (não existe nesta versão)"; continue; fi
+            echo "::group::$t"
+            set +e; python -u -X faulthandler "$t" all; rc=$?; set -e
+            echo "::endgroup::"
+            if [ $rc -ne 0 ]; then echo "FALHOU: $t (código $rc)"; exit 1; fi
+          done
+
+      - name: Gerar executável, AppImage e .tar.gz
+        run: python tools/build_linux.py --package
+
+      - name: Auto-teste (pasta, AppImage offscreen e AppImage em X11/Xvfb)
+        run: |
+          set -u
+          vid="$PWD/tests/_out/teste_verde.mp4"; fail=0
+          run() {  # nome, comando...
+            name="$1"; shift; out="$PWD/selftest_out/$name"; mkdir -p "$out"
+            set +e; "$@" --self-test "$vid" "$out"; rc=$?; set -e
+            echo "== $name: código $rc =="; cat "$out/selftest.log" 2>/dev/null || true
+            [ -f "$out/selftest_crash.log" ] && cat "$out/selftest_crash.log"
+            [ $rc -eq 0 ] || fail=1
+          }
+          export HOME="$PWD/fakehome"; mkdir -p "$HOME"
+          QT_QPA_PLATFORM=offscreen run pasta ./dist/Chromaqui/Chromaqui
+          QT_QPA_PLATFORM=offscreen run appimage ./Chromaqui-Linux-x86_64.AppImage --appimage-extract-and-run
+          QT_QPA_PLATFORM=xcb run appimage-x11 xvfb-run -a -s "-screen 0 1600x1000x24" ./Chromaqui-Linux-x86_64.AppImage --appimage-extract-and-run
+          ls -la Chromaqui-Linux-x86_64.*
+          exit $fail
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: selftest-linux
+          path: selftest_out
+          if-no-files-found: ignore
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Chromaqui-Linux
+          path: |
+            Chromaqui-Linux-x86_64.AppImage
+            Chromaqui-Linux-x86_64.tar.gz
+
+  publish:
+    needs: [windows, linux]
+    if: >-
+      ${{ always() && needs.linux.result == 'success' &&
+          (needs.windows.result == 'success' || (inputs.only_linux && needs.windows.result == 'skipped')) &&
+          (startsWith(github.ref, 'refs/tags/v') || inputs.release_tag != '') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: Chromaqui-*
+          merge-multiple: true
+          path: assets
+
       - name: Publicar Release (cria ou atualiza, sem duplicar)
-        if: startsWith(github.ref, 'refs/tags/v') || inputs.release_tag != ''
-        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ inputs.release_tag || github.ref_name }}
+          ONLY_LINUX: ${{ inputs.only_linux && 'true' || 'false' }}
         run: |
-          python tools/release_notes.py "${TAG#v}" > release_notes.md
+          set -eu
+          ls -la assets
+          LINUX=(assets/Chromaqui-Linux-x86_64.AppImage assets/Chromaqui-Linux-x86_64.tar.gz)
+          if [ "$ONLY_LINUX" = "true" ]; then
+            # adiciona SÓ os arquivos Linux a uma Release existente: sem --clobber (falha se já existirem),
+            # sem tocar nos arquivos do Windows, nas notas ou na marcação Latest/pre-release
+            gh release view "$TAG" >/dev/null
+            gh release upload "$TAG" "${LINUX[@]}"
+            gh release view "$TAG" --json assets -q '.assets[] | "\(.name)\t\(.size)\t\(.updatedAt)"'
+            exit 0
+          fi
+          WIN=(assets/Chromaqui-Windows.zip assets/Chromaqui-Windows-onefile.zip)
+          RELEASE_HAS_LINUX=1 python3 tools/release_notes.py "${TAG#v}" --linux > release_notes.md
           # versões de testes (-alpha/-beta/-rc) saem como pré-release e NUNCA viram a "Latest";
           # a estável continua sendo a última versão sem sufixo
           case "$TAG" in
@@ -89,10 +208,10 @@ jobs:
             *) KIND=(--latest); echo "$TAG: versão estável (Latest)";;
           esac
           if gh release view "$TAG" >/dev/null 2>&1; then
-            echo "Release $TAG já existe: substituindo os zips (--clobber)."
-            gh release upload "$TAG" Chromaqui-Windows.zip Chromaqui-Windows-onefile.zip --clobber
+            echo "Release $TAG já existe: substituindo os arquivos desta compilação (--clobber)."
+            gh release upload "$TAG" "${WIN[@]}" "${LINUX[@]}" --clobber
             gh release edit "$TAG" "${KIND[@]}"
           else
-            gh release create "$TAG" Chromaqui-Windows.zip Chromaqui-Windows-onefile.zip \
+            gh release create "$TAG" "${WIN[@]}" "${LINUX[@]}" \
               --title "Chromaqui! ${TAG#v}" --notes-file release_notes.md --verify-tag "${KIND[@]}"
           fi

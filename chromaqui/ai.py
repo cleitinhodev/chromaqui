@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import hashlib
 import os
-import sys
 import threading
 import urllib.request
 from collections import OrderedDict
@@ -44,11 +43,8 @@ class AIError(Exception):
 def models_dir() -> str:
     d = os.environ.get("CHROMAQUI_MODELS_DIR")
     if not d:
-        if sys.platform.startswith("win"):
-            d = os.path.join(os.environ.get("APPDATA") or os.path.expanduser("~"), "Chromaqui", "models")
-        else:
-            d = os.path.join(os.environ.get("XDG_DATA_HOME") or os.path.expanduser("~/.local/share"),
-                             "Chromaqui", "models")
+        from .paths import data_dir
+        d = os.path.join(data_dir(), "models")
     return d
 
 
