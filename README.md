@@ -19,6 +19,7 @@
 
 | Tema escuro | Tema claro |
 |---|---|
+| ![Projeto de demonstração ao abrir (escuro)](docs/demo_inicio_escuro.png) | ![Projeto de demonstração ao abrir (claro)](docs/demo_inicio_claro.png) |
 | ![Tema escuro](docs/screenshot_escuro.png) | ![Tema claro](docs/screenshot_claro.png) |
 | ![Exportar (escuro)](docs/screenshot_exportar_escuro.png) | ![Exportar (claro)](docs/screenshot_exportar_claro.png) |
 | ![Recorte (escuro)](docs/recorte_escuro.png) | ![Recorte (claro)](docs/recorte_claro.png) |
@@ -67,11 +68,26 @@ Configurações e logs ficam em `~/.config/Chromaqui` (ou `$XDG_CONFIG_HOME/Chro
 `~/.local/share/Chromaqui/models`. Em Wayland o programa usa o Wayland nativo e, se não der, o X11 (XWayland);
 para forçar o X11: `QT_QPA_PLATFORM=xcb ./Chromaqui-Linux-x86_64.AppImage`.
 
-> 🧪 **Versão de testes:** a **3.2.0-beta.2** (Windows e Linux) está nas Releases como *pre-release* (recursos marcados
+> 🧪 **Versão de testes:** a **3.2.0-beta.3** (Windows e Linux) está nas Releases como *pre-release* (recursos marcados
 > **(beta)** abaixo). A versão estável recomendada continua sendo a **3.1.0** (marcada como *Latest*).
 
 Se algo der errado, os detalhes ficam em `%APPDATA%\Chromaqui\logs` (Windows) ou `~/.config/Chromaqui/logs`
 (Linux) — arquivos `erros.log` e `travamento.log`.
+
+## Projeto de demonstração
+
+Ao abrir *(a partir da 3.2.0-beta.3)*, o Chromaqui! já mostra um exemplo pronto: a moça de
+[`assets/demo/japanese_woman.mp4`](assets/demo/japanese_woman.mp4) (tela verde, 1280×720, 6 s) sobre o
+cenário do santuário [`assets/demo/scenery_shrine.webp`](assets/demo/scenery_shrine.webp), com ajustes
+calibrados e a prévia **meio a meio**: à esquerda o original com o fundo verde, à direita o resultado no
+cenário (arraste a divisória). Um aviso *Projeto de demonstração* (com ✕ para fechar) explica o que é.
+
+- **Novo projeto** (botão no topo ou **Ctrl+N**) e **Importar vídeo…** começam do zero, como sempre: nada da
+  demonstração (ajustes, fundo, comparação, recorte) vai para o seu projeto nem para as preferências.
+- Para não abrir mais: **Configurações → Início → Mostrar demonstração ao iniciar**. Para ver de novo:
+  **Abrir demonstração** (em Configurações ou em Sobre).
+- Os dois arquivos acompanham o programa (`_internal/assets/demo/` no Windows, no AppImage e no `.tar.gz`);
+  use-os para treinar.
 
 ## Recursos
 
@@ -139,10 +155,11 @@ python run_chromaqui.py --self-test caminho\video.mp4 pasta_saida
 # ou no executável:  Chromaqui.exe --self-test video.mp4 pasta_saida
 ```
 
-Testa tema, efeitos, ícone, Sobre/Configurações, todos os idiomas, presets, visualizações, CPU/GPU,
+Testa tema, efeitos, ícone, Sobre/Configurações, o projeto de demonstração (e o *Novo projeto* em branco), todos os idiomas, presets, visualizações, CPU/GPU,
 fundo, reprodução, **todos os formatos** (conferidos com ffprobe/Pillow), fundo na exportação e cancelar.
 Resultado em `pasta_saida/selftest.log`. Outros testes: `tests/test_core.py`, `tests/test_exporters.py`,
-`tests/test_gpu.py`, `tests/test_playback.py` (rode `tests/make_soft_video.py` antes).
+`tests/test_gpu.py`, `tests/test_playback.py`, `tests/test_demo.py` (rode `tests/make_soft_video.py` antes).
+As capturas de `docs/` são geradas com o projeto de demonstração: `python tests/screenshot.py`.
 
 ### Gerar o executável
 
@@ -187,8 +204,10 @@ Os textos-fonte numerados ficam em `tools/i18n_src/*.txt` → `python tools/i18n
 ```
 chromaqui/      app.py (janela), app_extras.py (recursos 3.2), core.py (chroma key), exporters.py (formatos),
                 ai.py (IA/onnxruntime), retouch.py (pincel), batch.py (lote), updates.py, gpu.py (OpenCL),
-                theme.py, fx.py, i18n.py, dialogs.py, widgets.py, settings.py, selftest.py
-assets/         logo.png, icon.ico, favicon.ico, icons/, i18n/
+                demo.py (projeto de demonstração), theme.py, fx.py, i18n.py, dialogs.py, widgets.py, settings.py,
+                selftest.py
+assets/         logo.png, icon.ico, favicon.ico, icons/, i18n/,
+                demo/ (japanese_woman.mp4 + scenery_shrine.webp: projeto de demonstração)
 tools/          build_exe.py, make_icon.py, prepare_logo.py, logo_preview.py, extract_strings.py, i18n_build.py
 tests/          testes e geradores de vídeos de teste
 docs/           capturas de tela
@@ -218,6 +237,12 @@ animated WebP, APNG, WebM VP9 with alpha and MOV ProRes 4444 with alpha** (bundl
   JSON**; **batch export**; **AI background removal without a green screen** (onnxruntime, model downloaded on
   first use to `%APPDATA%\Chromaqui\models`, or `~/.local/share/Chromaqui/models` on Linux); **drop shadow / neon glow**; **undo/redo** and **before/after
   compare**; **update checker**. Range export (from/to/every N frames) was already available.
+- **Demo project on startup (3.2.0-beta.3)**: the app opens with `assets/demo/japanese_woman.mp4` (green
+  screen) keyed over `assets/demo/scenery_shrine.webp`, tuned settings and a **half-and-half split preview**
+  (original on the left, result on the right; drag the divider) plus a dismissable *Demo project* banner.
+  **New project** (Ctrl+N) or importing a video starts from scratch, as always — nothing from the demo leaks into
+  your project or settings. Turn it off in **Settings → Startup → Show demo at startup**; reopen it with
+  **Open demo** (Settings or About).
 - Preview over checkerboard/solid color or **your own image/video background**; it is only baked into
   the export when **"Include background in export"** is checked.
 - **Light/Dark themes**, optional animations and neon glow, **8 languages switchable at runtime**

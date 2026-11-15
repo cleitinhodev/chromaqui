@@ -78,6 +78,11 @@ class AboutDialog(QDialog):
         bb = QDialogButtonBox(QDialogButtonBox.Close)
         bb.button(QDialogButtonBox.Close).setText(T("Fechar"))
         bb.rejected.connect(self.reject)
+        if parent is not None and hasattr(parent, "open_demo"):
+            self.btn_demo = bb.addButton(T("Abrir demonstração"), QDialogButtonBox.ActionRole)
+            self.btn_demo.setToolTip(T("Abre o projeto de exemplo: moça na tela verde sobre o cenário do santuário, "
+                                       "com a prévia dividida meio a meio."))
+            self.btn_demo.clicked.connect(lambda: (self.accept(), parent.open_demo()))
         lay.addWidget(bb)
         set_neon(self.title, FX.neon, 16)
 
@@ -152,6 +157,21 @@ class SettingsDialog(QDialog):
         row.addWidget(self.lbl_upd, 1)
         f3.addLayout(row)
         lay.addWidget(g3)
+
+        g4 = QGroupBox(T("Início"))
+        f4 = QHBoxLayout(g4)
+        self.chk_demo = QCheckBox(T("Mostrar demonstração ao iniciar"))
+        self.chk_demo.setChecked(s.get("show_demo"))
+        self.chk_demo.setToolTip(T("Ao abrir o programa sem um vídeo, carrega o projeto de exemplo (tela verde + "
+                                   "cenário, meio a meio). 'Novo projeto' e importar um vídeo começam do zero."))
+        self.chk_demo.toggled.connect(lambda on: s.set("show_demo", bool(on)))
+        f4.addWidget(self.chk_demo, 1)
+        w = getattr(ctrl, "window", None)
+        if w is not None and hasattr(w, "open_demo"):
+            self.btn_demo = QPushButton(T("Abrir demonstração"))
+            self.btn_demo.clicked.connect(lambda: (self.accept(), w.open_demo()))
+            f4.addWidget(self.btn_demo)
+        lay.addWidget(g4)
         self.chk_upd.toggled.connect(lambda on: s.set("update_check", bool(on)))
         self.chk_betas.toggled.connect(lambda on: s.set("update_betas", bool(on)))
 

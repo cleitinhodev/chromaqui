@@ -108,6 +108,10 @@ QLabel#muted, QLabel[muted="true"] {{ color: {p['muted']}; }}
 QLabel#appTitle {{ font-size: 17pt; font-weight: 800; letter-spacing: 0.5px;
     color: {p['accent']}; }}  /* o gradiente do texto é pintado por widgets.GradientTitle */
 QLabel#appVersion {{ color: {p['muted']}; font-size: 9pt; }}
+QFrame#demoBanner {{ background: {mix(p['panel2'], p['accent'], 0.10)}; border: 1px solid {mix(p['border'], p['accent'], 0.45)}; border-radius: 8px; }}
+QLabel#demoTag {{ color: {p['accent_text']}; background: {p['accent']}; font-weight: 700; font-size: 8.5pt; padding: 2px 8px; border-radius: 6px; }}
+QToolButton#demoClose {{ color: {p['muted']}; border: none; padding: 2px 6px; font-size: 11pt; }}
+QToolButton#demoClose:hover {{ color: {p['text']}; }}
 QFrame#header {{ background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 {p['head1']}, stop:1 {p['head2']});
     border: 1px solid {p['border']}; border-radius: 12px; }}
 QLabel#preview {{ background: {p['preview']}; color: {p['muted']}; font-size: 15px; border: 1px solid {p['border']}; border-radius: 12px; }}

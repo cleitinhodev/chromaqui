@@ -1,5 +1,31 @@
 # Changelog
 
+## 3.2.0-beta.3 — 2026-11-15 (pré-release, versão de testes)
+
+> Versão **de testes** (*pre-release*). A **3.1.0 continua sendo a versão estável** ("Latest").
+
+### Novidade: projeto de demonstração ao abrir
+- O programa abre com um exemplo pronto: a moça de **`assets/demo/japanese_woman.mp4`** (tela verde,
+  1280×720, 6 s) sobre o cenário do santuário **`assets/demo/scenery_shrine.webp`**, com ajustes calibrados
+  (tolerância 24, pedestal 6: o fundo verde some por inteiro, sem véu) e a prévia **meio a meio** — à
+  esquerda o original com fundo verde, à direita o resultado no cenário (a divisória pode ser arrastada).
+- Aviso **"Projeto de demonstração"** (8 idiomas) acima da prévia, com ✕ para fechar.
+- **Novo projeto** (botão no topo, **Ctrl+N**) e **Importar vídeo…** começam do zero, como sempre: os ajustes,
+  o fundo, a comparação e o recorte da demonstração não passam para o seu projeto e nada da demonstração é
+  gravado nas preferências (nem o recorte memorizado por tamanho de vídeo).
+- **Configurações → Início → Mostrar demonstração ao iniciar** (ligado por padrão) e **Abrir demonstração**
+  (em Configurações e em Sobre). Abrir um vídeo pela linha de comando continua abrindo só o vídeo.
+- Os arquivos da demonstração vão junto nos executáveis do Windows (pasta e arquivo único), no AppImage e no
+  `.tar.gz` (a compilação falha se faltarem). Vídeo reencodado (H.264 CRF 20, sem áudio, 1,8 MB) e cenário
+  em WebP (0,6 MB), sem perda visível.
+- O auto-teste (`--self-test`) confere a demonstração (arquivos, meio a meio, recorte limpo) e o *Novo
+  projeto* em branco; novo `tests/test_demo.py`.
+- Capturas do README (`docs/`) e do tutorial refeitas com a demonstração.
+
+### Correções
+- Tradução do rótulo "Depois" da comparação (aparecia como "Later"/"Plus tard"/"Später"… em vez de
+  "After"/"Après"/"Nachher"…).
+
 ## 3.2.0-beta.2 — 2026-11-09 (pré-release, versão de testes)
 
 > Versão **de testes** (*pre-release*). A **3.1.0 continua sendo a versão estável** ("Latest").

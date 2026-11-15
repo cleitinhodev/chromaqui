@@ -427,7 +427,7 @@
  "Esta é uma versão de testes: os recursos novos podem mudar. A versão estável continua disponível na página de Releases.": "这是测试版：新功能可能会变化。稳定版仍可在 Releases 页面获取。",
  "Verificando…": "正在检查…",
  "BETA (versão de testes)": "测试版（BETA）",
- "Depois": "稍后",
+ "Depois": "之后",
  "Sprite sheet (PNG + JSON)": "精灵图（PNG + JSON）",
  "Pessoas — MODNet (26 MB)": "人物 — MODNet（26 MB）",
  "Objetos — U²-Net pequeno (4,6 MB)": "物体 — U²-Net 小型（4.6 MB）",
@@ -440,5 +440,18 @@
  "Deslocamento X": "X 偏移",
  "Deslocamento Y": "Y 偏移",
  "Opacidade": "不透明度",
- "Expansão": "扩展"
+ "Expansão": "扩展",
+ "Novo projeto": "新建项目",
+ "Começa do zero: sem vídeo, ajustes no padrão (Ctrl+N)": "从头开始：没有视频，设置为默认值（Ctrl+N）",
+ "Projeto de demonstração": "演示项目",
+ "Fechar aviso": "关闭提示",
+ "Arquivos da demonstração não encontrados.": "找不到演示文件。",
+ "Aguarde a exportação terminar (ou cancele) para começar um projeto novo.": "请等待导出完成（或取消导出）后再新建项目。",
+ "{video} sobre {scene}: à esquerda o original, à direita o resultado (arraste a divisória). Importe um vídeo ou clique em 'Novo projeto' para começar.": "{video} 合成到 {scene}：左边是原始画面，右边是结果（可拖动分隔线）。导入视频或点击“新建项目”即可开始。",
+ "Projeto de demonstração: {video} sobre {scene}.": "演示项目：{video} 合成到 {scene}。",
+ "Início": "启动",
+ "Mostrar demonstração ao iniciar": "启动时显示演示",
+ "Ao abrir o programa sem um vídeo, carrega o projeto de exemplo (tela verde + cenário, meio a meio). 'Novo projeto' e importar um vídeo começam do zero.": "在没有指定视频的情况下打开程序时，载入示例项目（绿幕 + 场景，左右各半）。“新建项目”和导入视频都会从头开始。",
+ "Abrir demonstração": "打开演示",
+ "Abre o projeto de exemplo: moça na tela verde sobre o cenário do santuário, com a prévia dividida meio a meio.": "打开示例项目：绿幕前的女孩合成到神社场景上，预览左右各半分屏显示。"
 }

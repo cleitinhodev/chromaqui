@@ -439,5 +439,18 @@
  "Deslocamento X": "",
  "Deslocamento Y": "",
  "Opacidade": "",
- "Expansão": ""
+ "Expansão": "",
+ "Novo projeto": "",
+ "Começa do zero: sem vídeo, ajustes no padrão (Ctrl+N)": "",
+ "Projeto de demonstração": "",
+ "Fechar aviso": "",
+ "Arquivos da demonstração não encontrados.": "",
+ "Aguarde a exportação terminar (ou cancele) para começar um projeto novo.": "",
+ "{video} sobre {scene}: à esquerda o original, à direita o resultado (arraste a divisória). Importe um vídeo ou clique em 'Novo projeto' para começar.": "",
+ "Projeto de demonstração: {video} sobre {scene}.": "",
+ "Início": "",
+ "Mostrar demonstração ao iniciar": "",
+ "Ao abrir o programa sem um vídeo, carrega o projeto de exemplo (tela verde + cenário, meio a meio). 'Novo projeto' e importar um vídeo começam do zero.": "",
+ "Abrir demonstração": "",
+ "Abre o projeto de exemplo: moça na tela verde sobre o cenário do santuário, com a prévia dividida meio a meio.": ""
 }

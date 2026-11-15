@@ -425,7 +425,7 @@
 425|This is a testing version: the new features may change. The stable version remains available on the Releases page.
 426|Checking…
 427|BETA (testing version)
-428|Later
+428|After
 429|Sprite sheet (PNG + JSON)
 430|People — MODNet (26 MB)
 431|Objects — U²-Net small (4.6 MB)
@@ -439,3 +439,16 @@
 439|Offset Y
 440|Opacity
 441|Spread
+442|New project
+443|Start from scratch: no video, default settings (Ctrl+N)
+444|Demo project
+445|Close notice
+446|Demo files not found.
+447|Wait for the export to finish (or cancel it) to start a new project.
+448|{video} over {scene}: original on the left, result on the right (drag the divider). Import a video or click 'New project' to start.
+449|Demo project: {video} over {scene}.
+450|Startup
+451|Show demo at startup
+452|When the program opens without a video, it loads the sample project (green screen + scenery, half and half). 'New project' and importing a video start from scratch.
+453|Open demo
+454|Opens the sample project: a woman on a green screen over the shrine scenery, with the preview split half and half.

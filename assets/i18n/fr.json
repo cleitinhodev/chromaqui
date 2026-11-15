@@ -427,7 +427,7 @@
  "Esta é uma versão de testes: os recursos novos podem mudar. A versão estável continua disponível na página de Releases.": "Ceci est une version de test : les nouvelles fonctions peuvent changer. La version stable reste disponible sur la page Releases.",
  "Verificando…": "Vérification…",
  "BETA (versão de testes)": "BÊTA (version de test)",
- "Depois": "Plus tard",
+ "Depois": "Après",
  "Sprite sheet (PNG + JSON)": "Sprite sheet (PNG + JSON)",
  "Pessoas — MODNet (26 MB)": "Personnes — MODNet (26 Mo)",
  "Objetos — U²-Net pequeno (4,6 MB)": "Objets — U²-Net petit (4,6 Mo)",
@@ -440,5 +440,18 @@
  "Deslocamento X": "Décalage X",
  "Deslocamento Y": "Décalage Y",
  "Opacidade": "Opacité",
- "Expansão": "Expansion"
+ "Expansão": "Expansion",
+ "Novo projeto": "Nouveau projet",
+ "Começa do zero: sem vídeo, ajustes no padrão (Ctrl+N)": "Repartir de zéro : sans vidéo, réglages par défaut (Ctrl+N)",
+ "Projeto de demonstração": "Projet de démonstration",
+ "Fechar aviso": "Fermer l’avis",
+ "Arquivos da demonstração não encontrados.": "Fichiers de la démonstration introuvables.",
+ "Aguarde a exportação terminar (ou cancele) para começar um projeto novo.": "Attendez la fin de l’exportation (ou annulez-la) pour commencer un nouveau projet.",
+ "{video} sobre {scene}: à esquerda o original, à direita o resultado (arraste a divisória). Importe um vídeo ou clique em 'Novo projeto' para começar.": "{video} sur {scene} : à gauche l’original, à droite le résultat (faites glisser la séparation). Importez une vidéo ou cliquez sur « Nouveau projet » pour commencer.",
+ "Projeto de demonstração: {video} sobre {scene}.": "Projet de démonstration : {video} sur {scene}.",
+ "Início": "Démarrage",
+ "Mostrar demonstração ao iniciar": "Afficher la démonstration au démarrage",
+ "Ao abrir o programa sem um vídeo, carrega o projeto de exemplo (tela verde + cenário, meio a meio). 'Novo projeto' e importar um vídeo começam do zero.": "À l’ouverture du programme sans vidéo, charge le projet d’exemple (fond vert + décor, moitié-moitié). « Nouveau projet » et l’importation d’une vidéo repartent de zéro.",
+ "Abrir demonstração": "Ouvrir la démonstration",
+ "Abre o projeto de exemplo: moça na tela verde sobre o cenário do santuário, com a prévia dividida meio a meio.": "Ouvre le projet d’exemple : une jeune femme sur fond vert devant le décor du sanctuaire, avec l’aperçu partagé moitié-moitié."
 }

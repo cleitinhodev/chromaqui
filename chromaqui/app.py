@@ -15,7 +15,7 @@ from PySide6.QtWidgets import (
     QSlider, QSpinBox, QStyle, QToolButton, QVBoxLayout, QWidget,
 )
 
-from . import APP_NAME, __version__, ai, core, gpu, i18n, theme
+from . import APP_NAME, __version__, ai, core, demo, gpu, i18n, theme
 from .dialogs import AboutDialog, SettingsDialog, app_icon, backend_text, logo_pixmap
 from .exporters import FORMAT_BY_KEY, FORMATS, default_output_name, ffmpeg_available
 from .fx import FX, fade_in, fade_window, set_neon
@@ -100,6 +100,8 @@ class MainWindow(ExtrasMixin, QMainWindow):
         self.auto_thread = self.auto_worker = None
         self._crop_save_timer = QTimer(self, singleShot=True, interval=400)
         self._crop_save_timer.timeout.connect(self._save_crop)
+        self.demo_active = False              # projeto de demonstração aberto (nada dele vai para as preferências)
+        self._demo_loading = False
         self._init_extras()
 
         self.render_thread = QThread()
@@ -144,6 +146,7 @@ class MainWindow(ExtrasMixin, QMainWindow):
         top.addWidget(self.cmb_bgmode)
         self._build_view_tools(top)
         root.addLayout(top)
+        root.addWidget(self._build_demo_banner())
 
         mid = QHBoxLayout()
         self.preview = PreviewLabel()
@@ -250,6 +253,9 @@ class MainWindow(ExtrasMixin, QMainWindow):
         self.statusBar().showMessage(T("Pronto"))
         sc = QShortcut(QKeySequence(Qt.Key_Space), self)
         sc.activated.connect(self.toggle_play)
+        sc = QShortcut(QKeySequence.New, self)
+        sc.setContext(Qt.WindowShortcut)
+        sc.activated.connect(self.new_project)
         self._neon_widgets = [(self.lbl_title, 18), (self.btn_export, 14), (self.btn_play, 12), (self.btn_open, 12)]
         self.apply_fx()
         self._on_format_changed()
@@ -271,6 +277,11 @@ class MainWindow(ExtrasMixin, QMainWindow):
         v.setObjectName("appVersion")
         h.addWidget(v)
         h.addSpacing(14)
+        self.btn_new = QPushButton(T("Novo projeto"))
+        self.btn_new.setIcon(self.style().standardIcon(QStyle.SP_FileIcon))
+        self.btn_new.setToolTip(T("Começa do zero: sem vídeo, ajustes no padrão (Ctrl+N)"))
+        self.btn_new.clicked.connect(self.new_project)
+        h.addWidget(self.btn_new)
         self.btn_open = QPushButton(T("Importar vídeo…"))
         self.btn_open.setObjectName("primary")
         self.btn_open.setIcon(self.style().standardIcon(QStyle.SP_DialogOpenButton))
@@ -560,7 +571,7 @@ class MainWindow(ExtrasMixin, QMainWindow):
             return {}
 
     def _save_crop(self):
-        if not self.video:
+        if not self.video or self.demo_active or self._demo_loading:
             return
         d = self._crop_store()
         key = f"{self.video.width}x{self.video.height}"
@@ -572,6 +583,8 @@ class MainWindow(ExtrasMixin, QMainWindow):
         self.ctrl.settings.set("crops", json.dumps(d))
 
     def _saved_crop(self, w, h):
+        if self.demo_active or self._demo_loading:
+            return None
         r = self._crop_store().get(f"{w}x{h}")
         return tuple(int(v) for v in r) if r is not None and core.crop_fits(r, w, h) else None
 
@@ -774,6 +787,8 @@ class MainWindow(ExtrasMixin, QMainWindow):
         if self._crop_save_timer.isActive():      # grava o recorte do vídeo anterior
             self._crop_save_timer.stop()
             self._save_crop()
+        if self.demo_active and not self._demo_loading:
+            self._leave_demo()                    # outro vídeo: começa limpo, como sempre
         if self.video:
             self.video.release()
         self.video, self.path = v, path
@@ -835,6 +850,80 @@ class MainWindow(ExtrasMixin, QMainWindow):
         self.reset_undo()
         fade_in(self.preview)
         return True
+
+    # ---------------------------------------------------------- projeto de demonstração
+    def _build_demo_banner(self):
+        fr = QFrame()
+        fr.setObjectName("demoBanner")
+        h = QHBoxLayout(fr)
+        h.setContentsMargins(10, 4, 4, 4)
+        h.setSpacing(8)
+        tag = QLabel(T("Projeto de demonstração"))
+        tag.setObjectName("demoTag")
+        h.addWidget(tag)
+        self.lbl_demo = QLabel(T("{video} sobre {scene}: à esquerda o original, à direita o resultado (arraste a "
+                                 "divisória). Importe um vídeo ou clique em 'Novo projeto' para começar.").format(
+            video=demo.VIDEO, scene=demo.BACKGROUND))
+        self.lbl_demo.setObjectName("muted")
+        self.lbl_demo.setWordWrap(True)
+        h.addWidget(self.lbl_demo, 1)
+        self.btn_demo_close = QToolButton()
+        self.btn_demo_close.setObjectName("demoClose")
+        self.btn_demo_close.setText("✕")
+        self.btn_demo_close.setAutoRaise(True)
+        self.btn_demo_close.setToolTip(T("Fechar aviso"))
+        self.btn_demo_close.clicked.connect(lambda: self.demo_banner.setVisible(False))
+        h.addWidget(self.btn_demo_close)
+        fr.setVisible(False)
+        self.demo_banner = fr
+        return fr
+
+    def open_demo(self, frame_idx=None):
+        """Abre o vídeo de exemplo com o cenário e a prévia dividida meio a meio (não altera preferências)."""
+        if not demo.available():
+            self.statusBar().showMessage(T("Arquivos da demonstração não encontrados."))
+            return False
+        if self.is_exporting():
+            return False
+        self._demo_loading = True
+        try:
+            ok = self.load_video(demo.video_path(), demo.FRAME if frame_idx is None else frame_idx)
+        finally:
+            self._demo_loading = False
+        if not ok:
+            return False
+        self.demo_active = True
+        self.apply_params(demo.params())
+        self.cmb_view.setCurrentIndex(VIEWS.index("Resultado"))
+        self.set_background(demo.background_path(), demo.BG_MODE)
+        self.preview.set_split(demo.SPLIT)
+        self.btn_compare.setChecked(True)
+        self._feed_before()
+        self.demo_banner.setVisible(True)
+        self.render_preview()
+        self.reset_undo()
+        # mostra a miniatura do quadro da demonstração depois que a linha do tempo tiver tamanho
+        QTimer.singleShot(200, lambda: self.video is not None and self._mark_frame(self.slider.value()))
+        self.statusBar().showMessage(T("Projeto de demonstração: {video} sobre {scene}.").format(
+            video=demo.VIDEO, scene=demo.BACKGROUND))
+        return True
+
+    def _leave_demo(self):
+        """Sai da demonstração: ajustes, fundo e comparação voltam ao padrão (como um projeto novo)."""
+        self.demo_active = False
+        self.demo_banner.setVisible(False)
+        self.apply_params(core.KeyParams())
+        self.background.clear()
+        self.cmb_bg.setCurrentIndex(0)
+        self._last_bg = 0
+        self.cmb_bgmode.setVisible(False)
+        self.btn_compare.setChecked(False)
+        self.preview.set_split(0.5)
+        self.cmb_view.setCurrentIndex(0)
+
+    def new_project(self):
+        """Projeto em branco (Ctrl+N): janela nova sem vídeo e com tudo no padrão."""
+        return self.ctrl.new_project()
 
     def _clear_timeline(self):
         for b in self._items.values():
@@ -1300,11 +1389,15 @@ class MainWindow(ExtrasMixin, QMainWindow):
             "motion": self.crop_motion(), "keys": dict(self.crop_keys), "smooth": self.sp_track_smooth.value(),
             "track": (self.track_path, self._track_sig), "sheet": self.sheet_options(),
             "compare": self.btn_compare.isChecked(), "brush_frame": self.chk_brush_frame.isChecked(),
-            "brush_mode": self.brush_mode_key(),
+            "brush_mode": self.brush_mode_key(), "demo": self.demo_active,
+            "demo_banner": self.demo_banner.isVisible(),
         }
 
     def restore(self, st):
-        if st.get("path") and os.path.isfile(st["path"]):
+        if st.get("demo") and demo.available():
+            self.open_demo(st.get("idx", demo.FRAME))
+            self.demo_banner.setVisible(bool(st.get("demo_banner", True)))
+        elif st.get("path") and os.path.isfile(st["path"]):
             self.load_video(st["path"], st.get("idx", 0))
         self.apply_params(st["params"])
         self.crop_keys = dict(st.get("keys") or {})
@@ -1440,6 +1533,18 @@ class Controller(QObject):
         self.window = w
         return w
 
+    def new_project(self):
+        """Troca a janela por uma nova, vazia (sem vídeo, ajustes/fundo/recorte no padrão)."""
+        old = self.window
+        if old is None:
+            return None
+        if old.is_exporting():
+            QMessageBox.information(old, APP_NAME, T("Aguarde a exportação terminar (ou cancele) para começar um "
+                                                     "projeto novo."))
+            return None
+        st = {"geometry": old.saveGeometry(), "maximized": old.isMaximized()}
+        return self._replace_window(old, None, st)
+
     def set_language(self, code):
         code = i18n.set_language(code)
         self.settings.set("lang", code)
@@ -1452,8 +1557,11 @@ class Controller(QObject):
                                                      "ou ao reabrir o programa."))
             return None
         st = old.snapshot()
+        return self._replace_window(old, st, st)
+
+    def _replace_window(self, old, state, st):
         old.shutdown()
-        w = self.create_window(st)
+        w = self.create_window(state)
         if not st.get("maximized"):
             w.setGeometry(old.geometry())          # mesma posição/tamanho da janela anterior
         if st.get("maximized"):
@@ -1495,6 +1603,8 @@ def main():
     w.schedule_update_check()
     if len(sys.argv) > 1 and os.path.isfile(sys.argv[1]):
         w.load_video(sys.argv[1])
+    elif ctrl.settings.get("show_demo"):
+        w.open_demo()                       # projeto de demonstração (desligável nas Configurações)
     sys.exit(app.exec())
 
 

@@ -55,6 +55,9 @@ def strip_onedir():
             removed += os.path.getsize(p)
             os.remove(p)
     print(f"strip: -{removed / 1e6:.1f} MB")
+    demo = [os.path.join(base, "_internal", "assets", "demo", n) for n in ("japanese_woman.mp4", "scenery_shrine.webp")]
+    if not all(os.path.isfile(d) for d in demo):
+        raise SystemExit("faltam os arquivos da demonstração (assets/demo)")
 
 
 def make_zip(src, out, arc_root):

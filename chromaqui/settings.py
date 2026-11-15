@@ -13,7 +13,8 @@ DEFAULTS = {"theme": "dark", "lang": "pt-BR", "animations": True, "neon": True, 
             "accent": "", "play_quality": 0, "last_dir": "",
             "crops": "", "crop_margin": 8, "crop_even": False,
             "update_check": True, "update_betas": IS_BETA, "update_skip": "",
-            "brush_size": 30, "brush_hardness": 50}
+            "brush_size": 30, "brush_hardness": 50,
+            "show_demo": True}
 
 
 def _migrate_native(ini):

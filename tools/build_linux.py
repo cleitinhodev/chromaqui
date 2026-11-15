@@ -95,6 +95,10 @@ def strip_onedir(base):
     print("plataformas Qt:", plats)
     if not any("xcb" in p for p in plats) or not any("wayland" in p for p in plats):
         raise SystemExit("faltam os plugins xcb/wayland do Qt")
+    demo = [os.path.join(base, "_internal", "assets", "demo", n) for n in ("japanese_woman.mp4", "scenery_shrine.webp")]
+    if not all(os.path.isfile(d) for d in demo):
+        raise SystemExit("faltam os arquivos da demonstração (assets/demo)")
+    print("demonstração:", ", ".join(f"{os.path.basename(d)} {os.path.getsize(d) / 1e6:.1f} MB" for d in demo))
 
 
 def icons_into(dst_root):

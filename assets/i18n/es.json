@@ -440,5 +440,18 @@
  "Deslocamento X": "Desplazamiento X",
  "Deslocamento Y": "Desplazamiento Y",
  "Opacidade": "Opacidad",
- "Expansão": "Expansión"
+ "Expansão": "Expansión",
+ "Novo projeto": "Nuevo proyecto",
+ "Começa do zero: sem vídeo, ajustes no padrão (Ctrl+N)": "Empieza desde cero: sin vídeo, ajustes predeterminados (Ctrl+N)",
+ "Projeto de demonstração": "Proyecto de demostración",
+ "Fechar aviso": "Cerrar aviso",
+ "Arquivos da demonstração não encontrados.": "No se encontraron los archivos de la demostración.",
+ "Aguarde a exportação terminar (ou cancele) para começar um projeto novo.": "Espera a que termine la exportación (o cancélala) para empezar un proyecto nuevo.",
+ "{video} sobre {scene}: à esquerda o original, à direita o resultado (arraste a divisória). Importe um vídeo ou clique em 'Novo projeto' para começar.": "{video} sobre {scene}: a la izquierda el original, a la derecha el resultado (arrastra el divisor). Importa un vídeo o haz clic en 'Nuevo proyecto' para empezar.",
+ "Projeto de demonstração: {video} sobre {scene}.": "Proyecto de demostración: {video} sobre {scene}.",
+ "Início": "Inicio",
+ "Mostrar demonstração ao iniciar": "Mostrar la demostración al iniciar",
+ "Ao abrir o programa sem um vídeo, carrega o projeto de exemplo (tela verde + cenário, meio a meio). 'Novo projeto' e importar um vídeo começam do zero.": "Al abrir el programa sin un vídeo, carga el proyecto de ejemplo (pantalla verde + escenario, mitad y mitad). 'Nuevo proyecto' e importar un vídeo empiezan desde cero.",
+ "Abrir demonstração": "Abrir demostración",
+ "Abre o projeto de exemplo: moça na tela verde sobre o cenário do santuário, com a prévia dividida meio a meio.": "Abre el proyecto de ejemplo: una chica en pantalla verde sobre el escenario del santuario, con la vista previa dividida mitad y mitad."
 }

@@ -327,6 +327,34 @@ def self_test(argv):
         sd.deleteLater()
         log("SOBRE OK (versão, ícone, 3 links) · CONFIGURAÇÕES OK")
 
+        # ---- projeto de demonstração (arquivos empacotados, meio a meio) e "Novo projeto" em branco
+        from . import demo
+        assert demo.available(), f"demonstração ausente: {demo.video_path()}"
+        crops_before = ctrl.settings.get("crops")
+        assert ctrl.settings.get("show_demo") is True
+        assert w.open_demo(), "open_demo falhou"
+        _wait(app, lambda: w.preview._before is not None and w.frame is not None, 30)
+        _pump(app, 0.6)
+        assert w.demo_active and w.demo_banner.isVisible() and w.btn_compare.isChecked()
+        assert abs(w.preview.split - demo.SPLIT) < 1e-6 and w.slider.value() == demo.FRAME
+        assert w.background.active and os.path.basename(w.background.path) == demo.BACKGROUND
+        assert w.sliders["tolerance"].value() == demo.VALUES["tolerance"]
+        fr = w.video.read(demo.FRAME)
+        a = core.compute_alpha(fr, w.params())
+        cov, corner = float(a.mean()), float(a[:120, :200].mean())
+        assert 0.03 < cov < 0.6 and corner < 0.01, (cov, corner)
+        try:
+            w.grab().save(os.path.join(log_dir, "selftest_demo.png"))
+        except Exception:  # noqa: BLE001
+            pass
+        w = w.new_project()
+        app.processEvents()
+        assert w is ctrl.window and w.video is None and not w.demo_active and not w.background.active
+        assert w.sliders["tolerance"].value() == core.PARAM_DEFAULTS["tolerance"] and not w.btn_compare.isChecked()
+        assert ctrl.settings.get("crops") == crops_before, "a demonstração gravou recorte nas preferências"
+        log(f"DEMO OK ({demo.VIDEO} {fr.shape[1]}×{fr.shape[0]} + {demo.BACKGROUND}, meio a meio, "
+            f"objeto {cov * 100:.0f}% do quadro; Novo projeto em branco)")
+
         if args:
             video = args[0]
             w.load_video(video)

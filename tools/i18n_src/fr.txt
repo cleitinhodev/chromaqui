@@ -425,7 +425,7 @@
 425|Ceci est une version de test : les nouvelles fonctions peuvent changer. La version stable reste disponible sur la page Releases.
 426|Vérification…
 427|BÊTA (version de test)
-428|Plus tard
+428|Après
 429|Sprite sheet (PNG + JSON)
 430|Personnes — MODNet (26 Mo)
 431|Objets — U²-Net petit (4,6 Mo)
@@ -439,3 +439,16 @@
 439|Décalage Y
 440|Opacité
 441|Expansion
+442|Nouveau projet
+443|Repartir de zéro : sans vidéo, réglages par défaut (Ctrl+N)
+444|Projet de démonstration
+445|Fermer l’avis
+446|Fichiers de la démonstration introuvables.
+447|Attendez la fin de l’exportation (ou annulez-la) pour commencer un nouveau projet.
+448|{video} sur {scene} : à gauche l’original, à droite le résultat (faites glisser la séparation). Importez une vidéo ou cliquez sur « Nouveau projet » pour commencer.
+449|Projet de démonstration : {video} sur {scene}.
+450|Démarrage
+451|Afficher la démonstration au démarrage
+452|À l’ouverture du programme sans vidéo, charge le projet d’exemple (fond vert + décor, moitié-moitié). « Nouveau projet » et l’importation d’une vidéo repartent de zéro.
+453|Ouvrir la démonstration
+454|Ouvre le projet d’exemple : une jeune femme sur fond vert devant le décor du sanctuaire, avec l’aperçu partagé moitié-moitié.

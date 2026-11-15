@@ -427,7 +427,7 @@
  "Esta é uma versão de testes: os recursos novos podem mudar. A versão estável continua disponível na página de Releases.": "This is a testing version: the new features may change. The stable version remains available on the Releases page.",
  "Verificando…": "Checking…",
  "BETA (versão de testes)": "BETA (testing version)",
- "Depois": "Later",
+ "Depois": "After",
  "Sprite sheet (PNG + JSON)": "Sprite sheet (PNG + JSON)",
  "Pessoas — MODNet (26 MB)": "People — MODNet (26 MB)",
  "Objetos — U²-Net pequeno (4,6 MB)": "Objects — U²-Net small (4.6 MB)",
@@ -440,5 +440,18 @@
  "Deslocamento X": "Offset X",
  "Deslocamento Y": "Offset Y",
  "Opacidade": "Opacity",
- "Expansão": "Spread"
+ "Expansão": "Spread",
+ "Novo projeto": "New project",
+ "Começa do zero: sem vídeo, ajustes no padrão (Ctrl+N)": "Start from scratch: no video, default settings (Ctrl+N)",
+ "Projeto de demonstração": "Demo project",
+ "Fechar aviso": "Close notice",
+ "Arquivos da demonstração não encontrados.": "Demo files not found.",
+ "Aguarde a exportação terminar (ou cancele) para começar um projeto novo.": "Wait for the export to finish (or cancel it) to start a new project.",
+ "{video} sobre {scene}: à esquerda o original, à direita o resultado (arraste a divisória). Importe um vídeo ou clique em 'Novo projeto' para começar.": "{video} over {scene}: original on the left, result on the right (drag the divider). Import a video or click 'New project' to start.",
+ "Projeto de demonstração: {video} sobre {scene}.": "Demo project: {video} over {scene}.",
+ "Início": "Startup",
+ "Mostrar demonstração ao iniciar": "Show demo at startup",
+ "Ao abrir o programa sem um vídeo, carrega o projeto de exemplo (tela verde + cenário, meio a meio). 'Novo projeto' e importar um vídeo começam do zero.": "When the program opens without a video, it loads the sample project (green screen + scenery, half and half). 'New project' and importing a video start from scratch.",
+ "Abrir demonstração": "Open demo",
+ "Abre o projeto de exemplo: moça na tela verde sobre o cenário do santuário, com a prévia dividida meio a meio.": "Opens the sample project: a woman on a green screen over the shrine scenery, with the preview split half and half."
 }

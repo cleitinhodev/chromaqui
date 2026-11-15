@@ -427,7 +427,7 @@
  "Esta é uma versão de testes: os recursos novos podem mudar. A versão estável continua disponível na página de Releases.": "Dies ist eine Testversion: Neue Funktionen können sich ändern. Die stabile Version bleibt auf der Releases-Seite verfügbar.",
  "Verificando…": "Prüfe…",
  "BETA (versão de testes)": "BETA (Testversion)",
- "Depois": "Später",
+ "Depois": "Nachher",
  "Sprite sheet (PNG + JSON)": "Sprite Sheet (PNG + JSON)",
  "Pessoas — MODNet (26 MB)": "Personen — MODNet (26 MB)",
  "Objetos — U²-Net pequeno (4,6 MB)": "Objekte — U²-Net klein (4,6 MB)",
@@ -440,5 +440,18 @@
  "Deslocamento X": "Versatz X",
  "Deslocamento Y": "Versatz Y",
  "Opacidade": "Deckkraft",
- "Expansão": "Ausdehnung"
+ "Expansão": "Ausdehnung",
+ "Novo projeto": "Neues Projekt",
+ "Começa do zero: sem vídeo, ajustes no padrão (Ctrl+N)": "Von vorn beginnen: kein Video, Standardeinstellungen (Strg+N)",
+ "Projeto de demonstração": "Demoprojekt",
+ "Fechar aviso": "Hinweis schließen",
+ "Arquivos da demonstração não encontrados.": "Demo-Dateien nicht gefunden.",
+ "Aguarde a exportação terminar (ou cancele) para começar um projeto novo.": "Warte, bis der Export fertig ist (oder brich ihn ab), um ein neues Projekt zu beginnen.",
+ "{video} sobre {scene}: à esquerda o original, à direita o resultado (arraste a divisória). Importe um vídeo ou clique em 'Novo projeto' para começar.": "{video} vor {scene}: links das Original, rechts das Ergebnis (Trennlinie ziehen). Importiere ein Video oder klicke auf „Neues Projekt“, um zu beginnen.",
+ "Projeto de demonstração: {video} sobre {scene}.": "Demoprojekt: {video} vor {scene}.",
+ "Início": "Start",
+ "Mostrar demonstração ao iniciar": "Demo beim Start anzeigen",
+ "Ao abrir o programa sem um vídeo, carrega o projeto de exemplo (tela verde + cenário, meio a meio). 'Novo projeto' e importar um vídeo começam do zero.": "Wenn das Programm ohne Video geöffnet wird, lädt es das Beispielprojekt (Greenscreen + Szenerie, halb und halb). „Neues Projekt“ und das Importieren eines Videos beginnen von vorn.",
+ "Abrir demonstração": "Demo öffnen",
+ "Abre o projeto de exemplo: moça na tela verde sobre o cenário do santuário, com a prévia dividida meio a meio.": "Öffnet das Beispielprojekt: eine Frau vor dem Greenscreen über der Schrein-Szenerie, mit halb geteilter Vorschau."
 }

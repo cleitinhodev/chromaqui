@@ -439,3 +439,16 @@
 439|Desplazamiento Y
 440|Opacidad
 441|Expansión
+442|Nuevo proyecto
+443|Empieza desde cero: sin vídeo, ajustes predeterminados (Ctrl+N)
+444|Proyecto de demostración
+445|Cerrar aviso
+446|No se encontraron los archivos de la demostración.
+447|Espera a que termine la exportación (o cancélala) para empezar un proyecto nuevo.
+448|{video} sobre {scene}: a la izquierda el original, a la derecha el resultado (arrastra el divisor). Importa un vídeo o haz clic en 'Nuevo proyecto' para empezar.
+449|Proyecto de demostración: {video} sobre {scene}.
+450|Inicio
+451|Mostrar la demostración al iniciar
+452|Al abrir el programa sin un vídeo, carga el proyecto de ejemplo (pantalla verde + escenario, mitad y mitad). 'Nuevo proyecto' e importar un vídeo empiezan desde cero.
+453|Abrir demostración
+454|Abre el proyecto de ejemplo: una chica en pantalla verde sobre el escenario del santuario, con la vista previa dividida mitad y mitad.
