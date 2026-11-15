@@ -300,7 +300,7 @@
 300|Divide la vista previa: original a la izquierda, resultado a la derecha. Arrastra el divisor.
 301|Antes
 302|Mantén pulsado para ver el vídeo original; suelta para volver al resultado.
-303|Eliminación por IA (beta)
+303|Eliminación por IA
 304|Clave de color (pantalla verde/azul)
 305|IA — sin pantalla verde
 306|Origen del recorte
@@ -310,7 +310,7 @@
 310|Descargar modelo
 311|Descargando el modelo de IA…
 312|Modelo de IA listo.
-313|Retoque con pincel (beta)
+313|Retoque con pincel
 314|Pincel
 315|Pinta en la vista previa las áreas que deben quedarse (Mantener) o desaparecer (Eliminar). Atajos: B activa/desactiva, [ y ] cambian el tamaño.
 316|Modo
@@ -323,7 +323,7 @@
 323|Desmarcado: el retoque vale para todos los fotogramas (máscara fija). Marcado: solo para el fotograma mostrado.
 324|Limpiar fotograma
 325|Limpiar todo
-326|Sombra y brillo (beta)
+326|Sombra y brillo
 327|Activar sombra/brillo detrás del objeto
 328|Aparece en la vista previa (sobre el fondo de prueba) y, si se marca abajo, en el archivo exportado.
 329|Sombra proyectada
@@ -367,88 +367,86 @@
 367|Omitir esta versión
 368|Ahora no
 369|onnxruntime no está disponible en esta instalación.
-370|Eliminación por IA
-371|Pincel: pinta en la vista previa. Verde = mantener, rojo = eliminar.
-372|Ningún retoque pintado.
-373|máscara fija (todos los fotogramas)
-374|fotogramas
-375|Suavizado
-376|Nada que deshacer.
-377|Nada que rehacer.
-378|beta
-379|Descargando el modelo de IA: {a} de {b} MB
-380|Descarga cancelada.
-381|Comprueba la conexión e inténtalo de nuevo. Mientras tanto, la clave de color sigue funcionando.
-382|Retoque: {what}.
-383|En píxeles del vídeo original.
-384|El área sigue al objeto. Haz clic en 'Analizar movimiento' para verlo en la vista previa; la exportación calcula la trayectoria automáticamente.
-385|Analizando movimiento: fotograma {i} de {n}…
-386|No se pudo descargar el modelo de IA:
-387|{n} fotograma(s) con retoque propio
-388|No se pudo comprobar ahora.
-389|Nueva versión disponible: {v}
-390|Hay una nueva versión de {app}: <b>{v}</b> ({kind}).<br>Estás usando la {cur}.
-391|Trayectoria analizada: área de {w}×{h} px siguiendo el objeto.
-392|{n} fotograma(s) clave: {list}
-393|Modelo listo (funciona sin conexión). Carpeta: {p}
-394|Ya tienes la versión más reciente ({v}).
-395|El modelo ({mb} MB) se descarga una vez, en el primer uso, en {p}.
-396|Exportación por lotes (beta)
-397|Añade vídeos a la cola. Todos se exportan en el formato y con las opciones elegidas en 'Opciones de exportación' (vídeo completo). El retoque con pincel y los fotogramas clave no se aplican en el lote.
-398|Añadir vídeos…
-399|Vaciar cola
-400|Ajustes actuales
-401|Elegir preset (.json)…
-402|Elegir…
-403|Usar el recorte guardado para cada tamaño de vídeo
-404|Si ya recortaste un vídeo del mismo tamaño, se usa la misma área; si no, el fotograma completo.
-405|Vídeo %v de %m
-406|Iniciar
-407|Añadir vídeos
-408|Vídeo
-409|Estado
-410|Ajustes
-411|Carpeta de destino
-412|En cola
-413|Lote terminado: {ok} de {n} vídeos exportados.
-414|Formato: {fmt}
-415|Lote cancelado: {ok} de {n} vídeos exportados.
-416|{n} fotogramas
-417|Cancelado
-418|Exportación por lotes
-419|¿Cancelar la exportación por lotes?
-420|Actualizaciones
-421|Buscar actualizaciones al iniciar
-422|Consulta las Releases de GitHub en segundo plano; sin internet, no pasa nada.
-423|Incluir versiones beta (de pruebas)
-424|Comprobar ahora
-425|Esta es una versión de pruebas: las funciones nuevas pueden cambiar. La versión estable sigue disponible en la página de Releases.
-426|Comprobando…
-427|BETA (versión de pruebas)
-428|Después
-429|Sprite sheet (PNG + JSON)
-430|Personas — MODNet (26 MB)
-431|Objetos — U²-Net pequeño (4,6 MB)
-432|Mantener
-433|Borrador
-434|Fijo
-435|Seguir el objeto
-436|Fotogramas clave
-437|Desenfoque
-438|Desplazamiento X
-439|Desplazamiento Y
-440|Opacidad
-441|Expansión
-442|Nuevo proyecto
-443|Empieza desde cero: sin vídeo, ajustes predeterminados (Ctrl+N)
-444|Proyecto de demostración
-445|Cerrar aviso
-446|No se encontraron los archivos de la demostración.
-447|Espera a que termine la exportación (o cancélala) para empezar un proyecto nuevo.
-448|{video} sobre {scene}: a la izquierda el original, a la derecha el resultado (arrastra el divisor). Importa un vídeo o haz clic en 'Nuevo proyecto' para empezar.
-449|Proyecto de demostración: {video} sobre {scene}.
-450|Inicio
-451|Mostrar la demostración al iniciar
-452|Al abrir el programa sin un vídeo, carga el proyecto de ejemplo (pantalla verde + escenario, mitad y mitad). 'Nuevo proyecto' e importar un vídeo empiezan desde cero.
-453|Abrir demostración
-454|Abre el proyecto de ejemplo: una chica en pantalla verde sobre el escenario del santuario, con la vista previa dividida mitad y mitad.
+370|Pincel: pinta en la vista previa. Verde = mantener, rojo = eliminar.
+371|Ningún retoque pintado.
+372|máscara fija (todos los fotogramas)
+373|fotogramas
+374|Suavizado
+375|Nada que deshacer.
+376|Nada que rehacer.
+377|beta
+378|Descargando el modelo de IA: {a} de {b} MB
+379|Descarga cancelada.
+380|Comprueba la conexión e inténtalo de nuevo. Mientras tanto, la clave de color sigue funcionando.
+381|Retoque: {what}.
+382|En píxeles del vídeo original.
+383|El área sigue al objeto. Haz clic en 'Analizar movimiento' para verlo en la vista previa; la exportación calcula la trayectoria automáticamente.
+384|Analizando movimiento: fotograma {i} de {n}…
+385|No se pudo descargar el modelo de IA:
+386|{n} fotograma(s) con retoque propio
+387|No se pudo comprobar ahora.
+388|Nueva versión disponible: {v}
+389|Hay una nueva versión de {app}: <b>{v}</b> ({kind}).<br>Estás usando la {cur}.
+390|Trayectoria analizada: área de {w}×{h} px siguiendo el objeto.
+391|{n} fotograma(s) clave: {list}
+392|Modelo listo (funciona sin conexión). Carpeta: {p}
+393|Ya tienes la versión más reciente ({v}).
+394|El modelo ({mb} MB) se descarga una vez, en el primer uso, en {p}.
+395|Exportación por lotes
+396|Añade vídeos a la cola. Todos se exportan en el formato y con las opciones elegidas en 'Opciones de exportación' (vídeo completo). El retoque con pincel y los fotogramas clave no se aplican en el lote.
+397|Añadir vídeos…
+398|Vaciar cola
+399|Ajustes actuales
+400|Elegir preset (.json)…
+401|Elegir…
+402|Usar el recorte guardado para cada tamaño de vídeo
+403|Si ya recortaste un vídeo del mismo tamaño, se usa la misma área; si no, el fotograma completo.
+404|Vídeo %v de %m
+405|Iniciar
+406|Añadir vídeos
+407|Vídeo
+408|Estado
+409|Ajustes
+410|Carpeta de destino
+411|En cola
+412|Lote terminado: {ok} de {n} vídeos exportados.
+413|Formato: {fmt}
+414|Lote cancelado: {ok} de {n} vídeos exportados.
+415|{n} fotogramas
+416|Cancelado
+417|¿Cancelar la exportación por lotes?
+418|Actualizaciones
+419|Buscar actualizaciones al iniciar
+420|Consulta las Releases de GitHub en segundo plano; sin internet, no pasa nada.
+421|Incluir versiones beta (de pruebas)
+422|Comprobar ahora
+423|Esta es una versión de pruebas: las funciones nuevas pueden cambiar. La versión estable sigue disponible en la página de Releases.
+424|Comprobando…
+425|BETA (versión de pruebas)
+426|Después
+427|Sprite sheet (PNG + JSON)
+428|Personas — MODNet (26 MB)
+429|Objetos — U²-Net pequeño (4,6 MB)
+430|Mantener
+431|Borrador
+432|Fijo
+433|Seguir el objeto
+434|Fotogramas clave
+435|Desenfoque
+436|Desplazamiento X
+437|Desplazamiento Y
+438|Opacidad
+439|Expansión
+440|Nuevo proyecto
+441|Empieza desde cero: sin vídeo, ajustes predeterminados (Ctrl+N)
+442|Proyecto de demostración
+443|Cerrar aviso
+444|No se encontraron los archivos de la demostración.
+445|Espera a que termine la exportación (o cancélala) para empezar un proyecto nuevo.
+446|{video} sobre {scene}: a la izquierda el original, a la derecha el resultado (arrastra el divisor). Importa un vídeo o haz clic en 'Nuevo proyecto' para empezar.
+447|Proyecto de demostración: {video} sobre {scene}.
+448|Inicio
+449|Mostrar la demostración al iniciar
+450|Al abrir el programa sin un vídeo, carga el proyecto de ejemplo (pantalla verde + escenario, mitad y mitad). 'Nuevo proyecto' e importar un vídeo empiezan desde cero.
+451|Abrir demostración
+452|Abre el proyecto de ejemplo: una chica en pantalla verde sobre el escenario del santuario, con la vista previa dividida mitad y mitad.

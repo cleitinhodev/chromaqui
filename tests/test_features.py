@@ -250,6 +250,15 @@ def test_updates():
     assert updates.pick_update(rels, "3.2.0-beta.1", True)["tag_name"] == "v3.3.0-beta.1"
     assert updates.pick_update(rels, "3.3.0", True) is None
     assert updates.pick_update(rels, "3.2.0", False) is None
+    # cenário real da 3.2.0 estável: quem está na 3.1.0 ou em qualquer beta da 3.2.0 vê a 3.2.0
+    real = [{"tag_name": "v3.2.0", "prerelease": False, "draft": False},
+            {"tag_name": "v3.2.0-beta.3", "prerelease": True, "draft": False},
+            {"tag_name": "v3.2.0-beta.2", "prerelease": True, "draft": False},
+            {"tag_name": "v3.1.0", "prerelease": False, "draft": False}]
+    for cur in ("3.1.0", "3.2.0-beta.1", "3.2.0-beta.3"):
+        for betas in (False, True):
+            assert updates.pick_update(real, cur, betas)["tag_name"] == "v3.2.0", (cur, betas)
+    assert updates.pick_update(real, "3.2.0", True) is None
     # falha de rede é silenciosa (None)
     assert updates.check("3.0.0", True, url="http://127.0.0.1:9/x", timeout=2) is None
     print("ATUALIZAÇÕES OK (versões beta/rc, escolha estável/beta, rede silenciosa)")

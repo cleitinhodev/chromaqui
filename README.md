@@ -17,13 +17,21 @@
   <a href="#english">English</a>
 </p>
 
+<p align="center">
+  <picture>
+    <source srcset="docs/demo.webp" type="image/webp">
+    <img src="docs/demo.gif" width="720" alt="Demonstração: à esquerda o vídeo original com tela verde, à direita o recorte do Chromaqui! sobre o cenário do santuário / Demo: original green screen on the left, Chromaqui! key over the shrine scenery on the right">
+  </picture><br>
+  <sub>Projeto de demonstração (<code>assets/demo/japanese_woman.mp4</code> + <code>assets/demo/scenery_shrine.webp</code>): à esquerda o original, à direita o resultado — gerado pelo próprio programa com <code>tools/make_demo_gif.py</code>.</sub>
+</p>
+
 | Tema escuro | Tema claro |
 |---|---|
 | ![Projeto de demonstração ao abrir (escuro)](docs/demo_inicio_escuro.png) | ![Projeto de demonstração ao abrir (claro)](docs/demo_inicio_claro.png) |
 | ![Tema escuro](docs/screenshot_escuro.png) | ![Tema claro](docs/screenshot_claro.png) |
 | ![Exportar (escuro)](docs/screenshot_exportar_escuro.png) | ![Exportar (claro)](docs/screenshot_exportar_claro.png) |
 | ![Recorte (escuro)](docs/recorte_escuro.png) | ![Recorte (claro)](docs/recorte_claro.png) |
-| ![Comparar + brilho neon (beta)](docs/beta_comparar_brilho_escuro.png) | ![Exportação em lote (beta)](docs/beta_lote_escuro.png) |
+| ![Comparar + brilho neon](docs/beta_comparar_brilho_escuro.png) | ![Exportação em lote](docs/beta_lote_escuro.png) |
 
 ## Download
 
@@ -68,15 +76,17 @@ Configurações e logs ficam em `~/.config/Chromaqui` (ou `$XDG_CONFIG_HOME/Chro
 `~/.local/share/Chromaqui/models`. Em Wayland o programa usa o Wayland nativo e, se não der, o X11 (XWayland);
 para forçar o X11: `QT_QPA_PLATFORM=xcb ./Chromaqui-Linux-x86_64.AppImage`.
 
-> 🧪 **Versão de testes:** a **3.2.0-beta.3** (Windows e Linux) está nas Releases como *pre-release* (recursos marcados
-> **(beta)** abaixo). A versão estável recomendada continua sendo a **3.1.0** (marcada como *Latest*).
+> ✅ **Versão estável atual: 3.2.0** (Windows e Linux, marcada como *Latest* nas Releases). Ela reúne tudo o que
+> foi testado nas betas 3.2.0-beta.1 a beta.3: recorte que segue o objeto, retoque com pincel, remoção por IA,
+> sombra/brilho, desfazer/refazer, comparar, lote, sprite sheet, verificação de atualizações e o projeto de
+> demonstração. Versões *pre-release* (beta) só aparecem se você marcar "Incluir versões beta" nas Configurações.
 
 Se algo der errado, os detalhes ficam em `%APPDATA%\Chromaqui\logs` (Windows) ou `~/.config/Chromaqui/logs`
 (Linux) — arquivos `erros.log` e `travamento.log`.
 
 ## Projeto de demonstração
 
-Ao abrir *(a partir da 3.2.0-beta.3)*, o Chromaqui! já mostra um exemplo pronto: a moça de
+Ao abrir *(a partir da 3.2.0)*, o Chromaqui! já mostra um exemplo pronto: a moça de
 [`assets/demo/japanese_woman.mp4`](assets/demo/japanese_woman.mp4) (tela verde, 1280×720, 6 s) sobre o
 cenário do santuário [`assets/demo/scenery_shrine.webp`](assets/demo/scenery_shrine.webp), com ajustes
 calibrados e a prévia **meio a meio**: à esquerda o original com o fundo verde, à direita o resultado no
@@ -103,17 +113,17 @@ cenário (arraste a divisória). Um aviso *Projeto de demonstração* (com ✕ p
   margem). O recorte vale para **todos os quadros e todos os formatos** (e para o fundo incluído), é
   aplicado antes da escala, deixa a exportação mais rápida e fica salvo para vídeos do mesmo tamanho.
   Opção de largura/altura pares (WebM e ProRes sempre usam pares). **Redefinir** volta ao quadro inteiro.
-- **Recorte que segue o objeto** *(beta, 3.2)*: *Movimento* = **Seguir o objeto** (a área acompanha o
+- **Recorte que segue o objeto** *(3.2)*: *Movimento* = **Seguir o objeto** (a área acompanha o
   objeto, com suavização) ou **Quadros-chave** (você posiciona a área em alguns quadros e ela é interpolada).
 - **Exportar só um trecho**: campos *De / Até / 1 a cada N* em "Opções de exportação".
-- **Retoque com pincel** *(beta)*: Manter / Remover / Borracha direto na prévia (todos os quadros ou só um).
-- **Remoção por IA, sem tela verde** *(beta)*: onnxruntime na CPU; o modelo (MODNet 26 MB ou U²-Net
+- **Retoque com pincel**: Manter / Remover / Borracha direto na prévia (todos os quadros ou só um).
+- **Remoção por IA, sem tela verde**: onnxruntime na CPU; o modelo (MODNet 26 MB ou U²-Net
   pequeno 4,6 MB) é baixado uma vez, no primeiro uso, para `%APPDATA%\Chromaqui\models`
   (Linux: `~/.local/share/Chromaqui/models`).
-- **Sombra projetada / brilho neon** atrás do objeto *(beta)*, na prévia e opcionalmente no arquivo.
-- **Desfazer/Refazer** (Ctrl+Z / Ctrl+Y) e **comparar antes/depois** (prévia dividida e botão "Antes") *(beta)*.
-- **Exportação em lote** *(beta)*: vários vídeos com os ajustes atuais ou um preset.
-- **Verificação de atualizações** *(beta)*: avisa quando há versão nova nas Releases (desligável).
+- **Sombra projetada / brilho neon** atrás do objeto, na prévia e opcionalmente no arquivo.
+- **Desfazer/Refazer** (Ctrl+Z / Ctrl+Y) e **comparar antes/depois** (prévia dividida e botão "Antes").
+- **Exportação em lote**: vários vídeos com os ajustes atuais ou um preset.
+- **Verificação de atualizações**: avisa quando há versão nova nas Releases (desligável).
 - **Fundo de teste**: xadrez, preto, branco, cor, **imagem ou vídeo** (preencher/ajustar/esticar).
   Só vai para o arquivo se você marcar **"Incluir fundo na exportação"** (resultado opaco).
 - **Exportação** (sempre com transparência, respeitando intervalo, passo "1 a cada N", escala e FPS):
@@ -126,7 +136,7 @@ cenário (arraste a divisória). Um aviso *Projeto de demonstração* (com ✕ p
   | WebP animado / APNG | alfa completo (8 bits), repetições |
   | WebM VP9 | `yuva420p` com alfa (navegadores, OBS, editores) |
   | MOV ProRes 4444 | `yuva444p10le` com alfa (Premiere, DaVinci Resolve, Final Cut) |
-  | Sprite sheet *(beta)* | PNG + JSON do TexturePacker (hash/array), colunas, espaçamento, tamanho máximo e *trim* |
+  | Sprite sheet | PNG + JSON do TexturePacker (hash/array), colunas, espaçamento, tamanho máximo e *trim* |
 
   WebM/ProRes/WebP/APNG usam o **ffmpeg embutido** (imageio-ffmpeg); nada para instalar.
 - **Temas Claro/Escuro** com gradientes nas cores do logo, **animações** e **brilho neon**
@@ -187,6 +197,7 @@ dos executáveis) ao criar uma tag `v*` (ex.: `git tag v3.1.0 && git push origin
 python tools/prepare_logo.py meu_logo.png assets/logo.png   # remove o fundo, recorta e deixa quadrado
 python tools/make_icon.py assets/logo.png                    # icon.ico, favicon.ico, icons/*.png
 python tools/logo_preview.py                                 # docs/logo_preview.png (claro/escuro)
+python tools/make_demo_gif.py                                # docs/demo.gif + docs/demo.webp (animação meio a meio do topo)
 ```
 
 `prepare_logo.py` aceita PNG transparente ou com fundo branco (remove só o branco ligado às bordas,
@@ -208,7 +219,7 @@ chromaqui/      app.py (janela), app_extras.py (recursos 3.2), core.py (chroma k
                 selftest.py
 assets/         logo.png, icon.ico, favicon.ico, icons/, i18n/,
                 demo/ (japanese_woman.mp4 + scenery_shrine.webp: projeto de demonstração)
-tools/          build_exe.py, make_icon.py, prepare_logo.py, logo_preview.py, extract_strings.py, i18n_build.py
+tools/          build_exe.py, make_demo_gif.py, make_icon.py, prepare_logo.py, logo_preview.py, extract_strings.py, i18n_build.py
 tests/          testes e geradores de vídeos de teste
 docs/           capturas de tela
 ```
@@ -232,17 +243,18 @@ animated WebP, APNG, WebM VP9 with alpha and MOV ProRes 4444 with alpha** (bundl
   containing the subject across 30 frames (plus a margin). The crop applies to every frame and every format
   (and to the included background), is applied before scaling, speeds up export and is remembered per video
   size. Optional even width/height (always even for WebM/ProRes).
-- **New in 3.2.0-beta.1 (pre-release; 3.1.0 stays the stable "Latest")**: crop that **follows the subject**
+- **New in 3.2.0 (current stable "Latest")**: crop that **follows the subject**
   or is interpolated between **keyframes**; **brush retouch** (keep/remove/eraser); **sprite sheet + TexturePacker
   JSON**; **batch export**; **AI background removal without a green screen** (onnxruntime, model downloaded on
   first use to `%APPDATA%\Chromaqui\models`, or `~/.local/share/Chromaqui/models` on Linux); **drop shadow / neon glow**; **undo/redo** and **before/after
   compare**; **update checker**. Range export (from/to/every N frames) was already available.
-- **Demo project on startup (3.2.0-beta.3)**: the app opens with `assets/demo/japanese_woman.mp4` (green
+- **Demo project on startup (3.2.0)**: the app opens with `assets/demo/japanese_woman.mp4` (green
   screen) keyed over `assets/demo/scenery_shrine.webp`, tuned settings and a **half-and-half split preview**
   (original on the left, result on the right; drag the divider) plus a dismissable *Demo project* banner.
   **New project** (Ctrl+N) or importing a video starts from scratch, as always — nothing from the demo leaks into
   your project or settings. Turn it off in **Settings → Startup → Show demo at startup**; reopen it with
-  **Open demo** (Settings or About).
+  **Open demo** (Settings or About). The animation at the top of this page (`docs/demo.gif` / `docs/demo.webp`)
+  is rendered from these files with the app's own keying code (`tools/make_demo_gif.py`).
 - Preview over checkerboard/solid color or **your own image/video background**; it is only baked into
   the export when **"Include background in export"** is checked.
 - **Light/Dark themes**, optional animations and neon glow, **8 languages switchable at runtime**

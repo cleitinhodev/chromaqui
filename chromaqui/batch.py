@@ -1,4 +1,4 @@
-"""Exportação em lote (beta): uma fila de vídeos exportada com os ajustes atuais ou com um preset."""
+"""Exportação em lote: uma fila de vídeos exportada com os ajustes atuais ou com um preset."""
 from __future__ import annotations
 
 import copy
@@ -40,7 +40,7 @@ class BatchDialog(QDialog):
         super().__init__(window)
         self.win = window
         self.thread = self.worker = None
-        self.setWindowTitle(T("Exportação em lote (beta)"))
+        self.setWindowTitle(T("Exportação em lote"))
         self.setWindowIcon(app_icon())
         self.resize(720, 480)
         lay = QVBoxLayout(self)

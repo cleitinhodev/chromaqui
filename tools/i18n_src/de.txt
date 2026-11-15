@@ -300,7 +300,7 @@
 300|Teilt die Vorschau: Original links, Ergebnis rechts. Ziehen Sie die Trennlinie.
 301|Vorher
 302|Gedrückt halten, um das Originalvideo zu sehen; loslassen, um zum Ergebnis zurückzukehren.
-303|KI-Freistellung (Beta)
+303|KI-Freistellung
 304|Farbschlüssel (Green-/Bluescreen)
 305|KI — ohne Greenscreen
 306|Quelle der Maske
@@ -310,7 +310,7 @@
 310|Modell herunterladen
 311|KI-Modell wird heruntergeladen…
 312|KI-Modell bereit.
-313|Pinselretusche (Beta)
+313|Pinselretusche
 314|Pinsel
 315|Malen Sie in der Vorschau die Bereiche, die bleiben (Behalten) oder verschwinden (Entfernen) sollen. Tastenkürzel: B schaltet um, [ und ] ändern die Größe.
 316|Modus
@@ -323,7 +323,7 @@
 323|Nicht markiert: Die Retusche gilt für alle Bilder (feste Maske). Markiert: nur für das angezeigte Bild.
 324|Bild leeren
 325|Alles leeren
-326|Schatten und Leuchten (Beta)
+326|Schatten und Leuchten
 327|Schatten/Leuchten hinter dem Objekt aktivieren
 328|Erscheint in der Vorschau (über dem Testhintergrund) und, falls unten markiert, in der exportierten Datei.
 329|Schlagschatten
@@ -367,88 +367,86 @@
 367|Diese Version überspringen
 368|Nicht jetzt
 369|onnxruntime ist in dieser Installation nicht verfügbar.
-370|KI-Freistellung
-371|Pinsel: in der Vorschau malen. Grün = behalten, Rot = entfernen.
-372|Keine Retusche gemalt.
-373|feste Maske (alle Bilder)
-374|Bilder
-375|Glättung
-376|Nichts rückgängig zu machen.
-377|Nichts zu wiederholen.
-378|Beta
-379|KI-Modell wird heruntergeladen: {a} von {b} MB
-380|Download abgebrochen.
-381|Prüfen Sie die Verbindung und versuchen Sie es erneut. Der Farbschlüssel funktioniert weiterhin.
-382|Retusche: {what}.
-383|In Pixeln des Originalvideos.
-384|Der Bereich folgt dem Objekt. Klicken Sie auf „Bewegung analysieren“, um ihn in der Vorschau zu sehen; der Export berechnet den Pfad automatisch.
-385|Bewegung wird analysiert: Bild {i} von {n}…
-386|Das KI-Modell konnte nicht heruntergeladen werden:
-387|{n} Bild(er) mit eigener Retusche
-388|Prüfung momentan nicht möglich.
-389|Neue Version verfügbar: {v}
-390|Eine neue Version von {app} ist verfügbar: <b>{v}</b> ({kind}).<br>Sie verwenden {cur}.
-391|Pfad analysiert: Bereich von {w}×{h} px folgt dem Objekt.
-392|{n} Keyframe(s): {list}
-393|Modell bereit (funktioniert offline). Ordner: {p}
-394|Sie haben bereits die neueste Version ({v}).
-395|Das Modell ({mb} MB) wird einmalig beim ersten Gebrauch nach {p} heruntergeladen.
-396|Stapelexport (Beta)
-397|Fügen Sie Videos zur Warteschlange hinzu. Alle werden im Format und mit den Optionen aus „Exportoptionen“ exportiert (ganzes Video). Pinselretusche und Keyframes werden im Stapel nicht angewendet.
-398|Videos hinzufügen…
-399|Warteschlange leeren
-400|Aktuelle Einstellungen
-401|Preset wählen (.json)…
-402|Wählen…
-403|Gespeicherten Zuschnitt je Videogröße verwenden
-404|Wenn Sie bereits ein Video gleicher Größe zugeschnitten haben, wird derselbe Bereich verwendet; sonst das ganze Bild.
-405|Video %v von %m
-406|Starten
-407|Videos hinzufügen
-408|Video
-409|Status
-410|Einstellungen
-411|Zielordner
-412|In Warteschlange
-413|Stapel fertig: {ok} von {n} Videos exportiert.
-414|Format: {fmt}
-415|Stapel abgebrochen: {ok} von {n} Videos exportiert.
-416|{n} Bilder
-417|Abgebrochen
-418|Stapelexport
-419|Stapelexport abbrechen?
-420|Updates
-421|Beim Start nach Updates suchen
-422|Fragt GitHub-Releases im Hintergrund ab; ohne Internet passiert nichts.
-423|Beta-Versionen (Testversionen) einbeziehen
-424|Jetzt prüfen
-425|Dies ist eine Testversion: Neue Funktionen können sich ändern. Die stabile Version bleibt auf der Releases-Seite verfügbar.
-426|Prüfe…
-427|BETA (Testversion)
-428|Nachher
-429|Sprite Sheet (PNG + JSON)
-430|Personen — MODNet (26 MB)
-431|Objekte — U²-Net klein (4,6 MB)
-432|Behalten
-433|Radierer
-434|Fest
-435|Objekt folgen
-436|Keyframes
-437|Unschärfe
-438|Versatz X
-439|Versatz Y
-440|Deckkraft
-441|Ausdehnung
-442|Neues Projekt
-443|Von vorn beginnen: kein Video, Standardeinstellungen (Strg+N)
-444|Demoprojekt
-445|Hinweis schließen
-446|Demo-Dateien nicht gefunden.
-447|Warte, bis der Export fertig ist (oder brich ihn ab), um ein neues Projekt zu beginnen.
-448|{video} vor {scene}: links das Original, rechts das Ergebnis (Trennlinie ziehen). Importiere ein Video oder klicke auf „Neues Projekt“, um zu beginnen.
-449|Demoprojekt: {video} vor {scene}.
-450|Start
-451|Demo beim Start anzeigen
-452|Wenn das Programm ohne Video geöffnet wird, lädt es das Beispielprojekt (Greenscreen + Szenerie, halb und halb). „Neues Projekt“ und das Importieren eines Videos beginnen von vorn.
-453|Demo öffnen
-454|Öffnet das Beispielprojekt: eine Frau vor dem Greenscreen über der Schrein-Szenerie, mit halb geteilter Vorschau.
+370|Pinsel: in der Vorschau malen. Grün = behalten, Rot = entfernen.
+371|Keine Retusche gemalt.
+372|feste Maske (alle Bilder)
+373|Bilder
+374|Glättung
+375|Nichts rückgängig zu machen.
+376|Nichts zu wiederholen.
+377|Beta
+378|KI-Modell wird heruntergeladen: {a} von {b} MB
+379|Download abgebrochen.
+380|Prüfen Sie die Verbindung und versuchen Sie es erneut. Der Farbschlüssel funktioniert weiterhin.
+381|Retusche: {what}.
+382|In Pixeln des Originalvideos.
+383|Der Bereich folgt dem Objekt. Klicken Sie auf „Bewegung analysieren“, um ihn in der Vorschau zu sehen; der Export berechnet den Pfad automatisch.
+384|Bewegung wird analysiert: Bild {i} von {n}…
+385|Das KI-Modell konnte nicht heruntergeladen werden:
+386|{n} Bild(er) mit eigener Retusche
+387|Prüfung momentan nicht möglich.
+388|Neue Version verfügbar: {v}
+389|Eine neue Version von {app} ist verfügbar: <b>{v}</b> ({kind}).<br>Sie verwenden {cur}.
+390|Pfad analysiert: Bereich von {w}×{h} px folgt dem Objekt.
+391|{n} Keyframe(s): {list}
+392|Modell bereit (funktioniert offline). Ordner: {p}
+393|Sie haben bereits die neueste Version ({v}).
+394|Das Modell ({mb} MB) wird einmalig beim ersten Gebrauch nach {p} heruntergeladen.
+395|Stapelexport
+396|Fügen Sie Videos zur Warteschlange hinzu. Alle werden im Format und mit den Optionen aus „Exportoptionen“ exportiert (ganzes Video). Pinselretusche und Keyframes werden im Stapel nicht angewendet.
+397|Videos hinzufügen…
+398|Warteschlange leeren
+399|Aktuelle Einstellungen
+400|Preset wählen (.json)…
+401|Wählen…
+402|Gespeicherten Zuschnitt je Videogröße verwenden
+403|Wenn Sie bereits ein Video gleicher Größe zugeschnitten haben, wird derselbe Bereich verwendet; sonst das ganze Bild.
+404|Video %v von %m
+405|Starten
+406|Videos hinzufügen
+407|Video
+408|Status
+409|Einstellungen
+410|Zielordner
+411|In Warteschlange
+412|Stapel fertig: {ok} von {n} Videos exportiert.
+413|Format: {fmt}
+414|Stapel abgebrochen: {ok} von {n} Videos exportiert.
+415|{n} Bilder
+416|Abgebrochen
+417|Stapelexport abbrechen?
+418|Updates
+419|Beim Start nach Updates suchen
+420|Fragt GitHub-Releases im Hintergrund ab; ohne Internet passiert nichts.
+421|Beta-Versionen (Testversionen) einbeziehen
+422|Jetzt prüfen
+423|Dies ist eine Testversion: Neue Funktionen können sich ändern. Die stabile Version bleibt auf der Releases-Seite verfügbar.
+424|Prüfe…
+425|BETA (Testversion)
+426|Nachher
+427|Sprite Sheet (PNG + JSON)
+428|Personen — MODNet (26 MB)
+429|Objekte — U²-Net klein (4,6 MB)
+430|Behalten
+431|Radierer
+432|Fest
+433|Objekt folgen
+434|Keyframes
+435|Unschärfe
+436|Versatz X
+437|Versatz Y
+438|Deckkraft
+439|Ausdehnung
+440|Neues Projekt
+441|Von vorn beginnen: kein Video, Standardeinstellungen (Strg+N)
+442|Demoprojekt
+443|Hinweis schließen
+444|Demo-Dateien nicht gefunden.
+445|Warte, bis der Export fertig ist (oder brich ihn ab), um ein neues Projekt zu beginnen.
+446|{video} vor {scene}: links das Original, rechts das Ergebnis (Trennlinie ziehen). Importiere ein Video oder klicke auf „Neues Projekt“, um zu beginnen.
+447|Demoprojekt: {video} vor {scene}.
+448|Start
+449|Demo beim Start anzeigen
+450|Wenn das Programm ohne Video geöffnet wird, lädt es das Beispielprojekt (Greenscreen + Szenerie, halb und halb). „Neues Projekt“ und das Importieren eines Videos beginnen von vorn.
+451|Demo öffnen
+452|Öffnet das Beispielprojekt: eine Frau vor dem Greenscreen über der Schrein-Szenerie, mit halb geteilter Vorschau.

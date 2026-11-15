@@ -1,4 +1,4 @@
-"""Recursos da 3.2 (beta) na janela principal: remoção por IA, retoque com pincel, sombra/brilho,
+"""Recursos da 3.2 na janela principal: remoção por IA, retoque com pincel, sombra/brilho,
 recorte que segue o objeto / quadros-chave, opções de sprite sheet, exportação em lote,
 desfazer/refazer, comparação antes/depois e verificação de atualizações.
 (Mixin de MainWindow: usa os widgets e métodos definidos em app.py.)"""
@@ -107,7 +107,7 @@ class ExtrasMixin:
 
     # =============================================================== IA
     def _build_ai_section(self):
-        sec = Section(T("Remoção por IA (beta)"))
+        sec = Section(T("Remoção por IA"))
         self.cmb_source = QComboBox()
         self.cmb_source.addItem(T("Cor-chave (tela verde/azul)"), "chroma")
         self.cmb_source.addItem(T("IA — sem tela verde"), "ai")
@@ -258,7 +258,7 @@ class ExtrasMixin:
 
     # =============================================================== retoque (pincel)
     def _build_retouch_section(self):
-        sec = Section(T("Retoque com pincel (beta)"))
+        sec = Section(T("Retoque com pincel"))
         self.btn_brush = QPushButton(T("Pincel"))
         self.btn_brush.setCheckable(True)
         self.btn_brush.setEnabled(False)
@@ -416,7 +416,7 @@ class ExtrasMixin:
 
     # =============================================================== sombra / brilho
     def _build_glow_section(self):
-        sec = Section(T("Sombra e brilho (beta)"))
+        sec = Section(T("Sombra e brilho"))
         self.chk_glow = QCheckBox(T("Ativar sombra/brilho atrás do objeto"))
         self.chk_glow.toggled.connect(self._on_glow)
         sec.add_row("", self.chk_glow, T("Aparece na prévia (sobre o fundo de teste) e, se marcado abaixo, no "

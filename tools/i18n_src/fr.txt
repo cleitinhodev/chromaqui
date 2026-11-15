@@ -300,7 +300,7 @@
 300|Divise l'aperçu : original à gauche, résultat à droite. Faites glisser le séparateur.
 301|Avant
 302|Maintenez pour voir la vidéo originale ; relâchez pour revenir au résultat.
-303|Suppression par IA (bêta)
+303|Suppression par IA
 304|Incrustation (fond vert/bleu)
 305|IA — sans fond vert
 306|Source du détourage
@@ -310,7 +310,7 @@
 310|Télécharger le modèle
 311|Téléchargement du modèle d'IA…
 312|Modèle d'IA prêt.
-313|Retouche au pinceau (bêta)
+313|Retouche au pinceau
 314|Pinceau
 315|Peignez sur l'aperçu les zones à garder (Garder) ou à faire disparaître (Supprimer). Raccourcis : B active/désactive, [ et ] changent la taille.
 316|Mode
@@ -323,7 +323,7 @@
 323|Décoché : la retouche s'applique à toutes les images (masque fixe). Coché : uniquement à l'image affichée.
 324|Effacer l'image
 325|Tout effacer
-326|Ombre et lueur (bêta)
+326|Ombre et lueur
 327|Activer l'ombre/la lueur derrière le sujet
 328|Apparaît dans l'aperçu (sur le fond de test) et, si coché ci-dessous, dans le fichier exporté.
 329|Ombre portée
@@ -367,88 +367,86 @@
 367|Ignorer cette version
 368|Pas maintenant
 369|onnxruntime n'est pas disponible dans cette installation.
-370|Suppression par IA
-371|Pinceau : peignez sur l'aperçu. Vert = garder, rouge = supprimer.
-372|Aucune retouche peinte.
-373|masque fixe (toutes les images)
-374|images
-375|Lissage
-376|Rien à annuler.
-377|Rien à rétablir.
-378|bêta
-379|Téléchargement du modèle d'IA : {a} sur {b} Mo
-380|Téléchargement annulé.
-381|Vérifiez la connexion et réessayez. En attendant, l'incrustation continue de fonctionner.
-382|Retouche : {what}.
-383|En pixels de la vidéo originale.
-384|La zone suit le sujet. Cliquez sur « Analyser le mouvement » pour la voir dans l'aperçu ; l'export calcule le trajet automatiquement.
-385|Analyse du mouvement : image {i} sur {n}…
-386|Impossible de télécharger le modèle d'IA :
-387|{n} image(s) avec leur propre retouche
-388|Vérification impossible pour le moment.
-389|Nouvelle version disponible : {v}
-390|Une nouvelle version de {app} est disponible : <b>{v}</b> ({kind}).<br>Vous utilisez la {cur}.
-391|Trajet analysé : zone de {w}×{h} px qui suit le sujet.
-392|{n} image(s) clé(s) : {list}
-393|Modèle prêt (fonctionne hors ligne). Dossier : {p}
-394|Vous avez déjà la version la plus récente ({v}).
-395|Le modèle ({mb} Mo) est téléchargé une seule fois, à la première utilisation, dans {p}.
-396|Export par lot (bêta)
-397|Ajoutez des vidéos à la file. Toutes sont exportées dans le format et avec les options choisis dans « Options d'export » (vidéo entière). La retouche au pinceau et les images clés ne sont pas appliquées au lot.
-398|Ajouter des vidéos…
-399|Vider la file
-400|Réglages actuels
-401|Choisir un preset (.json)…
-402|Choisir…
-403|Utiliser le recadrage enregistré pour chaque taille de vidéo
-404|Si vous avez déjà recadré une vidéo de la même taille, la même zone est utilisée ; sinon, l'image entière.
-405|Vidéo %v sur %m
-406|Démarrer
-407|Ajouter des vidéos
-408|Vidéo
-409|État
-410|Réglages
-411|Dossier de destination
-412|En attente
-413|Lot terminé : {ok} sur {n} vidéos exportées.
-414|Format : {fmt}
-415|Lot annulé : {ok} sur {n} vidéos exportées.
-416|{n} images
-417|Annulé
-418|Export par lot
-419|Annuler l'export par lot ?
-420|Mises à jour
-421|Rechercher les mises à jour au démarrage
-422|Consulte les Releases GitHub en arrière-plan ; sans internet, rien ne se passe.
-423|Inclure les versions bêta (de test)
-424|Vérifier maintenant
-425|Ceci est une version de test : les nouvelles fonctions peuvent changer. La version stable reste disponible sur la page Releases.
-426|Vérification…
-427|BÊTA (version de test)
-428|Après
-429|Sprite sheet (PNG + JSON)
-430|Personnes — MODNet (26 Mo)
-431|Objets — U²-Net petit (4,6 Mo)
-432|Garder
-433|Gomme
-434|Fixe
-435|Suivre le sujet
-436|Images clés
-437|Flou
-438|Décalage X
-439|Décalage Y
-440|Opacité
-441|Expansion
-442|Nouveau projet
-443|Repartir de zéro : sans vidéo, réglages par défaut (Ctrl+N)
-444|Projet de démonstration
-445|Fermer l’avis
-446|Fichiers de la démonstration introuvables.
-447|Attendez la fin de l’exportation (ou annulez-la) pour commencer un nouveau projet.
-448|{video} sur {scene} : à gauche l’original, à droite le résultat (faites glisser la séparation). Importez une vidéo ou cliquez sur « Nouveau projet » pour commencer.
-449|Projet de démonstration : {video} sur {scene}.
-450|Démarrage
-451|Afficher la démonstration au démarrage
-452|À l’ouverture du programme sans vidéo, charge le projet d’exemple (fond vert + décor, moitié-moitié). « Nouveau projet » et l’importation d’une vidéo repartent de zéro.
-453|Ouvrir la démonstration
-454|Ouvre le projet d’exemple : une jeune femme sur fond vert devant le décor du sanctuaire, avec l’aperçu partagé moitié-moitié.
+370|Pinceau : peignez sur l'aperçu. Vert = garder, rouge = supprimer.
+371|Aucune retouche peinte.
+372|masque fixe (toutes les images)
+373|images
+374|Lissage
+375|Rien à annuler.
+376|Rien à rétablir.
+377|bêta
+378|Téléchargement du modèle d'IA : {a} sur {b} Mo
+379|Téléchargement annulé.
+380|Vérifiez la connexion et réessayez. En attendant, l'incrustation continue de fonctionner.
+381|Retouche : {what}.
+382|En pixels de la vidéo originale.
+383|La zone suit le sujet. Cliquez sur « Analyser le mouvement » pour la voir dans l'aperçu ; l'export calcule le trajet automatiquement.
+384|Analyse du mouvement : image {i} sur {n}…
+385|Impossible de télécharger le modèle d'IA :
+386|{n} image(s) avec leur propre retouche
+387|Vérification impossible pour le moment.
+388|Nouvelle version disponible : {v}
+389|Une nouvelle version de {app} est disponible : <b>{v}</b> ({kind}).<br>Vous utilisez la {cur}.
+390|Trajet analysé : zone de {w}×{h} px qui suit le sujet.
+391|{n} image(s) clé(s) : {list}
+392|Modèle prêt (fonctionne hors ligne). Dossier : {p}
+393|Vous avez déjà la version la plus récente ({v}).
+394|Le modèle ({mb} Mo) est téléchargé une seule fois, à la première utilisation, dans {p}.
+395|Export par lot
+396|Ajoutez des vidéos à la file. Toutes sont exportées dans le format et avec les options choisis dans « Options d'export » (vidéo entière). La retouche au pinceau et les images clés ne sont pas appliquées au lot.
+397|Ajouter des vidéos…
+398|Vider la file
+399|Réglages actuels
+400|Choisir un preset (.json)…
+401|Choisir…
+402|Utiliser le recadrage enregistré pour chaque taille de vidéo
+403|Si vous avez déjà recadré une vidéo de la même taille, la même zone est utilisée ; sinon, l'image entière.
+404|Vidéo %v sur %m
+405|Démarrer
+406|Ajouter des vidéos
+407|Vidéo
+408|État
+409|Réglages
+410|Dossier de destination
+411|En attente
+412|Lot terminé : {ok} sur {n} vidéos exportées.
+413|Format : {fmt}
+414|Lot annulé : {ok} sur {n} vidéos exportées.
+415|{n} images
+416|Annulé
+417|Annuler l'export par lot ?
+418|Mises à jour
+419|Rechercher les mises à jour au démarrage
+420|Consulte les Releases GitHub en arrière-plan ; sans internet, rien ne se passe.
+421|Inclure les versions bêta (de test)
+422|Vérifier maintenant
+423|Ceci est une version de test : les nouvelles fonctions peuvent changer. La version stable reste disponible sur la page Releases.
+424|Vérification…
+425|BÊTA (version de test)
+426|Après
+427|Sprite sheet (PNG + JSON)
+428|Personnes — MODNet (26 Mo)
+429|Objets — U²-Net petit (4,6 Mo)
+430|Garder
+431|Gomme
+432|Fixe
+433|Suivre le sujet
+434|Images clés
+435|Flou
+436|Décalage X
+437|Décalage Y
+438|Opacité
+439|Expansion
+440|Nouveau projet
+441|Repartir de zéro : sans vidéo, réglages par défaut (Ctrl+N)
+442|Projet de démonstration
+443|Fermer l’avis
+444|Fichiers de la démonstration introuvables.
+445|Attendez la fin de l’exportation (ou annulez-la) pour commencer un nouveau projet.
+446|{video} sur {scene} : à gauche l’original, à droite le résultat (faites glisser la séparation). Importez une vidéo ou cliquez sur « Nouveau projet » pour commencer.
+447|Projet de démonstration : {video} sur {scene}.
+448|Démarrage
+449|Afficher la démonstration au démarrage
+450|À l’ouverture du programme sans vidéo, charge le projet d’exemple (fond vert + décor, moitié-moitié). « Nouveau projet » et l’importation d’une vidéo repartent de zéro.
+451|Ouvrir la démonstration
+452|Ouvre le projet d’exemple : une jeune femme sur fond vert devant le décor du sanctuaire, avec l’aperçu partagé moitié-moitié.

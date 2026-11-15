@@ -512,7 +512,8 @@ def test_beta_ui():
     rt = w.retouch
     w2 = ctrl.set_language("en") or ctrl.window; pump(0.4)
     assert w2.glow["on"] and w2.retouch is rt and w2.chk_glow.isChecked(), "estado perdido na troca de idioma"
-    assert "beta" in w2.windowTitle().lower(), w2.windowTitle()
+    from chromaqui import IS_BETA
+    assert ("beta" in w2.windowTitle().lower()) == IS_BETA, w2.windowTitle()
     ctrl.set_language("pt-BR"); pump(0.3); w = ctrl.window
     import chromaqui.app as appmod
     w.shutdown(); w.close(); pump(0.2)

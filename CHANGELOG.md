@@ -1,5 +1,34 @@
 # Changelog
 
+## 3.2.0 — 2026-11-15
+
+> ✅ **Versão estável** (marcada como *Latest*). Reúne tudo o que foi testado nas pré-releases
+> **3.2.0-beta.1**, **beta.2** e **beta.3** (detalhes no CHANGELOG.md); quem está na 3.1.0 ou numa beta da
+> 3.2.0 recebe o aviso de atualização para esta versão.
+
+### Novidades em relação à 3.1.0
+- **Linux nativo (x86_64)**: **Chromaqui-Linux-x86_64.AppImage** e **.tar.gz**, X11 e Wayland, mesmos recursos
+  do Windows (beta.2).
+- **Projeto de demonstração ao abrir**: `assets/demo/japanese_woman.mp4` (tela verde) sobre
+  `assets/demo/scenery_shrine.webp`, prévia meio a meio, aviso que pode ser fechado; **Novo projeto**
+  (**Ctrl+N**) e importar vídeo começam do zero; *Configurações → Início → Mostrar demonstração ao iniciar* e
+  **Abrir demonstração** (beta.3).
+- **Recorte que segue o objeto** e **quadros-chave**; **retoque com pincel**; **remoção por IA** sem tela
+  verde (MODNet / U²-Net, baixados no primeiro uso); **sombra projetada / brilho neon**; **desfazer/refazer**
+  e **comparar antes/depois**; **exportação em lote**; **sprite sheet + JSON do TexturePacker**;
+  **verificação de atualizações** (beta.1).
+
+### Mudanças desde a 3.2.0-beta.3
+- **Animação no topo do README** (`docs/demo.gif` e `docs/demo.webp`): a demonstração meio a meio — original com
+  tela verde à esquerda, recorte sobre o cenário à direita — gerada com o próprio código de recorte do
+  programa por `tools/make_demo_gif.py`.
+- Os recursos deixam de ser marcados como *(beta)* na interface (Remoção por IA, Retoque com pincel, Sombra e
+  brilho, Exportação em lote) e "beta" sai do título da janela e do **Sobre**.
+- A opção "Incluir versões beta" nas Configurações passa a vir **desligada** por padrão (só avisos de
+  versões estáveis).
+- Vídeo da demonstração reencodado em **BT.601** (o OpenCV do Windows ignorava a marcação BT.709 e mostrava
+  cores levemente diferentes; agora Windows e Linux exibem os mesmos pixels). Tolerância da demonstração 28.
+
 ## 3.2.0-beta.3 — 2026-11-15 (pré-release, versão de testes)
 
 > Versão **de testes** (*pre-release*). A **3.1.0 continua sendo a versão estável** ("Latest").

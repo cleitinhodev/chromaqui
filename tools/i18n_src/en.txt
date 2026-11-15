@@ -300,7 +300,7 @@
 300|Splits the preview: original on the left, result on the right. Drag the divider.
 301|Before
 302|Hold to see the original video; release to go back to the result.
-303|AI removal (beta)
+303|AI removal
 304|Chroma key (green/blue screen)
 305|AI — no green screen
 306|Matte source
@@ -310,7 +310,7 @@
 310|Download model
 311|Downloading the AI model…
 312|AI model ready.
-313|Brush retouch (beta)
+313|Brush retouch
 314|Brush
 315|Paint on the preview the areas that should stay (Keep) or disappear (Remove). Shortcuts: B toggles, [ and ] change the size.
 316|Mode
@@ -323,7 +323,7 @@
 323|Unchecked: the retouch applies to all frames (fixed mask). Checked: only to the frame shown.
 324|Clear frame
 325|Clear all
-326|Shadow and glow (beta)
+326|Shadow and glow
 327|Enable shadow/glow behind the subject
 328|Shows in the preview (over the test background) and, if checked below, in the exported file.
 329|Drop shadow
@@ -367,88 +367,86 @@
 367|Skip this version
 368|Not now
 369|onnxruntime is not available in this installation.
-370|AI removal
-371|Brush: paint on the preview. Green = keep, red = remove.
-372|No retouch painted.
-373|fixed mask (all frames)
-374|frames
-375|Smoothing
-376|Nothing to undo.
-377|Nothing to redo.
-378|beta
-379|Downloading the AI model: {a} of {b} MB
-380|Download canceled.
-381|Check your connection and try again. Meanwhile, chroma key keeps working.
-382|Retouch: {what}.
-383|In pixels of the original video.
-384|The area follows the subject. Click 'Analyze motion' to see it in the preview; the export computes the path automatically.
-385|Analyzing motion: frame {i} of {n}…
-386|Could not download the AI model:
-387|{n} frame(s) with their own retouch
-388|Could not check right now.
-389|New version available: {v}
-390|A new version of {app} is available: <b>{v}</b> ({kind}).<br>You are using {cur}.
-391|Path analyzed: {w}×{h} px area following the subject.
-392|{n} keyframe(s): {list}
-393|Model ready (works offline). Folder: {p}
-394|You already have the latest version ({v}).
-395|The model ({mb} MB) is downloaded once, on first use, to {p}.
-396|Batch export (beta)
-397|Add videos to the queue. All are exported in the format and with the options chosen in 'Export options' (whole video). Brush retouch and keyframes are not applied in batch.
-398|Add videos…
-399|Clear queue
-400|Current settings
-401|Choose preset (.json)…
-402|Choose…
-403|Use the saved crop for each video size
-404|If you already cropped a video of the same size, the same area is used; otherwise, the full frame.
-405|Video %v of %m
-406|Start
-407|Add videos
-408|Video
-409|Status
-410|Settings
-411|Output folder
-412|Queued
-413|Batch finished: {ok} of {n} videos exported.
-414|Format: {fmt}
-415|Batch canceled: {ok} of {n} videos exported.
-416|{n} frames
-417|Canceled
-418|Batch export
-419|Cancel the batch export?
-420|Updates
-421|Check for updates at startup
-422|Queries GitHub Releases in the background; without internet, nothing happens.
-423|Include beta (testing) versions
-424|Check now
-425|This is a testing version: the new features may change. The stable version remains available on the Releases page.
-426|Checking…
-427|BETA (testing version)
-428|After
-429|Sprite sheet (PNG + JSON)
-430|People — MODNet (26 MB)
-431|Objects — U²-Net small (4.6 MB)
-432|Keep
-433|Eraser
-434|Fixed
-435|Follow the subject
-436|Keyframes
-437|Blur
-438|Offset X
-439|Offset Y
-440|Opacity
-441|Spread
-442|New project
-443|Start from scratch: no video, default settings (Ctrl+N)
-444|Demo project
-445|Close notice
-446|Demo files not found.
-447|Wait for the export to finish (or cancel it) to start a new project.
-448|{video} over {scene}: original on the left, result on the right (drag the divider). Import a video or click 'New project' to start.
-449|Demo project: {video} over {scene}.
-450|Startup
-451|Show demo at startup
-452|When the program opens without a video, it loads the sample project (green screen + scenery, half and half). 'New project' and importing a video start from scratch.
-453|Open demo
-454|Opens the sample project: a woman on a green screen over the shrine scenery, with the preview split half and half.
+370|Brush: paint on the preview. Green = keep, red = remove.
+371|No retouch painted.
+372|fixed mask (all frames)
+373|frames
+374|Smoothing
+375|Nothing to undo.
+376|Nothing to redo.
+377|beta
+378|Downloading the AI model: {a} of {b} MB
+379|Download canceled.
+380|Check your connection and try again. Meanwhile, chroma key keeps working.
+381|Retouch: {what}.
+382|In pixels of the original video.
+383|The area follows the subject. Click 'Analyze motion' to see it in the preview; the export computes the path automatically.
+384|Analyzing motion: frame {i} of {n}…
+385|Could not download the AI model:
+386|{n} frame(s) with their own retouch
+387|Could not check right now.
+388|New version available: {v}
+389|A new version of {app} is available: <b>{v}</b> ({kind}).<br>You are using {cur}.
+390|Path analyzed: {w}×{h} px area following the subject.
+391|{n} keyframe(s): {list}
+392|Model ready (works offline). Folder: {p}
+393|You already have the latest version ({v}).
+394|The model ({mb} MB) is downloaded once, on first use, to {p}.
+395|Batch export
+396|Add videos to the queue. All are exported in the format and with the options chosen in 'Export options' (whole video). Brush retouch and keyframes are not applied in batch.
+397|Add videos…
+398|Clear queue
+399|Current settings
+400|Choose preset (.json)…
+401|Choose…
+402|Use the saved crop for each video size
+403|If you already cropped a video of the same size, the same area is used; otherwise, the full frame.
+404|Video %v of %m
+405|Start
+406|Add videos
+407|Video
+408|Status
+409|Settings
+410|Output folder
+411|Queued
+412|Batch finished: {ok} of {n} videos exported.
+413|Format: {fmt}
+414|Batch canceled: {ok} of {n} videos exported.
+415|{n} frames
+416|Canceled
+417|Cancel the batch export?
+418|Updates
+419|Check for updates at startup
+420|Queries GitHub Releases in the background; without internet, nothing happens.
+421|Include beta (testing) versions
+422|Check now
+423|This is a testing version: the new features may change. The stable version remains available on the Releases page.
+424|Checking…
+425|BETA (testing version)
+426|After
+427|Sprite sheet (PNG + JSON)
+428|People — MODNet (26 MB)
+429|Objects — U²-Net small (4.6 MB)
+430|Keep
+431|Eraser
+432|Fixed
+433|Follow the subject
+434|Keyframes
+435|Blur
+436|Offset X
+437|Offset Y
+438|Opacity
+439|Spread
+440|New project
+441|Start from scratch: no video, default settings (Ctrl+N)
+442|Demo project
+443|Close notice
+444|Demo files not found.
+445|Wait for the export to finish (or cancel it) to start a new project.
+446|{video} over {scene}: original on the left, result on the right (drag the divider). Import a video or click 'New project' to start.
+447|Demo project: {video} over {scene}.
+448|Startup
+449|Show demo at startup
+450|When the program opens without a video, it loads the sample project (green screen + scenery, half and half). 'New project' and importing a video start from scratch.
+451|Open demo
+452|Opens the sample project: a woman on a green screen over the shrine scenery, with the preview split half and half.

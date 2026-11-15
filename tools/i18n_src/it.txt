@@ -300,7 +300,7 @@
 300|Divide l'anteprima: originale a sinistra, risultato a destra. Trascina il divisore.
 301|Prima
 302|Tieni premuto per vedere il video originale; rilascia per tornare al risultato.
-303|Rimozione con IA (beta)
+303|Rimozione con IA
 304|Chroma key (green/blue screen)
 305|IA — senza green screen
 306|Origine del ritaglio
@@ -310,7 +310,7 @@
 310|Scarica modello
 311|Download del modello IA…
 312|Modello IA pronto.
-313|Ritocco a pennello (beta)
+313|Ritocco a pennello
 314|Pennello
 315|Dipingi nell'anteprima le aree da tenere (Mantieni) o da far sparire (Rimuovi). Scorciatoie: B attiva/disattiva, [ e ] cambiano la dimensione.
 316|Modalità
@@ -323,7 +323,7 @@
 323|Non selezionato: il ritocco vale per tutti i fotogrammi (maschera fissa). Selezionato: solo per il fotogramma mostrato.
 324|Pulisci fotogramma
 325|Pulisci tutto
-326|Ombra e bagliore (beta)
+326|Ombra e bagliore
 327|Attiva ombra/bagliore dietro il soggetto
 328|Appare nell'anteprima (sullo sfondo di prova) e, se selezionato sotto, nel file esportato.
 329|Ombra proiettata
@@ -367,88 +367,86 @@
 367|Ignora questa versione
 368|Non ora
 369|onnxruntime non è disponibile in questa installazione.
-370|Rimozione con IA
-371|Pennello: dipingi nell'anteprima. Verde = mantieni, rosso = rimuovi.
-372|Nessun ritocco dipinto.
-373|maschera fissa (tutti i fotogrammi)
-374|fotogrammi
-375|Smussatura
-376|Niente da annullare.
-377|Niente da ripetere.
-378|beta
-379|Download del modello IA: {a} di {b} MB
-380|Download annullato.
-381|Controlla la connessione e riprova. Nel frattempo il chroma key continua a funzionare.
-382|Ritocco: {what}.
-383|In pixel del video originale.
-384|L'area segue il soggetto. Fai clic su 'Analizza movimento' per vederla nell'anteprima; l'esportazione calcola il percorso automaticamente.
-385|Analisi del movimento: fotogramma {i} di {n}…
-386|Impossibile scaricare il modello IA:
-387|{n} fotogramma/i con ritocco proprio
-388|Impossibile verificare adesso.
-389|Nuova versione disponibile: {v}
-390|È disponibile una nuova versione di {app}: <b>{v}</b> ({kind}).<br>Stai usando la {cur}.
-391|Percorso analizzato: area di {w}×{h} px che segue il soggetto.
-392|{n} fotogramma/i chiave: {list}
-393|Modello pronto (funziona offline). Cartella: {p}
-394|Hai già la versione più recente ({v}).
-395|Il modello ({mb} MB) viene scaricato una sola volta, al primo uso, in {p}.
-396|Esportazione in blocco (beta)
-397|Aggiungi video alla coda. Tutti vengono esportati nel formato e con le opzioni scelti in 'Opzioni di esportazione' (video intero). Ritocco a pennello e fotogrammi chiave non vengono applicati nel blocco.
-398|Aggiungi video…
-399|Svuota coda
-400|Impostazioni attuali
-401|Scegli preset (.json)…
-402|Scegli…
-403|Usa il ritaglio salvato per ogni dimensione di video
-404|Se hai già ritagliato un video della stessa dimensione, viene usata la stessa area; altrimenti, il fotogramma intero.
-405|Video %v di %m
-406|Avvia
-407|Aggiungi video
-408|Video
-409|Stato
-410|Impostazioni
-411|Cartella di destinazione
-412|In coda
-413|Blocco completato: {ok} di {n} video esportati.
-414|Formato: {fmt}
-415|Blocco annullato: {ok} di {n} video esportati.
-416|{n} fotogrammi
-417|Annullato
-418|Esportazione in blocco
-419|Annullare l'esportazione in blocco?
-420|Aggiornamenti
-421|Controlla aggiornamenti all'avvio
-422|Consulta le Releases di GitHub in background; senza internet non succede nulla.
-423|Includi versioni beta (di prova)
-424|Controlla ora
-425|Questa è una versione di prova: le nuove funzioni possono cambiare. La versione stabile resta disponibile nella pagina Releases.
-426|Verifica…
-427|BETA (versione di prova)
-428|Dopo
-429|Sprite sheet (PNG + JSON)
-430|Persone — MODNet (26 MB)
-431|Oggetti — U²-Net piccolo (4,6 MB)
-432|Mantieni
-433|Gomma
-434|Fisso
-435|Segui il soggetto
-436|Fotogrammi chiave
-437|Sfocatura
-438|Spostamento X
-439|Spostamento Y
-440|Opacità
-441|Espansione
-442|Nuovo progetto
-443|Ricomincia da zero: nessun video, impostazioni predefinite (Ctrl+N)
-444|Progetto dimostrativo
-445|Chiudi avviso
-446|File della demo non trovati.
-447|Attendi la fine dell’esportazione (o annullala) per iniziare un nuovo progetto.
-448|{video} su {scene}: a sinistra l’originale, a destra il risultato (trascina il divisore). Importa un video o fai clic su 'Nuovo progetto' per iniziare.
-449|Progetto dimostrativo: {video} su {scene}.
-450|Avvio
-451|Mostra la demo all’avvio
-452|Quando il programma si apre senza un video, carica il progetto di esempio (green screen + scenario, metà e metà). 'Nuovo progetto' e l’importazione di un video ripartono da zero.
-453|Apri demo
-454|Apre il progetto di esempio: una ragazza sul green screen sopra lo scenario del santuario, con l’anteprima divisa a metà.
+370|Pennello: dipingi nell'anteprima. Verde = mantieni, rosso = rimuovi.
+371|Nessun ritocco dipinto.
+372|maschera fissa (tutti i fotogrammi)
+373|fotogrammi
+374|Smussatura
+375|Niente da annullare.
+376|Niente da ripetere.
+377|beta
+378|Download del modello IA: {a} di {b} MB
+379|Download annullato.
+380|Controlla la connessione e riprova. Nel frattempo il chroma key continua a funzionare.
+381|Ritocco: {what}.
+382|In pixel del video originale.
+383|L'area segue il soggetto. Fai clic su 'Analizza movimento' per vederla nell'anteprima; l'esportazione calcola il percorso automaticamente.
+384|Analisi del movimento: fotogramma {i} di {n}…
+385|Impossibile scaricare il modello IA:
+386|{n} fotogramma/i con ritocco proprio
+387|Impossibile verificare adesso.
+388|Nuova versione disponibile: {v}
+389|È disponibile una nuova versione di {app}: <b>{v}</b> ({kind}).<br>Stai usando la {cur}.
+390|Percorso analizzato: area di {w}×{h} px che segue il soggetto.
+391|{n} fotogramma/i chiave: {list}
+392|Modello pronto (funziona offline). Cartella: {p}
+393|Hai già la versione più recente ({v}).
+394|Il modello ({mb} MB) viene scaricato una sola volta, al primo uso, in {p}.
+395|Esportazione in blocco
+396|Aggiungi video alla coda. Tutti vengono esportati nel formato e con le opzioni scelti in 'Opzioni di esportazione' (video intero). Ritocco a pennello e fotogrammi chiave non vengono applicati nel blocco.
+397|Aggiungi video…
+398|Svuota coda
+399|Impostazioni attuali
+400|Scegli preset (.json)…
+401|Scegli…
+402|Usa il ritaglio salvato per ogni dimensione di video
+403|Se hai già ritagliato un video della stessa dimensione, viene usata la stessa area; altrimenti, il fotogramma intero.
+404|Video %v di %m
+405|Avvia
+406|Aggiungi video
+407|Video
+408|Stato
+409|Impostazioni
+410|Cartella di destinazione
+411|In coda
+412|Blocco completato: {ok} di {n} video esportati.
+413|Formato: {fmt}
+414|Blocco annullato: {ok} di {n} video esportati.
+415|{n} fotogrammi
+416|Annullato
+417|Annullare l'esportazione in blocco?
+418|Aggiornamenti
+419|Controlla aggiornamenti all'avvio
+420|Consulta le Releases di GitHub in background; senza internet non succede nulla.
+421|Includi versioni beta (di prova)
+422|Controlla ora
+423|Questa è una versione di prova: le nuove funzioni possono cambiare. La versione stabile resta disponibile nella pagina Releases.
+424|Verifica…
+425|BETA (versione di prova)
+426|Dopo
+427|Sprite sheet (PNG + JSON)
+428|Persone — MODNet (26 MB)
+429|Oggetti — U²-Net piccolo (4,6 MB)
+430|Mantieni
+431|Gomma
+432|Fisso
+433|Segui il soggetto
+434|Fotogrammi chiave
+435|Sfocatura
+436|Spostamento X
+437|Spostamento Y
+438|Opacità
+439|Espansione
+440|Nuovo progetto
+441|Ricomincia da zero: nessun video, impostazioni predefinite (Ctrl+N)
+442|Progetto dimostrativo
+443|Chiudi avviso
+444|File della demo non trovati.
+445|Attendi la fine dell’esportazione (o annullala) per iniziare un nuovo progetto.
+446|{video} su {scene}: a sinistra l’originale, a destra il risultato (trascina il divisore). Importa un video o fai clic su 'Nuovo progetto' per iniziare.
+447|Progetto dimostrativo: {video} su {scene}.
+448|Avvio
+449|Mostra la demo all’avvio
+450|Quando il programma si apre senza un video, carica il progetto di esempio (green screen + scenario, metà e metà). 'Nuovo progetto' e l’importazione di un video ripartono da zero.
+451|Apri demo
+452|Apre il progetto di esempio: una ragazza sul green screen sopra lo scenario del santuario, con l’anteprima divisa a metà.

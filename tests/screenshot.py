@@ -92,7 +92,7 @@ w.reset_crop()
 
 # Recursos da 3.2 (beta): comparar antes/depois + brilho neon; recorte que segue o objeto; lote
 w = ctrl.window
-open_sections(w, ["Sombra e brilho (beta)", "Retoque com pincel (beta)"])
+open_sections(w, ["Sombra e brilho", "Retoque com pincel"])
 w.chk_glow.setChecked(True)
 w.cmb_glow_mode.setCurrentIndex(w.cmb_glow_mode.findData("neon"))
 w._on_glow_mode()
@@ -103,7 +103,7 @@ shoot("light", "beta_comparar_brilho_claro.png")
 w = ctrl.window
 w.btn_compare.setChecked(False)
 w.chk_glow.setChecked(False)
-open_sections(w, ["Recorte da área exportada", "Remoção por IA (beta)"])
+open_sections(w, ["Recorte da área exportada", "Remoção por IA"])
 w.cmb_motion.setCurrentIndex(w.cmb_motion.findData("follow"))
 w._on_motion()
 w.analyze_motion()
