@@ -64,7 +64,7 @@ assert w.open_demo(); pump(1.0)
 assert w.demo_active and w.demo_banner.isVisible() and w.btn_compare.isChecked() and w.preview.compare_active()
 assert w.slider.value() == demo.FRAME and abs(w.preview.split - 0.5) < 1e-9
 assert VIEWS[w.cmb_view.currentIndex()] == "Resultado" and w.background.active
-assert w.sliders["tolerance"].value() == 24 and w.sliders["pedestal"].value() == 6
+assert w.sliders["tolerance"].value() == 28 and w.sliders["pedestal"].value() == 6
 assert not w.btn_undo.isEnabled()
 # mexer no recorte durante a demonstração não grava "crops"
 w.set_crop((100, 50, 900, 600)); pump(0.6)

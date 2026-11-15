@@ -7,7 +7,7 @@
 ### Novidade: projeto de demonstração ao abrir
 - O programa abre com um exemplo pronto: a moça de **`assets/demo/japanese_woman.mp4`** (tela verde,
   1280×720, 6 s) sobre o cenário do santuário **`assets/demo/scenery_shrine.webp`**, com ajustes calibrados
-  (tolerância 24, pedestal 6: o fundo verde some por inteiro, sem véu) e a prévia **meio a meio** — à
+  (tolerância 28, pedestal 6: o fundo verde some por inteiro, sem véu) e a prévia **meio a meio** — à
   esquerda o original com fundo verde, à direita o resultado no cenário (a divisória pode ser arrastada).
 - Aviso **"Projeto de demonstração"** (8 idiomas) acima da prévia, com ✕ para fechar.
 - **Novo projeto** (botão no topo, **Ctrl+N**) e **Importar vídeo…** começam do zero, como sempre: os ajustes,

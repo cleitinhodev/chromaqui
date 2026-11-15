@@ -16,7 +16,7 @@ SPLIT = 0.5
 BG_MODE = "fill"
 # ajustes calibrados para este vídeo: tolerância um pouco maior e pedestal tiram o véu de ~2% de
 # alfa que sobrava no fundo verde; o resto (bordas, colorização, spill) fica no padrão.
-VALUES = {"tolerance": 24, "pedestal": 6}
+VALUES = {"tolerance": 28, "pedestal": 6}
 
 
 def video_path() -> str:
